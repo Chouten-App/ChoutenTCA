@@ -8,22 +8,13 @@
 import SwiftUI
 
 struct ModuleButton: View {
+    @Binding var isShowing: Bool
+    @Binding var showButton: Bool
     @StateObject var Colors = DynamicColors.shared
     
     var body: some View {
         Button {
-            print("hmmm")
-            let data = ["data": FloatyData(
-                message: "Floaty is working.",
-                error: true,
-                action: nil
-            )]
-            NotificationCenter.default
-                .post(
-                    name: NSNotification.Name("floaty"),
-                    object: nil,
-                    userInfo: data
-                )
+            isShowing = true
         } label: {
             Text("Zoro.to")
                 .font(.system(size: 18, weight: .bold))
@@ -39,15 +30,15 @@ struct ModuleButton: View {
                 .shadow(color: Color(hex: Colors.Scrim.dark).opacity(0.16), radius: 24, x: 0, y: 0)
         }
         .buttonStyle(PlainButtonStyle())
-        .padding(.trailing, 16)
+        .padding(.trailing, showButton ? 16 : -140)
         .padding(.bottom, 120)
         .foregroundColor(Color(hex: Colors.onPrimaryContainer.dark))
-        .transition(.move(edge: .trailing))
+        .animation(.spring(response: 0.3), value: showButton)
     }
 }
 
 struct ModuleButton_Previews: PreviewProvider {
     static var previews: some View {
-        ModuleButton()
+        ModuleButton(isShowing: .constant(false), showButton: .constant(true))
     }
 }
