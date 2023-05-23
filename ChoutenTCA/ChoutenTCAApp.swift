@@ -6,12 +6,19 @@
 //
 
 import SwiftUI
+import ComposableArchitecture
 
 @main
 struct ChoutenTCAApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Root(
+                store: Store(
+                    initialState: RootDomain.State(),
+                    reducer: RootDomain()
+                )
+            )
         }
     }
+        
 }
