@@ -65,15 +65,6 @@ struct MainView: View {
                     .tag(3)
                 }
             }
-            // Navbar
-            .overlay(alignment: .bottom) {
-                Navbar(
-                    store: self.store.scope(
-                        state: \.navbarState,
-                        action: MainDomain.Action.setTab
-                    )
-                )
-            }
             .onReceive(NotificationCenter.default.publisher(for: Notification.Name("floaty")), perform: { value in
                 print("hm")
                 if value.userInfo != nil {
@@ -84,11 +75,49 @@ struct MainView: View {
                     }
                 }
             })
-            // module selector
+            // module button
             .overlay(alignment: .bottomTrailing) {
-                if viewStore.navbarState.tab != 3 {
-                    ModuleButton()
-                }
+                ModuleButton(
+                    isShowing: viewStore.binding(
+                        get: \.isShowingBottomSheet,
+                        send: MainDomain.Action.setBottomSheet(newValue:)
+                    ),
+                    showButton: viewStore.binding(
+                        get: \.showModuleButton,
+                        send: MainDomain.Action.setModuleButton(newValue:)
+                    )
+                )
+            }
+            // module selector
+            .overlay(alignment: .bottom) {
+                BottomSheet(
+                    store: self.store.scope(
+                        state: \.bottomSheetState,
+                        action: MainDomain.Action.sheet
+                    ),
+                    isShowing: viewStore.binding(
+                        get: \.isShowingBottomSheet,
+                        send: MainDomain.Action.setBottomSheet(newValue:)
+                    ),
+                    content: AnyView(
+                        ModuleSelector(
+                            store: self.store.scope(
+                                state: \.moduleSelectorState,
+                                action: MainDomain.Action.selector
+                            )
+                        )
+                    )
+                )
+                .padding(.bottom, 100)
+            }
+            // Navbar
+            .overlay(alignment: .bottom) {
+                Navbar(
+                    store: self.store.scope(
+                        state: \.navbarState,
+                        action: MainDomain.Action.setTab
+                    )
+                )
             }
             .popup(isPresented: viewStore.binding(
                 get: \.floatyState.showFloaty,

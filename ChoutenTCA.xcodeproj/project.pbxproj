@@ -36,6 +36,17 @@
 		E9B601752A1D0883009E6EFE /* RootDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B601742A1D0883009E6EFE /* RootDomain.swift */; };
 		E9B601782A1D0A92009E6EFE /* NavigationTransitions in Frameworks */ = {isa = PBXBuildFile; productRef = E9B601772A1D0A92009E6EFE /* NavigationTransitions */; };
 		E9B6017B2A1D0E57009E6EFE /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B6017A2A1D0E57009E6EFE /* HistoryView.swift */; };
+		E9B6017E2A1D191C009E6EFE /* ModuleSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B6017D2A1D191C009E6EFE /* ModuleSelector.swift */; };
+		E9B601802A1D1B3B009E6EFE /* ModuleSelectorDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B6017F2A1D1B3B009E6EFE /* ModuleSelectorDomain.swift */; };
+		E9B601832A1D24B7009E6EFE /* CustomBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B601822A1D24B7009E6EFE /* CustomBottomSheet.swift */; };
+		E9B601852A1D2550009E6EFE /* RoundedCorners.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B601842A1D2550009E6EFE /* RoundedCorners.swift */; };
+		E9B601872A1D257B009E6EFE /* CustomBottomSheetDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B601862A1D257B009E6EFE /* CustomBottomSheetDomain.swift */; };
+		E9B6018A2A1D317F009E6EFE /* ModuleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B601892A1D317F009E6EFE /* ModuleManager.swift */; };
+		E9B6018C2A1D3371009E6EFE /* Module.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B6018B2A1D3371009E6EFE /* Module.swift */; };
+		E9B6018E2A1D3405009E6EFE /* ReturnedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B6018D2A1D3405009E6EFE /* ReturnedData.swift */; };
+		E9B601902A1D359B009E6EFE /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B6018F2A1D359B009E6EFE /* String.swift */; };
+		E9B601932A1D3743009E6EFE /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = E9B601922A1D3743009E6EFE /* ZIPFoundation */; };
+		E9B601962A1D445C009E6EFE /* GlobalData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B601952A1D445C009E6EFE /* GlobalData.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -66,6 +77,16 @@
 		E9B601722A1D0660009E6EFE /* Root.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Root.swift; sourceTree = "<group>"; };
 		E9B601742A1D0883009E6EFE /* RootDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootDomain.swift; sourceTree = "<group>"; };
 		E9B6017A2A1D0E57009E6EFE /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		E9B6017D2A1D191C009E6EFE /* ModuleSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleSelector.swift; sourceTree = "<group>"; };
+		E9B6017F2A1D1B3B009E6EFE /* ModuleSelectorDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleSelectorDomain.swift; sourceTree = "<group>"; };
+		E9B601822A1D24B7009E6EFE /* CustomBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBottomSheet.swift; sourceTree = "<group>"; };
+		E9B601842A1D2550009E6EFE /* RoundedCorners.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedCorners.swift; sourceTree = "<group>"; };
+		E9B601862A1D257B009E6EFE /* CustomBottomSheetDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBottomSheetDomain.swift; sourceTree = "<group>"; };
+		E9B601892A1D317F009E6EFE /* ModuleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleManager.swift; sourceTree = "<group>"; };
+		E9B6018B2A1D3371009E6EFE /* Module.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Module.swift; sourceTree = "<group>"; };
+		E9B6018D2A1D3405009E6EFE /* ReturnedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnedData.swift; sourceTree = "<group>"; };
+		E9B6018F2A1D359B009E6EFE /* String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
+		E9B601952A1D445C009E6EFE /* GlobalData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalData.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +98,7 @@
 				E9A3831129F723FB0098A3D5 /* Kingfisher in Frameworks */,
 				E9A382FC29F713480098A3D5 /* ComposableArchitecture in Frameworks */,
 				E9B601782A1D0A92009E6EFE /* NavigationTransitions in Frameworks */,
+				E9B601932A1D3743009E6EFE /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,6 +108,8 @@
 		E9A382DF29F7132A0098A3D5 = {
 			isa = PBXGroup;
 			children = (
+				E9B601942A1D444C009E6EFE /* Global */,
+				E9B601882A1D316A009E6EFE /* Module */,
 				E9A3830229F718C50098A3D5 /* Network */,
 				E9A382EA29F7132A0098A3D5 /* ChoutenTCA */,
 				E9A382E929F7132A0098A3D5 /* Products */,
@@ -113,7 +137,6 @@
 				E9A382EF29F7132C0098A3D5 /* Assets.xcassets */,
 				E9A382F129F7132C0098A3D5 /* ChoutenTCA.entitlements */,
 				E9A382F229F7132C0098A3D5 /* Preview Content */,
-				E9B601532A1BE545009E6EFE /* Colors.swift */,
 			);
 			path = ChoutenTCA;
 			sourceTree = "<group>";
@@ -179,6 +202,8 @@
 			isa = PBXGroup;
 			children = (
 				E9B601562A1BE592009E6EFE /* Color.swift */,
+				E9B601842A1D2550009E6EFE /* RoundedCorners.swift */,
+				E9B6018F2A1D359B009E6EFE /* String.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -204,6 +229,7 @@
 		E9B601622A1C1F4D009E6EFE /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				E9B601812A1D24A9009E6EFE /* CustomBottomSheet */,
 				E9B6016E2A1CF51B009E6EFE /* Floaty */,
 				E9B601632A1C1F5D009E6EFE /* M3ToggleStyle.swift */,
 			);
@@ -213,6 +239,7 @@
 		E9B601652A1CEF84009E6EFE /* Module */ = {
 			isa = PBXGroup;
 			children = (
+				E9B6017C2A1D1910009E6EFE /* Selector */,
 				E9B601662A1CEF8E009E6EFE /* Button */,
 			);
 			path = Module;
@@ -252,6 +279,43 @@
 			path = History;
 			sourceTree = "<group>";
 		};
+		E9B6017C2A1D1910009E6EFE /* Selector */ = {
+			isa = PBXGroup;
+			children = (
+				E9B6017D2A1D191C009E6EFE /* ModuleSelector.swift */,
+				E9B6017F2A1D1B3B009E6EFE /* ModuleSelectorDomain.swift */,
+			);
+			path = Selector;
+			sourceTree = "<group>";
+		};
+		E9B601812A1D24A9009E6EFE /* CustomBottomSheet */ = {
+			isa = PBXGroup;
+			children = (
+				E9B601822A1D24B7009E6EFE /* CustomBottomSheet.swift */,
+				E9B601862A1D257B009E6EFE /* CustomBottomSheetDomain.swift */,
+			);
+			path = CustomBottomSheet;
+			sourceTree = "<group>";
+		};
+		E9B601882A1D316A009E6EFE /* Module */ = {
+			isa = PBXGroup;
+			children = (
+				E9B601892A1D317F009E6EFE /* ModuleManager.swift */,
+				E9B6018B2A1D3371009E6EFE /* Module.swift */,
+				E9B6018D2A1D3405009E6EFE /* ReturnedData.swift */,
+			);
+			path = Module;
+			sourceTree = "<group>";
+		};
+		E9B601942A1D444C009E6EFE /* Global */ = {
+			isa = PBXGroup;
+			children = (
+				E9B601532A1BE545009E6EFE /* Colors.swift */,
+				E9B601952A1D445C009E6EFE /* GlobalData.swift */,
+			);
+			path = Global;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -273,6 +337,7 @@
 				E9A3831029F723FB0098A3D5 /* Kingfisher */,
 				E9B6016C2A1CF1EB009E6EFE /* PopupView */,
 				E9B601772A1D0A92009E6EFE /* NavigationTransitions */,
+				E9B601922A1D3743009E6EFE /* ZIPFoundation */,
 			);
 			productName = ChoutenTCA;
 			productReference = E9A382E829F7132A0098A3D5 /* ChoutenTCA.app */;
@@ -307,6 +372,7 @@
 				E9A3830F29F723FB0098A3D5 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				E9B6016B2A1CF1EA009E6EFE /* XCRemoteSwiftPackageReference "PopupView" */,
 				E9B601762A1D0A92009E6EFE /* XCRemoteSwiftPackageReference "swiftui-navigation-transitions" */,
+				E9B601912A1D3742009E6EFE /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			productRefGroup = E9A382E929F7132A0098A3D5 /* Products */;
 			projectDirPath = "";
@@ -344,18 +410,28 @@
 				E9B6016A2A1CF0E4009E6EFE /* FloatyDisplay.swift in Sources */,
 				E9B6015F2A1C1D24009E6EFE /* MoreView.swift in Sources */,
 				E9B601502A1BE193009E6EFE /* MainView.swift in Sources */,
+				E9B601802A1D1B3B009E6EFE /* ModuleSelectorDomain.swift in Sources */,
 				E9B601702A1CF52D009E6EFE /* FloatyDomain.swift in Sources */,
 				E9B601612A1C1D71009E6EFE /* MoreDomain.swift in Sources */,
+				E9B6018E2A1D3405009E6EFE /* ReturnedData.swift in Sources */,
 				E9A382EC29F7132A0098A3D5 /* ChoutenTCAApp.swift in Sources */,
+				E9B601962A1D445C009E6EFE /* GlobalData.swift in Sources */,
 				E9B601572A1BE592009E6EFE /* Color.swift in Sources */,
+				E9B6017E2A1D191C009E6EFE /* ModuleSelector.swift in Sources */,
 				E9B6015A2A1BED82009E6EFE /* Navbar.swift in Sources */,
+				E9B601872A1D257B009E6EFE /* CustomBottomSheetDomain.swift in Sources */,
 				E9A3830129F716B50098A3D5 /* SearchDomain.swift in Sources */,
 				E9B601752A1D0883009E6EFE /* RootDomain.swift in Sources */,
 				E9A3830629F7191F0098A3D5 /* SearchData.swift in Sources */,
 				E9A3830929F7198B0098A3D5 /* Title.swift in Sources */,
 				E9A3830429F718D30098A3D5 /* APIClient.swift in Sources */,
+				E9B6018C2A1D3371009E6EFE /* Module.swift in Sources */,
 				E9B601682A1CEF99009E6EFE /* ModuleButton.swift in Sources */,
+				E9B601832A1D24B7009E6EFE /* CustomBottomSheet.swift in Sources */,
 				E9A3830C29F722BE0098A3D5 /* GridCardView.swift in Sources */,
+				E9B6018A2A1D317F009E6EFE /* ModuleManager.swift in Sources */,
+				E9B601852A1D2550009E6EFE /* RoundedCorners.swift in Sources */,
+				E9B601902A1D359B009E6EFE /* String.swift in Sources */,
 				E9A3830E29F722D90098A3D5 /* GridCardDomain.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -604,6 +680,14 @@
 				minimumVersion = 0.9.0;
 			};
 		};
+		E9B601912A1D3742009E6EFE /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.16;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -626,6 +710,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E9B601762A1D0A92009E6EFE /* XCRemoteSwiftPackageReference "swiftui-navigation-transitions" */;
 			productName = NavigationTransitions;
+		};
+		E9B601922A1D3743009E6EFE /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9B601912A1D3742009E6EFE /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
