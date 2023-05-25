@@ -312,7 +312,7 @@ struct ModuleSelector: View, KeyboardReadable {
             .foregroundColor(Color(hex: Colors.onPrimaryContainer.dark))
             .padding(.horizontal, 16)
             .padding(.bottom, isKeyboardVisible ? 300 : 20)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: UIScreen.main.bounds.width > 600 ? 400 : .infinity, maxHeight: UIScreen.main.bounds.width > 600 ? .infinity : nil, alignment: .top)
             .background {
                 Color(hex: Colors.SurfaceContainer.dark)
             }

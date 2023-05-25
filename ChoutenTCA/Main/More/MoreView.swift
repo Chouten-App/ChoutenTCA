@@ -7,10 +7,44 @@
 
 import SwiftUI
 import ComposableArchitecture
+import CoreHaptics
 
 struct MoreView: View {
     let store: StoreOf<MoreDomain>
     @StateObject var Colors = DynamicColors.shared
+    @State private var engine: CHHapticEngine?
+    
+    func prepareHaptics() {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+
+        do {
+            engine = try CHHapticEngine()
+            try engine?.start()
+        } catch {
+            print("There was an error creating the engine: \(error.localizedDescription)")
+        }
+    }
+    
+    func complexSuccess() {
+        // make sure that the device supports haptics
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+        var events = [CHHapticEvent]()
+
+        // create one intense, sharp tap
+        let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: 2)
+        let sharpness = CHHapticEventParameter(parameterID: .hapticSharpness, value: 2)
+        let event = CHHapticEvent(eventType: .hapticTransient, parameters: [intensity, sharpness], relativeTime: 0)
+        events.append(event)
+
+        // convert those events into a pattern and play it immediately
+        do {
+            let pattern = try CHHapticPattern(events: events, parameters: [])
+            let player = try engine?.makePlayer(with: pattern)
+            try player?.start(atTime: 0)
+        } catch {
+            print("Failed to play pattern: \(error.localizedDescription).")
+        }
+    }
     
     var body: some View {
         WithViewStore(self.store) { viewStore in
@@ -41,6 +75,9 @@ struct MoreView: View {
                             ),
                             label: {})
                         .toggleStyle(M3ToggleStyle())
+                        .onChange(of: viewStore.downloadedOnly) { value in
+                            complexSuccess()
+                        }
                     }
                     
                     HStack {
@@ -60,6 +97,9 @@ struct MoreView: View {
                             send: MoreDomain.Action.setIncognito(newValue:)
                         ), label: {})
                             .toggleStyle(M3ToggleStyle())
+                            .onChange(of: viewStore.incognito) { value in
+                                complexSuccess()
+                            }
                     }
                 }
                 
@@ -88,6 +128,7 @@ struct MoreView: View {
                     Image("coffee")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
+                        .frame(maxWidth: 200)
                         .cornerRadius(8)
                         .onTapGesture {
                             viewStore.send(.openUrl(url: viewStore.buymeacoffeeString))
@@ -96,6 +137,7 @@ struct MoreView: View {
                     Image("ko-fi")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
+                        .frame(maxWidth: 200)
                         .cornerRadius(8)
                         .onTapGesture {
                             viewStore.send(.openUrl(url: viewStore.kofiString))
@@ -108,11 +150,18 @@ struct MoreView: View {
             }
             .padding(.horizontal, 20)
             .padding(.top, 60)
+            .foregroundColor(Color(hex: Colors.onSurface.dark))
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background {
                 Color(hex: Colors.Surface.dark)
             }
             .ignoresSafeArea()
+            .onAppear {
+                viewStore.send(.onAppear)
+            }
+        }
+        .onAppear {
+            prepareHaptics()
         }
     }
 }

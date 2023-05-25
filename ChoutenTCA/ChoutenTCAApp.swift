@@ -20,5 +20,4 @@ struct ChoutenTCAApp: App {
             )
         }
     }
-        
 }
