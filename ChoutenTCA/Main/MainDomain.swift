@@ -110,13 +110,13 @@ struct MainDomain: ReducerProtocol {
                     .run { send in
                         let incognitoStream = globalData.observeIncognito()
                         for await value in incognitoStream {
-                            await send(.setIncognito(newValue: value), animation: .easeOut(duration: 0.3))
+                            await send(.setIncognito(newValue: value), animation: .easeOut(duration: 0.2))
                         }
                     },
                     .run { send in
                         let downloadedOnly = globalData.observeDownloadedOnly()
                         for await value in downloadedOnly {
-                            await send(.setDownloadedOnly(newValue: value), animation: .easeOut(duration: 0.3))
+                            await send(.setDownloadedOnly(newValue: value), animation: .easeOut(duration: 0.2))
                         }
                     }
                 )
