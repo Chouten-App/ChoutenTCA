@@ -14,28 +14,57 @@ struct Navbar: View {
     
     var body: some View {
         WithViewStore(self.store) { viewStore in
-            HStack(spacing: 8) {
-                NavbarItem(label: "Home", icon: "house.fill", selected: viewStore.tab == 0, hasNotification: false)
-                    .onTapGesture {
-                        viewStore.send(.setTab(newTab: 0))
+            Group {
+                if viewStore.screenWidth > 600 {
+                    VStack(spacing: 8) {
+                        NavbarItem(label: "Home", icon: "house.fill", selected: viewStore.tab == 0, hasNotification: false)
+                            .onTapGesture {
+                                viewStore.send(.setTab(newTab: 0))
+                            }
+                        NavbarItem(label: "Search", icon: "magnifyingglass",selected: viewStore.tab == 1, hasNotification: false)
+                            .onTapGesture {
+                                viewStore.send(.setTab(newTab: 1))
+                            }
+                        NavbarItem(label: "History", icon: "clock.arrow.circlepath",selected: viewStore.tab == 2, hasNotification: false)
+                            .onTapGesture {
+                                viewStore.send(.setTab(newTab: 2))
+                            }
+                        NavbarItem(label: "More", icon: "ellipsis",selected: viewStore.tab == 3, hasNotification: true)
+                            .onTapGesture {
+                                viewStore.send(.setTab(newTab: 3))
+                            }
                     }
-                NavbarItem(label: "Search", icon: "magnifyingglass",selected: viewStore.tab == 1, hasNotification: false)
-                    .onTapGesture {
-                        viewStore.send(.setTab(newTab: 1))
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: 80, maxHeight: .infinity)
+                    .background {
+                        Color(hex: Colors.SurfaceContainer.dark)
                     }
-                NavbarItem(label: "History", icon: "clock.arrow.circlepath",selected: viewStore.tab == 2, hasNotification: false)
-                    .onTapGesture {
-                        viewStore.send(.setTab(newTab: 2))
+                } else {
+                    HStack(spacing: 8) {
+                        NavbarItem(label: "Home", icon: "house.fill", selected: viewStore.tab == 0, hasNotification: false)
+                            .onTapGesture {
+                                viewStore.send(.setTab(newTab: 0))
+                            }
+                        NavbarItem(label: "Search", icon: "magnifyingglass",selected: viewStore.tab == 1, hasNotification: false)
+                            .onTapGesture {
+                                viewStore.send(.setTab(newTab: 1))
+                            }
+                        NavbarItem(label: "History", icon: "clock.arrow.circlepath",selected: viewStore.tab == 2, hasNotification: false)
+                            .onTapGesture {
+                                viewStore.send(.setTab(newTab: 2))
+                            }
+                        NavbarItem(label: "More", icon: "ellipsis",selected: viewStore.tab == 3, hasNotification: true)
+                            .onTapGesture {
+                                viewStore.send(.setTab(newTab: 3))
+                            }
                     }
-                NavbarItem(label: "More", icon: "ellipsis",selected: viewStore.tab == 3, hasNotification: true)
-                    .onTapGesture {
-                        viewStore.send(.setTab(newTab: 3))
+                    .padding(.horizontal, 8)
+                    .padding(.bottom, 24)
+                    .background {
+                        Color(hex: Colors.SurfaceContainer.dark)
                     }
-            }
-            .padding(.horizontal, 8)
-            .padding(.bottom, 24)
-            .background {
-                Color(hex: Colors.SurfaceContainer.dark)
+                    
+                }
             }
         }
     }
@@ -88,7 +117,7 @@ struct NavbarItem: View {
         .foregroundColor(
             Color(hex: Colors.onSecondaryContainer.dark)
         )
-        .frame(maxWidth: .infinity, maxHeight: 80)
+        .frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.width > 600 ? 56 : 80)
     }
 }
 

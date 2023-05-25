@@ -10,7 +10,7 @@ import ComposableArchitecture
 
 struct CustomBottomSheetDomain: ReducerProtocol {
     struct State: Equatable {
-        var fromRight: Bool = false
+        var fromRight: Bool = UIScreen.main.bounds.width > 600
         var fromLeft: Bool = false
         
         var offsetY: Double = 0.0

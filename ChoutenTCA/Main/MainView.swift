@@ -15,130 +15,161 @@ struct MainView: View {
     
     var body: some View {
         WithViewStore(self.store) { viewStore in
-            VStack {
-                TabView(
-                    selection: viewStore.binding(
-                        get: \.navbarState.tab,
-                        send: { MainDomain.Action.setTab(.setTab(newTab: $0)) }
-                    )
-                ) {
-                    Text("Home")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background {
-                            Color(hex: Colors.Surface.dark)
+            GeometryReader { proxy in
+                VStack(spacing: 0) {
+                    // incognito banner
+                    if viewStore.isDownloadedOnly {
+                        ZStack(alignment: .bottom) {
+                            Color(hex: Colors.Tertiary.dark)
+                            
+                            Text("Downloaded Only")
+                                .font(.callout)
+                                .fontWeight(.semibold)
+                                .foregroundColor(
+                                    Color(hex: Colors.onTertiary.dark)
+                                )
+                                .padding(.vertical, 8)
+                                .padding(.top, proxy.safeAreaInsets.top)
                         }
-                        .ignoresSafeArea()
-                        .tag(0)
-                    
-                    SearchView(
-                        store: self.store.scope(
-                            state: \.searchState,
-                            action: MainDomain.Action.search
-                        )
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background {
-                        Color(hex: Colors.Surface.dark)
+                        .fixedSize(horizontal: false, vertical: true)
                     }
-                    .ignoresSafeArea()
-                    .tag(1)
-                    
-                    Text("History")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background {
-                            Color(hex: Colors.Surface.dark)
+                    // incognito banner
+                    if viewStore.isIncognito {
+                        ZStack(alignment: .bottom) {
+                            Color(hex: Colors.Primary.dark)
+                            
+                            Text("Incognito")
+                                .font(.callout)
+                                .fontWeight(.semibold)
+                                .foregroundColor(
+                                    Color(hex: Colors.onPrimary.dark)
+                                )
+                                .padding(.vertical, 8)
+                                .padding(.top, viewStore.isDownloadedOnly ? 0 : proxy.safeAreaInsets.top)
                         }
-                        .ignoresSafeArea()
-                        .tag(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                    }
                     
-                    MoreView(
-                        store: self.store.scope(
-                            state: \.moreState,
-                            action: MainDomain.Action.more
+                    TabView(
+                        selection: viewStore.binding(
+                            get: \.navbarState.tab,
+                            send: { MainDomain.Action.setTab(.setTab(newTab: $0)) }
                         )
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background {
-                        Color(hex: Colors.Surface.dark)
-                    }
-                    .ignoresSafeArea()
-                    .tag(3)
-                }
-            }
-            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("floaty")), perform: { value in
-                print("hm")
-                if value.userInfo != nil {
-                    if value.userInfo!["data"] != nil {
-                        let floatyData = value.userInfo!["data"] as! FloatyData
-                        viewStore.send(.floaty(.setFloatyData(message: floatyData.message, error: floatyData.error, action: floatyData.action)))
-                        viewStore.send(.floaty(.setFloatyBool(newValue: true)))
-                    }
-                }
-            })
-            // module button
-            .overlay(alignment: .bottomTrailing) {
-                ModuleButton(
-                    isShowing: viewStore.binding(
-                        get: \.isShowingBottomSheet,
-                        send: MainDomain.Action.setBottomSheet(newValue:)
-                    ),
-                    showButton: viewStore.binding(
-                        get: \.showModuleButton,
-                        send: MainDomain.Action.setModuleButton(newValue:)
-                    )
-                )
-            }
-            // module selector
-            .overlay(alignment: .bottom) {
-                BottomSheet(
-                    store: self.store.scope(
-                        state: \.bottomSheetState,
-                        action: MainDomain.Action.sheet
-                    ),
-                    isShowing: viewStore.binding(
-                        get: \.isShowingBottomSheet,
-                        send: MainDomain.Action.setBottomSheet(newValue:)
-                    ),
-                    content: AnyView(
-                        ModuleSelector(
+                    ) {
+                        Text("Home")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background {
+                                Color(hex: Colors.Surface.dark)
+                            }
+                            .ignoresSafeArea()
+                            .tag(0)
+                        
+                        SearchView(
                             store: self.store.scope(
-                                state: \.moduleSelectorState,
-                                action: MainDomain.Action.selector
+                                state: \.searchState,
+                                action: MainDomain.Action.search
+                            )
+                        )
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background {
+                            Color(hex: Colors.Surface.dark)
+                        }
+                        .ignoresSafeArea()
+                        .tag(1)
+                        
+                        Text("History")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background {
+                                Color(hex: Colors.Surface.dark)
+                            }
+                            .ignoresSafeArea()
+                            .tag(2)
+                        
+                        MoreView(
+                            store: self.store.scope(
+                                state: \.moreState,
+                                action: MainDomain.Action.more
+                            )
+                        )
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background {
+                            Color(hex: Colors.Surface.dark)
+                        }
+                        .ignoresSafeArea()
+                        .tag(3)
+                    }
+                    .padding(.leading, UIScreen.main.bounds.width > 600 ? 80 : 0)
+                }
+                .foregroundColor(Color(hex: Colors.onSurface.dark))
+                // module button
+                .overlay(alignment: .bottomTrailing) {
+                    ModuleButton(
+                        isShowing: viewStore.binding(
+                            get: \.isShowingBottomSheet,
+                            send: MainDomain.Action.setBottomSheet(newValue:)
+                        ),
+                        showButton: viewStore.binding(
+                            get: \.showModuleButton,
+                            send: MainDomain.Action.setModuleButton(newValue:)
+                        )
+                    )
+                }
+                // module selector
+                .overlay(alignment: .bottom) {
+                    BottomSheet(
+                        store: self.store.scope(
+                            state: \.bottomSheetState,
+                            action: MainDomain.Action.sheet
+                        ),
+                        isShowing: viewStore.binding(
+                            get: \.isShowingBottomSheet,
+                            send: MainDomain.Action.setBottomSheet(newValue:)
+                        ),
+                        content: AnyView(
+                            ModuleSelector(
+                                store: self.store.scope(
+                                    state: \.moduleSelectorState,
+                                    action: MainDomain.Action.selector
+                                )
                             )
                         )
                     )
-                )
-                .padding(.bottom, 100)
-            }
-            // Navbar
-            .overlay(alignment: .bottom) {
-                Navbar(
-                    store: self.store.scope(
-                        state: \.navbarState,
-                        action: MainDomain.Action.setTab
+                    .padding(.bottom, viewStore.navbarState.screenWidth > 600 ? 0 : 100)
+                }
+                // Navbar
+                .overlay(alignment: viewStore.navbarState.screenWidth > 600 ? .leading : .bottom) {
+                    Navbar(
+                        store: self.store.scope(
+                            state: \.navbarState,
+                            action: MainDomain.Action.setTab
+                        )
                     )
-                )
-            }
-            .popup(isPresented: viewStore.binding(
-                get: \.floatyState.showFloaty,
-                send: { MainDomain.Action.floaty(.setFloatyBool(newValue: $0)) }
-            )) {
-                FloatyDisplay(
-                    store: self.store.scope(
-                        state: \.floatyState,
-                        action: MainDomain.Action.floaty
+                }
+                .popup(isPresented: viewStore.binding(
+                    get: \.floatyState.showFloaty,
+                    send: { MainDomain.Action.floaty(.setFloatyBool(newValue: $0)) }
+                )) {
+                    FloatyDisplay(
+                        store: self.store.scope(
+                            state: \.floatyState,
+                            action: MainDomain.Action.floaty
+                        )
                     )
-                )
-            } customize: {
-                $0
-                    .type(.floater())
-                    .position(.bottom)
-                    .animation(.spring())
-                    .closeOnTapOutside(false)
-                    .closeOnTap(false)
-                    .autohideIn(4.0)
+                } customize: {
+                    $0
+                        .type(.floater())
+                        .position(.bottom)
+                        .animation(.spring())
+                        .closeOnTapOutside(false)
+                        .closeOnTap(false)
+                        .autohideIn(4.0)
+                }
+                .ignoresSafeArea()
+                .onAppear {
+                    viewStore.send(.onAppear)
+                }
             }
-            .ignoresSafeArea()
+            
         }
         .navigationBarBackButtonHidden(true)
     }

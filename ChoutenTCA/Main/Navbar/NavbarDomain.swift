@@ -11,6 +11,8 @@ import ComposableArchitecture
 struct NavbarDomain: ReducerProtocol {
     struct State: Equatable {
         var tab: Int = 0
+        var screenWidth: Double = UIScreen.main.bounds.width
+        var screenHeight: Double = UIScreen.main.bounds.height
     }
     
     enum Action: Equatable {
