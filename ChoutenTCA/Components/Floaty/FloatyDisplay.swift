@@ -63,7 +63,16 @@ struct FloatyDisplay: View {
             .shadow(color: Color(hex: Colors.Scrim.dark).opacity(0.08), radius: 2, x: 0, y: 0)
             .shadow(color: Color(hex: Colors.Scrim.dark).opacity(0.16), radius: 24, x: 0, y: 0)
             .padding(.horizontal, 16)
-            
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("floaty")), perform: { value in
+                print("hm")
+                if value.userInfo != nil {
+                    if value.userInfo!["data"] != nil {
+                        let floatyData = value.userInfo!["data"] as! FloatyData
+                        viewStore.send(.setFloatyData(message: floatyData.message, error: floatyData.error, action: floatyData.action))
+                        viewStore.send(.setFloatyBool(newValue: true))
+                    }
+                }
+            })
         }
         
     }

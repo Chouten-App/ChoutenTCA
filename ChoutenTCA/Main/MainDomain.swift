@@ -13,6 +13,9 @@ struct MainDomain: ReducerProtocol {
         var isShowingBottomSheet: Bool = false
         var showModuleButton: Bool = true
         
+        var isIncognito: Bool = false
+        var isDownloadedOnly: Bool = false
+        
         var navbarState = NavbarDomain.State()
         var searchState = SearchDomain.State()
         var moreState = MoreDomain.State()
@@ -30,7 +33,14 @@ struct MainDomain: ReducerProtocol {
         case floaty(FloatyDomain.Action)
         case sheet(CustomBottomSheetDomain.Action)
         case selector(ModuleSelectorDomain.Action)
+        
+        case onAppear
+        case setIncognito(newValue: Bool)
+        case setDownloadedOnly(newValue: Bool)
     }
+    
+    @Dependency(\.globalData)
+    var globalData
     
     var body: some ReducerProtocol<State, Action> {
         Scope(state: \.navbarState, action: /Action.setTab) {
@@ -85,7 +95,32 @@ struct MainDomain: ReducerProtocol {
                 return .none
             case .selector:
                 return .none
+                
+            case .setIncognito(let newValue):
+                state.isIncognito = newValue
+                return .none
+            case .setDownloadedOnly(let newValue):
+                state.isDownloadedOnly = newValue
+                return .none
+            case .onAppear:
+                state.isIncognito = globalData.getIncognito()
+                state.isDownloadedOnly = globalData.getIncognito()
+                
+                return .merge(
+                    .run { send in
+                        let incognitoStream = globalData.observeIncognito()
+                        for await value in incognitoStream {
+                            await send(.setIncognito(newValue: value), animation: .easeOut(duration: 0.3))
+                        }
+                    },
+                    .run { send in
+                        let downloadedOnly = globalData.observeDownloadedOnly()
+                        for await value in downloadedOnly {
+                            await send(.setDownloadedOnly(newValue: value), animation: .easeOut(duration: 0.3))
+                        }
+                    }
+                )
             }
-        }
+        }._printChanges()
     }
 }
