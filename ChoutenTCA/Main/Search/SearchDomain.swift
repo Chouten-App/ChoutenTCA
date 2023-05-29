@@ -13,6 +13,8 @@ struct SearchDomain: ReducerProtocol {
         var query: String = ""
         var searchResult: SearchResult? = nil
         
+        var isDownloadedOnly: Bool = false
+        
         var results: [SearchData] {
             searchResult != nil
             ? searchResult!.results
@@ -24,10 +26,16 @@ struct SearchDomain: ReducerProtocol {
         case setQuery(query: String)
         case search
         case searchResult(TaskResult<SearchResult>)
+        
+        case setDownloadedOnly(newValue: Bool)
+        case onAppear
     }
     
     @Dependency(\.apiClient)
     var client
+    
+    @Dependency(\.globalData)
+    var globalData
     
     func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         switch action {
@@ -50,6 +58,17 @@ struct SearchDomain: ReducerProtocol {
             print(error)
             // SHOW SNACKBAR
             return .none
+        case .setDownloadedOnly(let newValue):
+            state.isDownloadedOnly = newValue
+            return .none
+        case .onAppear:
+            state.isDownloadedOnly = globalData.getDownloadedOnly()
+            return .run { send in
+                let downloadedOnly = globalData.observeDownloadedOnly()
+                for await value in downloadedOnly {
+                    await send(.setDownloadedOnly(newValue: value))
+                }
+            }
         }
     }
 }
