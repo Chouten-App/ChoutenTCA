@@ -7,7 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E9A382EC29F7132A0098A3D5 /* ChoutenTCAApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A382EB29F7132A0098A3D5 /* ChoutenTCAApp.swift */; };
+		E97C33222A1F026400979A91 /* Info.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = E97C33202A1F026400979A91 /* Info.xcdatamodeld */; };
+		E97C33252A1F060300979A91 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C33242A1F060300979A91 /* SceneDelegate.swift */; };
+		E97C33272A1F064200979A91 /* DataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C33262A1F064200979A91 /* DataController.swift */; };
+		E97C33292A1F064D00979A91 /* HostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C33282A1F064D00979A91 /* HostingController.swift */; };
+		E97C332B2A1F065600979A91 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C332A2A1F065600979A91 /* AppDelegate.swift */; };
+		E97C332D2A1F07E700979A91 /* default.theme in Resources */ = {isa = PBXBuildFile; fileRef = E97C332C2A1F07E700979A91 /* default.theme */; };
 		E9A382F029F7132C0098A3D5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E9A382EF29F7132C0098A3D5 /* Assets.xcassets */; };
 		E9A382F429F7132C0098A3D5 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E9A382F329F7132C0098A3D5 /* Preview Assets.xcassets */; };
 		E9A382FC29F713480098A3D5 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = E9A382FB29F713480098A3D5 /* ComposableArchitecture */; };
@@ -50,8 +55,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E97C33212A1F026400979A91 /* CoreDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CoreDataModel.xcdatamodel; sourceTree = "<group>"; };
+		E97C33242A1F060300979A91 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		E97C33262A1F064200979A91 /* DataController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataController.swift; sourceTree = "<group>"; };
+		E97C33282A1F064D00979A91 /* HostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostingController.swift; sourceTree = "<group>"; };
+		E97C332A2A1F065600979A91 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		E97C332C2A1F07E700979A91 /* default.theme */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = default.theme; sourceTree = "<group>"; };
 		E9A382E829F7132A0098A3D5 /* ChoutenTCA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChoutenTCA.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		E9A382EB29F7132A0098A3D5 /* ChoutenTCAApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoutenTCAApp.swift; sourceTree = "<group>"; };
 		E9A382EF29F7132C0098A3D5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E9A382F129F7132C0098A3D5 /* ChoutenTCA.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChoutenTCA.entitlements; sourceTree = "<group>"; };
 		E9A382F329F7132C0098A3D5 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -105,9 +115,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E97C33232A1F055800979A91 /* CoreDataFiles */ = {
+			isa = PBXGroup;
+			children = (
+				E97C33202A1F026400979A91 /* Info.xcdatamodeld */,
+			);
+			path = CoreDataFiles;
+			sourceTree = "<group>";
+		};
 		E9A382DF29F7132A0098A3D5 = {
 			isa = PBXGroup;
 			children = (
+				E97C332C2A1F07E700979A91 /* default.theme */,
 				E9B601942A1D444C009E6EFE /* Global */,
 				E9B601882A1D316A009E6EFE /* Module */,
 				E9A3830229F718C50098A3D5 /* Network */,
@@ -127,16 +146,20 @@
 		E9A382EA29F7132A0098A3D5 /* ChoutenTCA */ = {
 			isa = PBXGroup;
 			children = (
+				E97C33232A1F055800979A91 /* CoreDataFiles */,
 				E9B601712A1D0656009E6EFE /* Root */,
 				E9B601622A1C1F4D009E6EFE /* Components */,
 				E9B601552A1BE584009E6EFE /* Extensions */,
 				E9B6014E2A1BE182009E6EFE /* Main */,
 				E9A3830A29F722AF0098A3D5 /* GridCard */,
 				E9A3830729F719810098A3D5 /* General */,
-				E9A382EB29F7132A0098A3D5 /* ChoutenTCAApp.swift */,
 				E9A382EF29F7132C0098A3D5 /* Assets.xcassets */,
 				E9A382F129F7132C0098A3D5 /* ChoutenTCA.entitlements */,
 				E9A382F229F7132C0098A3D5 /* Preview Content */,
+				E97C33242A1F060300979A91 /* SceneDelegate.swift */,
+				E97C33262A1F064200979A91 /* DataController.swift */,
+				E97C33282A1F064D00979A91 /* HostingController.swift */,
+				E97C332A2A1F065600979A91 /* AppDelegate.swift */,
 			);
 			path = ChoutenTCA;
 			sourceTree = "<group>";
@@ -390,6 +413,7 @@
 			files = (
 				E9A382F429F7132C0098A3D5 /* Preview Assets.xcassets in Resources */,
 				E9A382F029F7132C0098A3D5 /* Assets.xcassets in Resources */,
+				E97C332D2A1F07E700979A91 /* default.theme in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -402,19 +426,22 @@
 			files = (
 				E9B601522A1BE244009E6EFE /* MainDomain.swift in Sources */,
 				E9B601642A1C1F5D009E6EFE /* M3ToggleStyle.swift in Sources */,
+				E97C332B2A1F065600979A91 /* AppDelegate.swift in Sources */,
 				E9B601732A1D0660009E6EFE /* Root.swift in Sources */,
 				E9B6015C2A1BEDC3009E6EFE /* NavbarDomain.swift in Sources */,
 				E9B601542A1BE545009E6EFE /* Colors.swift in Sources */,
 				E9A382FF29F716A20098A3D5 /* SearchView.swift in Sources */,
 				E9B6017B2A1D0E57009E6EFE /* HistoryView.swift in Sources */,
 				E9B6016A2A1CF0E4009E6EFE /* FloatyDisplay.swift in Sources */,
+				E97C33222A1F026400979A91 /* Info.xcdatamodeld in Sources */,
 				E9B6015F2A1C1D24009E6EFE /* MoreView.swift in Sources */,
 				E9B601502A1BE193009E6EFE /* MainView.swift in Sources */,
 				E9B601802A1D1B3B009E6EFE /* ModuleSelectorDomain.swift in Sources */,
 				E9B601702A1CF52D009E6EFE /* FloatyDomain.swift in Sources */,
+				E97C33272A1F064200979A91 /* DataController.swift in Sources */,
 				E9B601612A1C1D71009E6EFE /* MoreDomain.swift in Sources */,
 				E9B6018E2A1D3405009E6EFE /* ReturnedData.swift in Sources */,
-				E9A382EC29F7132A0098A3D5 /* ChoutenTCAApp.swift in Sources */,
+				E97C33252A1F060300979A91 /* SceneDelegate.swift in Sources */,
 				E9B601962A1D445C009E6EFE /* GlobalData.swift in Sources */,
 				E9B601572A1BE592009E6EFE /* Color.swift in Sources */,
 				E9B6017E2A1D191C009E6EFE /* ModuleSelector.swift in Sources */,
@@ -426,6 +453,7 @@
 				E9A3830929F7198B0098A3D5 /* Title.swift in Sources */,
 				E9A3830429F718D30098A3D5 /* APIClient.swift in Sources */,
 				E9B6018C2A1D3371009E6EFE /* Module.swift in Sources */,
+				E97C33292A1F064D00979A91 /* HostingController.swift in Sources */,
 				E9B601682A1CEF99009E6EFE /* ModuleButton.swift in Sources */,
 				E9B601832A1D24B7009E6EFE /* CustomBottomSheet.swift in Sources */,
 				E9A3830C29F722BE0098A3D5 /* GridCardView.swift in Sources */,
@@ -717,6 +745,19 @@
 			productName = ZIPFoundation;
 		};
 /* End XCSwiftPackageProductDependency section */
+
+/* Begin XCVersionGroup section */
+		E97C33202A1F026400979A91 /* Info.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				E97C33212A1F026400979A91 /* CoreDataModel.xcdatamodel */,
+			);
+			currentVersion = E97C33212A1F026400979A91 /* CoreDataModel.xcdatamodel */;
+			path = Info.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = E9A382E029F7132A0098A3D5 /* Project object */;
 }

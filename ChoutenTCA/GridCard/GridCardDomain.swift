@@ -8,7 +8,7 @@
 import Foundation
 import ComposableArchitecture
 
-struct GridCardDomain {
+struct GridCardDomain: ReducerProtocol {
     struct State: Equatable {
         var data: SearchData
         
@@ -25,11 +25,10 @@ struct GridCardDomain {
     
     enum Action: Equatable {}
     
-    struct Environment {}
-    
-    static let reducer = Reducer<
-        State, Action, Environment
-    > { state, action, environment in
-        return .none
+    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        switch action {
+        default: 
+            return .none
+        }
     }
 }
