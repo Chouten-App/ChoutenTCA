@@ -70,11 +70,6 @@ struct MainView: View {
                                 action: MainDomain.Action.search
                             )
                         )
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background {
-                            Color(hex: Colors.Surface.dark)
-                        }
-                        .ignoresSafeArea()
                         .tag(1)
                         
                         Text("History")
@@ -163,6 +158,7 @@ struct MainView: View {
                         .closeOnTapOutside(false)
                         .closeOnTap(false)
                         .autohideIn(4.0)
+                        .dragToDismiss(true)
                 }
                 .ignoresSafeArea()
                 .onAppear {

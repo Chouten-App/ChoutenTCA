@@ -44,8 +44,7 @@ struct GridCardView_Previews: PreviewProvider {
                 initialState: GridCardDomain.State(
                     data: SearchResult.sample.results[0]
                 ),
-                reducer: GridCardDomain.reducer,
-                environment: GridCardDomain.Environment()
+                reducer: GridCardDomain()
             )
         )
     }

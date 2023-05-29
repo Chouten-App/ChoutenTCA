@@ -7,12 +7,17 @@
 
 import SwiftUI
 import CoreHaptics
+import CoreData
+
+// MARK: To be redone, mainly used for testing rn
 
 struct ModuleButton: View {
     @Binding var isShowing: Bool
     @Binding var showButton: Bool
     @StateObject var Colors = DynamicColors.shared
     @State private var engine: CHHapticEngine?
+    
+    @Environment(\.managedObjectContext) var moc
     
     func prepareHaptics() {
         guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
@@ -48,8 +53,21 @@ struct ModuleButton: View {
     
     var body: some View {
         Button {
-            isShowing = true
+            //isShowing = true
             complexSuccess()
+            // store core data info
+            let infoData = InfoData(context: moc)
+            infoData.id = "classroom-of-the-elite-713"
+            infoData.primaryTitle = "Classroom of the Elite"
+            infoData.secondaryTitle = "ようこそ実力至上主義の教室へ"
+            infoData.poster = "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b98659-sH5z5RfMuyMr.png"
+            infoData.banner = "https://s4.anilist.co/file/anilistcdn/media/anime/banner/98659-u46B5RCNl9il.jpg"
+            infoData.desc = "Koudo Ikusei Senior High School is a leading school with state-of-the-art facilities. The students there have the freedom to wear any hairstyle and bring any personal effects they desire. Koudo Ikusei is like a utopia, but the truth is that only the most superior students receive favorable treatment.\n\nKiyotaka Ayanokouji is a student of D-class, which is where the school dumps its \"inferior\" students in order to ridicule them. For a certain reason, Kiyotaka was careless on his entrance examination, and was put in D-class. After meeting Suzune Horikita and Kikyou Kushida, two other students in his class, Kiyotaka's situation begins to change. \n\n(Source: Anime News Network, edited)"
+            infoData.status = "Completed"
+            infoData.totalMediaCount = 12
+            infoData.mediaType = "Episodes"
+            
+            try? moc.save()
         } label: {
             Text("Zoro.to")
                 .font(.system(size: 18, weight: .bold))
