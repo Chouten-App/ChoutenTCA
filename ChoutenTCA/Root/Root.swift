@@ -12,7 +12,9 @@ import NavigationTransitions
 struct Root: View {
     let store: StoreOf<RootDomain>
     @StateObject var Colors = DynamicColors.shared
-    @FetchRequest(sortDescriptors: []) var info: FetchedResults<InfoData>
+    
+    @FetchRequest(sortDescriptors: []) var info: FetchedResults<Infodata>
+    @FetchRequest(sortDescriptors: []) var userInfo: FetchedResults<UserInfo>
     @Environment(\.managedObjectContext) var moc
     
     var body: some View {
@@ -69,6 +71,14 @@ struct Root: View {
                         print(data.primaryTitle ?? "")
                     }
                 }
+                if !userInfo.isEmpty {
+                    print(userInfo[0].selectedModuleId)
+                    if userInfo[0].selectedModuleId != nil {
+                        viewStore.send(.setSelectedModuleId(id: userInfo[0].selectedModuleId!))
+                    }
+                }
+                
+                viewStore.send(.onAppear)
             }
         }
         

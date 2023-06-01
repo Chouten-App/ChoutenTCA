@@ -16,6 +16,10 @@ struct ModuleSelectorDomain: ReducerProtocol {
         
         var fileUrl: String = ""
         var filename: String = ""
+        
+        var availableModules: [Module] = []
+        
+        var selectorButton = ModuleSelectorButtonDomain.State()
     }
     
     enum Action: Equatable {
@@ -23,22 +27,40 @@ struct ModuleSelectorDomain: ReducerProtocol {
         case setFilename(newName: String)
         case setIsModule(newValue: Bool)
         case setImportedPressed(newValue: Bool)
+        
+        case setAvailableModules
+        
+        case selectorDomain(ModuleSelectorButtonDomain.Action)
     }
     
-    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-        switch action {
-        case .setFileUrl(let newUrl):
-            state.fileUrl = newUrl
-            return .none
-        case .setFilename(let newName):
-            state.filename = newName
-            return .none
-        case .setIsModule(let newValue):
-            state.isModule = newValue
-            return .none
-        case .setImportedPressed(let newValue):
-            state.importPressed = newValue
-            return .none
+    @Dependency(\.globalData)
+    var globalData
+    
+    var body: some ReducerProtocol<State, Action> {
+        Scope(state: \.selectorButton, action: /Action.selectorDomain) {
+            ModuleSelectorButtonDomain()
+        }
+        
+        Reduce { state, action in
+            switch action {
+            case .setFileUrl(let newUrl):
+                state.fileUrl = newUrl
+                return .none
+            case .setFilename(let newName):
+                state.filename = newName
+                return .none
+            case .setIsModule(let newValue):
+                state.isModule = newValue
+                return .none
+            case .setImportedPressed(let newValue):
+                state.importPressed = newValue
+                return .none
+            case .setAvailableModules:
+                state.availableModules = globalData.getAvailableModules()
+                return .none
+            case .selectorDomain:
+                return .none
+            }
         }
     }
 }

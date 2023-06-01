@@ -7,18 +7,18 @@
 
 import Foundation
 
-struct ReturnedData: Codable {
-    let request: Request?
-    let usesApi: Bool
-    let allowExternalScripts: Bool
-    let removeScripts: Bool
-    let imports: [String]
-    let js: String
+struct ReturnedData: Codable, Equatable {
+    var request: Request?
+    var usesApi: Bool = false
+    var allowExternalScripts: Bool = false
+    var removeScripts: Bool = false
+    var imports: [String] = []
+    var js: String = ""
 }
 
-struct StringReturn: Codable {
+struct StringReturn: Codable, Equatable {
     let request: Request?
-    var usesApi: Bool = false
+    var usesApi: Bool? = false
     let allowExternalScripts: Bool
     let removeScripts: Bool
     var imports: [String] = []
@@ -26,7 +26,7 @@ struct StringReturn: Codable {
 
 struct Request: Hashable, Equatable, Codable {
     let url: String
-    let type: String
+    let method: String
     let headers: [Header]
     let body: String?
 }
