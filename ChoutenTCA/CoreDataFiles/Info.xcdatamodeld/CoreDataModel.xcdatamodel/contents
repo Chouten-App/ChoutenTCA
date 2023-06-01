@@ -3,7 +3,7 @@
     <entity name="AltTitle" representedClassName="AltTitle" syncable="YES" codeGenerationType="class">
         <attribute name="name" optional="YES" attributeType="String"/>
     </entity>
-    <entity name="InfoData" representedClassName="InfoData" syncable="YES" codeGenerationType="class">
+    <entity name="Infodata" representedClassName="Infodata" syncable="YES" codeGenerationType="class">
         <attribute name="banner" optional="YES" attributeType="String"/>
         <attribute name="desc" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="String"/>
@@ -13,5 +13,8 @@
         <attribute name="secondaryTitle" optional="YES" attributeType="String"/>
         <attribute name="status" optional="YES" attributeType="String"/>
         <attribute name="totalMediaCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="UserInfo" representedClassName="UserInfo" syncable="YES" codeGenerationType="class">
+        <attribute name="selectedModuleId" optional="YES" attributeType="String"/>
     </entity>
 </model>

@@ -48,6 +48,5 @@ struct MoreDomain: ReducerProtocol {
                 return .none
             }
         }
-        ._printChanges()
     }
 }
