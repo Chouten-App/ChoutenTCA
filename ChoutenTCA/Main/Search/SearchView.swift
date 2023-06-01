@@ -18,7 +18,8 @@ struct SearchView: View {
             WithViewStore(self.store) { viewStore in
                 VStack {
                     Group {
-                        if viewStore.results.isEmpty {
+                        
+                        if viewStore.searchResult.isEmpty {
                             VStack {
                                 Text("Nothing to show")
                             }
@@ -28,36 +29,46 @@ struct SearchView: View {
                                 LazyVGrid(columns: [
                                     GridItem(.adaptive(minimum: 100), alignment: .top)
                                 ], spacing: 20) {
-                                    ForEach(viewStore.results) { result in
-                                        VStack {
-                                            if result.image.contains("https://") {
-                                                KFImage(URL(string: result.image))
-                                                    .resizable()
-                                                    .aspectRatio(contentMode: .fill)
-                                                    .frame(width: 110, height: 160)
-                                                    .cornerRadius(12)
-                                            } else {
-                                                Image(result.image)
-                                                    .resizable()
-                                                    .aspectRatio(contentMode: .fill)
-                                                    .frame(width: 110, height: 180)
-                                                    .frame(minWidth: 110, minHeight: 160)
-                                                    .cornerRadius(12)
-                                            }
-                                            
-                                            Text(result.title.english ?? result.title.romaji)
-                                                .frame(width: 110)
-                                                .lineLimit(1)
-                                            
-                                            HStack {
-                                                Spacer()
+                                    ForEach(0..<viewStore.searchResult.count) { index in
+                                        NavigationLink(
+                                            destination: InfoView(
+                                                url: viewStore.searchResult[index].url,
+                                                store: self.store.scope(
+                                                    state: \.infoState,
+                                                    action: SearchDomain.Action.info
+                                                )
+                                            )
+                                        ) {
+                                            VStack {
+                                                if viewStore.searchResult[index].img.contains("https://") {
+                                                    KFImage(URL(string: viewStore.searchResult[index].img))
+                                                        .resizable()
+                                                        .aspectRatio(contentMode: .fill)
+                                                        .frame(width: 110, height: 160)
+                                                        .cornerRadius(12)
+                                                } else {
+                                                    Image(viewStore.searchResult[index].img)
+                                                        .resizable()
+                                                        .aspectRatio(contentMode: .fill)
+                                                        .frame(width: 110, height: 180)
+                                                        .frame(minWidth: 110, minHeight: 160)
+                                                        .cornerRadius(12)
+                                                }
                                                 
-                                                Text("\(result.currentEpisodeCount != nil ? String(result.currentEpisodeCount!) : "⁓") / \(result.totalEpisodes != nil ? String(result.totalEpisodes!) : "⁓")")
-                                                    .font(.caption)
+                                                Text(viewStore.searchResult[index].title)
+                                                    .frame(width: 110)
+                                                    .lineLimit(1)
+                                                
+                                                HStack {
+                                                    Spacer()
+                                                    
+                                                    Text("\(viewStore.searchResult[index].currentCount != nil ? String(viewStore.searchResult[index].currentCount!) : "⁓") / \(viewStore.searchResult[index].totalCount != nil ? String(viewStore.searchResult[index].totalCount!) : "⁓")")
+                                                        .font(.caption)
+                                                }
+                                                .frame(width: 110)
                                             }
-                                            .frame(width: 110)
+                                            .frame(maxWidth: 110)
                                         }
-                                        .frame(maxWidth: 110)
                                     }
                                 }
                                 .padding(.top, 140)
@@ -70,6 +81,18 @@ struct SearchView: View {
                 .foregroundColor(Color(hex: Colors.onSurface.dark))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .background(Color(hex: Colors.Surface.dark))
+                .background {
+                    if !viewStore.webviewState.htmlString.isEmpty && !viewStore.webviewState.javaScript.isEmpty {
+                        WebView(
+                            viewStore: ViewStore(
+                                self.store.scope(
+                                    state: \.webviewState,
+                                    action: SearchDomain.Action.webview
+                                )
+                            )
+                        )
+                    }
+                }
                 .overlay(alignment: .top) {
                     HStack {
                         Image(systemName: "magnifyingglass")
@@ -90,7 +113,7 @@ struct SearchView: View {
                                 if viewStore.isDownloadedOnly {
                                     
                                 } else {
-                                    viewStore.send(.search)
+                                    viewStore.send(.resetWebview)
                                 }
                             }
                         }

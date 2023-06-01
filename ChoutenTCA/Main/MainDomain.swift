@@ -22,6 +22,7 @@ struct MainDomain: ReducerProtocol {
         var floatyState = FloatyDomain.State()
         var bottomSheetState = CustomBottomSheetDomain.State()
         var moduleSelectorState = ModuleSelectorDomain.State()
+        var moduleButtonState = ModuleButtonDomain.State()
     }
     
     enum Action: Equatable {
@@ -33,6 +34,7 @@ struct MainDomain: ReducerProtocol {
         case floaty(FloatyDomain.Action)
         case sheet(CustomBottomSheetDomain.Action)
         case selector(ModuleSelectorDomain.Action)
+        case moduleButton(ModuleButtonDomain.Action)
         
         case onAppear
         case setIncognito(newValue: Bool)
@@ -67,6 +69,10 @@ struct MainDomain: ReducerProtocol {
             ModuleSelectorDomain()
         }
         
+        Scope(state: \.moduleButtonState, action: /Action.moduleButton) {
+            ModuleButtonDomain()
+        }
+        
         Reduce { state, action in
             switch action {
             case .setBottomSheet(let newValue):
@@ -95,6 +101,8 @@ struct MainDomain: ReducerProtocol {
                 return .none
             case .selector:
                 return .none
+            case .moduleButton:
+                return .none
                 
             case .setIncognito(let newValue):
                 state.isIncognito = newValue
@@ -121,6 +129,6 @@ struct MainDomain: ReducerProtocol {
                     }
                 )
             }
-        }._printChanges()
+        }
     }
 }

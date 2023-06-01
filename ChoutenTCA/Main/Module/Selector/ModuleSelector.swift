@@ -301,6 +301,21 @@ struct ModuleSelector: View, KeyboardReadable {
                             .stroke(style: StrokeStyle(lineWidth: 1, dash: [7]))
                     )
                     .animation(.easeInOut, value: viewStore.importPressed)
+                    
+                    ForEach(
+                        Array(
+                            zip(
+                                viewStore.availableModules.indices, viewStore.availableModules
+                            )
+                        ),
+                        id: \.0) { index, module in
+                            ModuleSelectorButton(
+                                store: Store(
+                                    initialState: ModuleSelectorButtonDomain.State(module: module),
+                                    reducer: ModuleSelectorButtonDomain()
+                                )
+                            )
+                    }
                 }
                 .padding(.bottom, 15)
                 
@@ -318,6 +333,9 @@ struct ModuleSelector: View, KeyboardReadable {
             }
             .onReceive(keyboardPublisher) { newIsKeyboardVisible in
                 isKeyboardVisible = newIsKeyboardVisible
+            }
+            .onAppear {
+                viewStore.send(.setAvailableModules)
             }
         }
     }

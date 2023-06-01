@@ -46,6 +46,5 @@ struct FloatyDomain: ReducerProtocol {
                 return .none
             }
         }
-        ._printChanges()
     }
 }

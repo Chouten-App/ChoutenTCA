@@ -2,11 +2,21 @@
 //  SearchData.swift
 //  ChoutenTCA
 //
-//  Created by Inumaki on 24.04.23.
+//  Created by Inumaki on 01.06.23.
 //
 
 import Foundation
 
+struct SearchData: Codable, Hashable, Equatable {
+    let url: String
+    let img: String
+    let title: String
+    let indicatorText: String?
+    let currentCount: Int?
+    let totalCount: Int?
+}
+
+/*
 struct SearchResult: Codable, Equatable {
     let currentPage: Int
     let hasNextPage: Bool
@@ -69,3 +79,4 @@ extension SearchResult {
         )
     }
 }
+*/

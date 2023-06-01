@@ -99,6 +99,10 @@ struct MainView: View {
                 // module button
                 .overlay(alignment: .bottomTrailing) {
                     ModuleButton(
+                        store: self.store.scope(
+                            state: \.moduleButtonState,
+                            action: MainDomain.Action.moduleButton
+                        ),
                         isShowing: viewStore.binding(
                             get: \.isShowingBottomSheet,
                             send: MainDomain.Action.setBottomSheet(newValue:)
