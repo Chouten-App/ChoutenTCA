@@ -185,12 +185,16 @@ extension ModuleManager {
                             let json = try JSON(data: dataFromString)
                             
                             let request = Request(url: json["request"]["url"].string ?? "", method: json["request"]["method"].string ?? "", headers: [], body: nil)
+                            
+                            print(json["imports"])
+                            
                             let returnValue = ReturnedData(
                                 request: request,
                                 usesApi: json["usesApi"].bool ?? false,
                                 allowExternalScripts: json["allowExternalScripts"].bool ?? false,
                                 removeScripts: json["removeScripts"].bool ?? true,
-                                imports: json["imports"].array as? [String] ?? [],
+                                imports: json["imports"].arrayValue.map { $0.stringValue},
+                                separator: json["separator"].string ?? "",
                                 js: logic!
                             )
                             return returnValue

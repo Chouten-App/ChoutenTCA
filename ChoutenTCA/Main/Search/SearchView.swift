@@ -8,6 +8,8 @@
 import SwiftUI
 import ComposableArchitecture
 import Kingfisher
+import NavigationTransitions
+import ActivityIndicatorView
 
 struct SearchView: View {
     let store: StoreOf<SearchDomain>
@@ -24,6 +26,21 @@ struct SearchView: View {
                                 Text("Nothing to show")
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        } else if viewStore.loading {
+                            VStack{
+                                ActivityIndicatorView(
+                                    isVisible: viewStore.binding(
+                                        get: \.loading,
+                                        send: SearchDomain.Action.setLoading(newLoading:)
+                                    ),
+                                    type: .growingArc(
+                                        Color(hex: Colors.Primary.dark),
+                                        lineWidth: 4
+                                    )
+                                )
+                                .frame(width: 50.0, height: 50.0)
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                         } else {
                             ScrollView {
                                 LazyVGrid(columns: [
@@ -69,11 +86,19 @@ struct SearchView: View {
                                             }
                                             .frame(maxWidth: 110)
                                         }
+                                        .simultaneousGesture(
+                                            TapGesture()
+                                                .onEnded{ value in
+                                                    print(viewStore.searchResult[index].url)
+                                                    viewStore.send(.resetInfoData)
+                                                }
+                                        )
                                     }
                                 }
                                 .padding(.top, 140)
                                 .padding(.bottom, 120)
                                 .padding(.horizontal, 20)
+                                //.navigationTransition(.slide)
                             }
                         }
                     }
@@ -91,6 +116,8 @@ struct SearchView: View {
                                 )
                             )
                         )
+                        .hidden()
+                        .frame(maxWidth: 0, maxHeight: 0)
                     }
                 }
                 .overlay(alignment: .top) {
@@ -116,6 +143,15 @@ struct SearchView: View {
                                     viewStore.send(.resetWebview)
                                 }
                             }
+                        }
+                        
+                        if !viewStore.query.isEmpty {
+                            Image(systemName: "xmark")
+                                .font(.footnote)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    viewStore.send(.resetSearch)
+                                }
                         }
                         
                         Image(systemName: "person.circle.fill")

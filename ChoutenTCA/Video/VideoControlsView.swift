@@ -6,9 +6,24 @@
 //
 
 import SwiftUI
+import ComposableArchitecture
+import AVKit
 
 struct VideoControlsView: View {
+    @Binding var videoData: VideoData?
+    let index: Int
+    @StateObject var playerVM: PlayerViewModel
     @StateObject var Colors = DynamicColors.shared
+    
+    @State var showUI: Bool = true
+    @State var isDragging: Bool = false
+    @State var animateBackward: Bool = false
+    @State var animateForward: Bool = false
+    @State private var buttonOffset: Double = -156
+    @State private var textWidth: Double = 0
+    
+    @Dependency(\.globalData) var globalData
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
         GeometryReader { proxy in
@@ -19,7 +34,7 @@ struct VideoControlsView: View {
                 
                 BottomBar()
             }
-            .padding(.horizontal, proxy.safeAreaInsets.leading)
+            .padding(.horizontal, 60)
             .padding(.vertical, 12)
             .foregroundColor(Color(hex: Colors.onSurface.dark))
             .background {
@@ -27,34 +42,202 @@ struct VideoControlsView: View {
                     .foregroundColor(Color(hex: Colors.onSurface.dark))
             }
             .background {
-                Color(.black)
+                MiddleBar()
             }
+            .opacity(showUI ? 1.0 : 0.0)
+            .background {
+                Subtitles()
+            }
+            .overlay(alignment: .bottomTrailing) {
+                if videoData != nil && videoData!.skips.count > 0 {
+                    SkipTimeButton(skip: videoData!.skips[0])
+                        .padding(.bottom, 88)
+                        .padding(.trailing, 60)
+                }
+            }
+            .background {
+                Color(.black).opacity(showUI ? 0.4 : 0.0)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        showUI.toggle()
+                    }
+            }
+            .animation(.spring(response: 0.3), value: showUI)
             .ignoresSafeArea()
         }
     }
     
     @ViewBuilder
+    func StylisedSubtitle(text: String) -> some View {
+        ZStack {
+            Text(LocalizedStringKey(text))
+                .multilineTextAlignment(.center)
+                .foregroundColor(.black)
+                .shadow(color: .black, radius: 0, x: 1, y: 1)
+                .shadow(color: .black, radius: 0, x: 1, y: -1)
+                .shadow(color: .black, radius: 0, x: -1, y: -1)
+                .shadow(color: .black, radius: 0, x: -1, y: 1)
+                .shadow(color: .black, radius: 0.1, x: -1, y: 0)
+                .shadow(color: .black, radius: 0.1, x: 1, y: 0)
+                .shadow(color: .black, radius: 0.1, x: 0, y: -1)
+                .shadow(color: .black, radius: 0.1, x: 0, y: 1)
+                .offset(x: 2, y: 2)
+            
+            Text(LocalizedStringKey(text))
+                .multilineTextAlignment(.center)
+                .shadow(color: .black, radius: 0, x: 1, y: 1)
+                .shadow(color: .black, radius: 0, x: 1, y: -1)
+                .shadow(color: .black, radius: 0, x: -1, y: -1)
+                .shadow(color: .black, radius: 0, x: -1, y: 1)
+                .shadow(color: .black, radius: 0.1, x: -1, y: 0)
+                .shadow(color: .black, radius: 0.1, x: 1, y: 0)
+                .shadow(color: .black, radius: 0.1, x: 0, y: -1)
+                .shadow(color: .black, radius: 0.1, x: 0, y: 1)
+        }
+    }
+    
+    @ViewBuilder
+    func Subtitles() -> some View {
+        VStack {
+            Spacer()
+            
+            ForEach(0..<playerVM.currentSubs.count, id:\.self) {index in
+                StylisedSubtitle(
+                    text: playerVM.currentSubs[index].text
+                        .replacingOccurrences(of: "*", with: "**")
+                        .replacingOccurrences(of: "_", with: "*")
+                )
+            }
+        }
+        .padding(.horizontal, 80)
+        .font(Font.custom("Trebuchet MS", size: 18))
+        .padding(.bottom, showUI ? 80 : 32)
+        .animation(.spring(response: 0.3), value: showUI)
+        .foregroundColor(.white)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .ignoresSafeArea()
+    }
+    
+    func getSkipPercentage(currentTime: Double, startTime: Double, endTime: Double) -> Double {
+        if(startTime <= currentTime && endTime >= currentTime) {
+            let timeElapsed = currentTime - startTime
+            let totalTime = endTime - startTime
+            let percentage = timeElapsed / totalTime
+            return percentage
+        }
+        return 0.0
+    }
+    
+    @ViewBuilder
+    func SkipTimeButton(skip: SkipTime) -> some View {
+        Button(action: {
+            playerVM.isEditingCurrentTime = true
+            playerVM.currentTime = skip.end
+            playerVM.isEditingCurrentTime = false
+        }) {
+            ZStack(alignment: .trailing) {
+                Rectangle()
+                    .fill(Color(hex: Colors.Tertiary.dark))
+                
+                Rectangle()
+                    .fill(Color(hex: Colors.Primary.dark))
+                    .frame(width: buttonOffset)
+                    .onReceive(playerVM.$currentTime) { currentTime in
+                        //viewModel.showSkipButton(currentTime: currentTime)
+                        let skipPercentage = getSkipPercentage(currentTime: currentTime, startTime: skip.start, endTime: skip.end)
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            buttonOffset = textWidth - (textWidth * skipPercentage)
+                        }
+                    }
+                
+                
+                Text("Skip \(skip.type)")
+                    .font(.system(size: 14))
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(hex: Colors.onTertiary.dark))
+                    //.blendMode(BlendMode.difference)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .overlay(
+                        GeometryReader { geometry in
+                            Color.clear
+                                .onAppear {
+                                    self.textWidth = geometry.size.width
+                                    buttonOffset = -textWidth
+                                }
+                        }
+                    )
+            }
+            .fixedSize()
+            .cornerRadius(12)
+            .clipped()
+        }
+        .opacity(skip.start <= playerVM.currentTime && skip.end >= playerVM.currentTime ? 1.0 : 0.0)
+    }
+    
+    @ViewBuilder
     func TopBar() -> some View {
         HStack {
+            let info = globalData.getInfoData()
+            let module = globalData.getModule()
+            
             Image(systemName: "chevron.left")
                 .font(.system(size: 32))
-                .fontWeight(.bold)
-            VStack(alignment: .leading) {
-                Text("1: Episode Title")
-                    .fontWeight(.bold)
-                Text("Show Title")
-                    .font(.subheadline)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    self.presentationMode.wrappedValue.dismiss()
+                }
+            
+            if info != nil {
+                VStack(alignment: .leading) {
+                    if info!.mediaList.count > 0 && info!.mediaList[0].list.count >= index {
+                        Text("\(info!.mediaList[0].list[index].number): \(info!.mediaList[0].list[index].title ?? "Episode")")
+                            .fontWeight(.bold)
+                    }
+                        
+                    Text(info!.titles.primary)
+                        .font(.subheadline)
+                }
             }
             
             Spacer()
             
             VStack(alignment: .trailing) {
-                Text("Module Name")
+                Text(module?.name ?? "Module Name")
                     .fontWeight(.bold)
-                Text("1920x1080")
-                    .font(.caption)
+                if globalData.getVideoData() == nil {
+                    Text("Fetching \(globalData.getServers().isEmpty ? "Servers" : "Sources")")
+                        .font(.caption)
+                }
+                Text(
+                    playerVM.getCurrentItem() != nil ?
+                    String(
+                        Int(playerVM.getCurrentItem()!.presentationSize.width)
+                    ) + "x" +
+                    String(
+                        Int(playerVM.getCurrentItem()!.presentationSize.height)
+                    )
+                    : "Resolution"
+                )
+                .font(.caption)
             }
         }
+    }
+    
+    @ViewBuilder
+    func MiddleBar() -> some View {
+        HStack {
+            Spacer()
+            
+            VStack(spacing: 12) {
+                VolumeSlider(percentage: $playerVM.player.volume, isDragging: $isDragging, total: 1.0)
+                    .frame(maxWidth: 20, maxHeight: 140)
+                
+                Image(systemName: "speaker.wave.2.fill")
+            }
+        }
+        .padding(.horizontal, 60)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     @ViewBuilder
@@ -62,8 +245,15 @@ struct VideoControlsView: View {
         HStack(spacing: 90) {
             SkipButton(forward: false)
             
-            Image(systemName: "play.fill")
+            Image(systemName: playerVM.isPlaying ? "pause.fill" : "play.fill")
                 .font(.system(size: 52))
+                .onTapGesture {
+                    if playerVM.isPlaying {
+                        playerVM.player.pause()
+                    } else {
+                        playerVM.player.play()
+                    }
+                }
             
             SkipButton()
         }
@@ -77,12 +267,23 @@ struct VideoControlsView: View {
                         TapGesture(count: 2)
                             .onEnded { _ in
                                 print("skip forward")
+                                Task {
+                                    if playerVM.player.currentItem != nil {
+                                        await playerVM.player.seek(to: CMTime(seconds: playerVM.currentTime - 10, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+                                    }
+                                    // add crunchy animation
+                                    animateBackward = true
+                                    //showUI = true
+                                    try? await Task.sleep(nanoseconds: 400_000_000)
+                                    animateBackward = false
+                                    //showUI = false
+                                }
                             }
                             .exclusively(
                                 before:
                                     TapGesture(count: 1)
                                     .onEnded { _ in
-                                        print("hide ui")
+                                        showUI = false
                                     }
                             )
                     )
@@ -91,7 +292,7 @@ struct VideoControlsView: View {
                     .contentShape(Rectangle())
                     .frame(maxWidth: 200)
                     .onTapGesture {
-                        print("hide ui")
+                        showUI = false
                     }
                 Rectangle()
                     .fill(.clear)
@@ -100,12 +301,23 @@ struct VideoControlsView: View {
                         TapGesture(count: 2)
                             .onEnded { _ in
                                 print("skip forward")
+                                Task {
+                                    if playerVM.player.currentItem != nil {
+                                        await playerVM.player.seek(to: CMTime(seconds: playerVM.currentTime + 10, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+                                    }
+                                    // add crunchy animation
+                                    animateForward = true
+                                    //showUI = true
+                                    try? await Task.sleep(nanoseconds: 400_000_000)
+                                    animateForward = false
+                                    //showUI = false
+                                }
                             }
                             .exclusively(
                                 before:
                                     TapGesture(count: 1)
                                     .onEnded { _ in
-                                        print("hide ui")
+                                        showUI = false
                                     }
                             )
                     )
@@ -120,26 +332,73 @@ struct VideoControlsView: View {
             Text("10")
                 .font(.system(size: 10, weight: .bold))
                 .offset(y: 2)
-                .opacity(1.0)
-                .animation(.spring(response: 0.3))
+                .opacity(animateForward || animateBackward ? 0.0 : 1.0)
+                .animation(.spring(response: 0.3), value: animateForward)
+                .animation(.spring(response: 0.3), value: animateForward)
             
             Image(systemName: forward ? "goforward" : "gobackward")
                 .font(.system(size: 32))
+                .rotationEffect(animateForward ? Angle(degrees: 30) : .zero)
+                .rotationEffect(animateBackward ? Angle(degrees: -30) : .zero)
             
             Text("\(forward ? "+" : "-")10")
                 .font(.system(size: 18, weight: .semibold))
-                .offset(x: forward ? 80 : -80, y: 2)
-                .opacity(1.0)
-                .animation(.spring(response: 0.3))
+                .offset(x: forward ? (animateForward ? 80 : 0.0) : (animateBackward ? -80 : 0.0), y: 2)
+                .opacity(animateForward || animateBackward ? 1.0 : 0.0)
+                .animation(.spring(response: 0.3), value: animateForward)
+                .animation(.spring(response: 0.3), value: animateForward)
         }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            Task {
+                if forward {
+                    if playerVM.player.currentItem != nil {
+                        await playerVM.player.seek(to: CMTime(seconds: playerVM.currentTime + 10, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+                    }
+                    // add crunchy animation
+                    animateForward = true
+                    //showUI = true
+                    try? await Task.sleep(nanoseconds: 400_000_000)
+                    animateForward = false
+                    //showUI = false
+                } else {
+                    if playerVM.player.currentItem != nil {
+                        await playerVM.player.seek(to: CMTime(seconds: playerVM.currentTime - 10, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+                    }
+                    // add crunchy animation
+                    animateBackward = true
+                    //showUI = true
+                    try? await Task.sleep(nanoseconds: 400_000_000)
+                    animateBackward = false
+                    //showUI = false
+                }
+            }
+        }
+    }
+    
+    func secondsToMinutesSeconds(_ seconds: Int) -> String {
+        let hours = (seconds / 3600)
+        let minutes = (seconds % 3600) / 60
+        let seconds = (seconds % 3600) % 60
+        
+        let hourString = hours > 0 ? "\(hours)" : ""
+        let minuteString = (minutes < 10 ? "0" : "") +  "\(minutes)"
+        let secondsString = (seconds < 10 ? "0" : "") +  "\(seconds)"
+        
+        return (hours > 0 ? hourString + ":" : "") + minuteString + ":" + secondsString
     }
     
     @ViewBuilder
     func BottomBar() -> some View {
         VStack {
             HStack {
-                Text("--:--/--:--")
-                
+                if playerVM.duration != nil {
+                    Text("\(secondsToMinutesSeconds(Int(playerVM.currentTime))) / \(secondsToMinutesSeconds(Int(playerVM.duration!)))")
+                        .font(.system(size: 14))
+                        .fontWeight(.bold)
+                } else {
+                    Text("--:--/--:--")
+                }
                 Spacer()
                 
                 HStack(spacing: 20) {
@@ -159,8 +418,13 @@ struct VideoControlsView: View {
             }
             .offset(y: 6)
             
-            Seekbar(percentage: .constant(0.2), buffered: .constant(0.5), isDragging: .constant(false), total: 1.0, isMacos: .constant(false))
-                .frame(maxHeight: 20)
+            if playerVM.duration != nil {
+                Seekbar(percentage: $playerVM.currentTime, buffered: $playerVM.buffered, isDragging: $playerVM.isEditingCurrentTime, total: playerVM.duration!, isMacos: .constant(false))
+                    .frame(maxHeight: 20)
+            } else {
+                Seekbar(percentage: .constant(0.0), buffered: .constant(0.0), isDragging: .constant(false), total: 1.0, isMacos: .constant(false))
+                    .frame(maxHeight: 20)
+            }
         }
         .padding(.bottom, 12)
     }
@@ -168,9 +432,14 @@ struct VideoControlsView: View {
 
 struct VideoControlsView_Previews: PreviewProvider {
     static var previews: some View {
-        VideoControlsView()
-            .prefersHomeIndicatorAutoHidden(true)
-            .supportedOrientation(.landscape)
-            .previewInterfaceOrientation(.landscapeRight)
+        ZStack {
+            Color(.black)
+            
+            VideoControlsView(videoData: .constant(nil), index: 0, playerVM: PlayerViewModel())
+        }
+        .prefersHomeIndicatorAutoHidden(true)
+        .supportedOrientation(.landscape)
+        .previewInterfaceOrientation(.landscapeRight)
+        .ignoresSafeArea()
     }
 }

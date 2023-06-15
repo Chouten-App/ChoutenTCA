@@ -34,7 +34,7 @@ struct ModuleSelector: View, KeyboardReadable {
     @StateObject var Colors = DynamicColors.shared
     @FocusState var isFocused: Bool
     @FocusState var isNameFocused: Bool
-    @FocusState var isKeyboardVisible: Bool
+    @State private var isKeyboardVisible: Bool = false
     
     var body: some View {
         WithViewStore(self.store) { viewStore in
@@ -332,7 +332,9 @@ struct ModuleSelector: View, KeyboardReadable {
                 Color(hex: Colors.SurfaceContainer.dark)
             }
             .onReceive(keyboardPublisher) { newIsKeyboardVisible in
+                print(newIsKeyboardVisible)
                 isKeyboardVisible = newIsKeyboardVisible
+                print(isKeyboardVisible)
             }
             .onAppear {
                 viewStore.send(.setAvailableModules)
