@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ConsoleData: Codable {
+struct ConsoleData: Codable, Equatable {
     let time: String
     let msg: String
     let type: String

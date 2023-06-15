@@ -48,116 +48,136 @@ struct MoreView: View {
     
     var body: some View {
         WithViewStore(self.store) { viewStore in
-            VStack {
-                Text("頂点")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 40)
-                
+            NavigationView {
                 VStack {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("Toggle Downloaded Only")
-                                .fontWeight(.semibold)
-                            Text("Sets the mode of the app to offline")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .opacity(0.7)
-                        }
-                        
-                        Spacer()
-                        
-                        Toggle(
-                            isOn: viewStore.binding(
-                                get: \.downloadedOnly,
-                                send: MoreDomain.Action.setDownloadedOnly(newValue:)
-                            ),
-                            label: {})
-                        .toggleStyle(M3ToggleStyle())
-                        .onChange(of: viewStore.downloadedOnly) { value in
-                            complexSuccess()
-                        }
-                    }
+                    Text("頂点")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 40)
                     
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("Toggle Incognito Mode")
-                                .fontWeight(.semibold)
-                            Text("For the naughty naughty")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .opacity(0.7)
+                    VStack {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text("Toggle Downloaded Only")
+                                    .fontWeight(.semibold)
+                                Text("Sets the mode of the app to offline")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .opacity(0.7)
+                            }
+                            
+                            Spacer()
+                            
+                            Toggle(
+                                isOn: viewStore.binding(
+                                    get: \.downloadedOnly,
+                                    send: MoreDomain.Action.setDownloadedOnly(newValue:)
+                                ),
+                                label: {})
+                            .toggleStyle(M3ToggleStyle())
+                            .onChange(of: viewStore.downloadedOnly) { value in
+                                complexSuccess()
+                            }
                         }
                         
-                        Spacer()
-                        
-                        Toggle(isOn: viewStore.binding(
-                            get: \.incognito,
-                            send: MoreDomain.Action.setIncognito(newValue:)
-                        ), label: {})
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text("Toggle Incognito Mode")
+                                    .fontWeight(.semibold)
+                                Text("For the naughty naughty")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .opacity(0.7)
+                            }
+                            
+                            Spacer()
+                            
+                            Toggle(isOn: viewStore.binding(
+                                get: \.incognito,
+                                send: MoreDomain.Action.setIncognito(newValue:)
+                            ), label: {})
                             .toggleStyle(M3ToggleStyle())
                             .onChange(of: viewStore.incognito) { value in
                                 complexSuccess()
                             }
-                    }
-                }
-                
-                Divider()
-                    .padding(8)
-                
-                HStack {
-                    Image(systemName: "gear")
-                        .font(.title2)
-                    
-                    VStack(alignment: .leading) {
-                        Text("Settings")
-                            .font(.title3)
-                            .fontWeight(.semibold)
+                        }
                     }
                     
-                    Spacer()
+                    Divider()
+                        .padding(8)
                     
-                    Image(systemName: "chevron.right")
-                }
-                
-                Divider()
-                    .padding(8)
-                
-                HStack(spacing: 12) {
-                    Image("coffee")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: 200)
-                        .cornerRadius(8)
-                        .onTapGesture {
-                            viewStore.send(.openUrl(url: viewStore.buymeacoffeeString))
+                    NavigationLink(
+                        destination: AppearanceView()
+                    ) {
+                        SettingsComponent(title: "Appearance", description: "Appearance Settings") {
+                            Image(systemName: "chevron.right")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: 16)
                         }
+                    }
                     
-                    Image("ko-fi")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: 200)
-                        .cornerRadius(8)
-                        .onTapGesture {
-                            viewStore.send(.openUrl(url: viewStore.kofiString))
+                    NavigationLink(
+                        destination: NetworkView()
+                    ) {
+                        SettingsComponent(title: "Network", description: "Network Settings") {
+                            Image(systemName: "chevron.right")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: 16)
                         }
+                    }
+                    
+                    NavigationLink(
+                        destination: DeveloperView()
+                    ) {
+                        SettingsComponent(title: "Developer", description: "Dev Only. DONT TOUCH!") {
+                            Image(systemName: "chevron.right")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: 16)
+                        }
+                    }
+                    
+                    Divider()
+                        .padding(8)
+                    
+                    HStack(spacing: 12) {
+                        Image("coffee")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: 200)
+                            .cornerRadius(8)
+                            .onTapGesture {
+                                viewStore.send(.openUrl(url: viewStore.buymeacoffeeString))
+                            }
+                        
+                        Image("ko-fi")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: 200)
+                            .cornerRadius(8)
+                            .onTapGesture {
+                                viewStore.send(.openUrl(url: viewStore.kofiString))
+                            }
+                    }
+                    
+                    Text("Version \(viewStore.versionString)")
+                        .font(.caption)
+                        .padding(.top, 12)
                 }
-                
-                Text("Version \(viewStore.versionString)")
-                    .font(.caption)
-                    .padding(.top, 12)
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 60)
-            .foregroundColor(Color(hex: Colors.onSurface.dark))
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background {
-                Color(hex: Colors.Surface.dark)
-            }
-            .ignoresSafeArea()
-            .onAppear {
-                viewStore.send(.onAppear)
+                .padding(.horizontal, 20)
+                .padding(.top, 60)
+                .foregroundColor(Color(hex: Colors.onSurface.dark))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .background {
+                    Color(hex: Colors.Surface.dark)
+                }
+                .ignoresSafeArea()
+                .onAppear {
+                    viewStore.send(.onAppear)
+                }
             }
         }
         .onAppear {

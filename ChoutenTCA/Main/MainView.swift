@@ -18,37 +18,39 @@ struct MainView: View {
             GeometryReader { proxy in
                 VStack(spacing: 0) {
                     // incognito banner
-                    if viewStore.isDownloadedOnly {
-                        ZStack(alignment: .bottom) {
-                            Color(hex: Colors.Tertiary.dark)
-                            
-                            Text("Downloaded Only")
-                                .font(.callout)
-                                .fontWeight(.semibold)
-                                .foregroundColor(
-                                    Color(hex: Colors.onTertiary.dark)
-                                )
-                                .padding(.vertical, 8)
-                                .padding(.top, proxy.safeAreaInsets.top)
-                        }
-                        .fixedSize(horizontal: false, vertical: true)
+                    ZStack(alignment: .bottom) {
+                        Color(hex: Colors.Tertiary.dark)
+                        
+                        Text("Downloaded Only")
+                            .font(.callout)
+                            .fontWeight(.semibold)
+                            .foregroundColor(
+                                Color(hex: Colors.onTertiary.dark)
+                            )
+                            .padding(.vertical, 8)
+                            .padding(.top, proxy.safeAreaInsets.top)
                     }
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxHeight: viewStore.isDownloadedOnly ? nil : 0.0)
+                    .animation(.spring(response: 0.3), value: viewStore.isDownloadedOnly)
+                    .zIndex(viewStore.isDownloadedOnly && !viewStore.isIncognito ? 10 : 0)
+                    
                     // incognito banner
-                    if viewStore.isIncognito {
-                        ZStack(alignment: .bottom) {
-                            Color(hex: Colors.Primary.dark)
-                            
-                            Text("Incognito")
-                                .font(.callout)
-                                .fontWeight(.semibold)
-                                .foregroundColor(
-                                    Color(hex: Colors.onPrimary.dark)
-                                )
-                                .padding(.vertical, 8)
-                                .padding(.top, viewStore.isDownloadedOnly ? 0 : proxy.safeAreaInsets.top)
-                        }
-                        .fixedSize(horizontal: false, vertical: true)
+                    ZStack(alignment: .bottom) {
+                        Color(hex: Colors.Primary.dark)
+                        
+                        Text("Incognito")
+                            .font(.callout)
+                            .fontWeight(.semibold)
+                            .foregroundColor(
+                                Color(hex: Colors.onPrimary.dark)
+                            )
+                            .padding(.vertical, viewStore.isIncognito ? 8 : 0)
+                            .padding(.top, viewStore.isDownloadedOnly ? 0 : proxy.safeAreaInsets.top)
                     }
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxHeight: viewStore.isIncognito ? nil : 0.0)
+                    .animation(.spring(response: 0.3), value: viewStore.isIncognito)
                     
                     TabView(
                         selection: viewStore.binding(
@@ -56,13 +58,13 @@ struct MainView: View {
                             send: { MainDomain.Action.setTab(.setTab(newTab: $0)) }
                         )
                     ) {
-                        Text("Home")
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background {
-                                Color(hex: Colors.Surface.dark)
-                            }
-                            .ignoresSafeArea()
-                            .tag(0)
+                        HomeView(
+                            store: self.store.scope(
+                                state: \.homeState,
+                                action: MainDomain.Action.home
+                            )
+                        )
+                        .tag(0)
                         
                         SearchView(
                             store: self.store.scope(

@@ -23,19 +23,39 @@ struct Seekbar: View {
             // TODO: - there might be a need for horizontal and vertical alignments
             ZStack(alignment: .bottomLeading) {
                 
-                Rectangle()
+                Capsule()
                     .foregroundColor(.white.opacity(0.4)).frame(height: barHeight, alignment: .bottom).cornerRadius(12)
                 
-                Rectangle()
+                Capsule()
                     .foregroundColor(.white.opacity(0.4))
-                    .frame(width: geometry.size.width * CGFloat(self.buffered / total)).frame(height: barHeight, alignment: .bottom).cornerRadius(12)
+                    .frame(
+                        maxWidth: geometry.size.width
+                    )
+                    .frame(height: barHeight, alignment: .bottom)
+                    .offset(
+                        x: -geometry.size.width + (
+                            geometry.size.width
+                            * CGFloat(self.buffered / total)
+                            )
+                        )
                 
-                Rectangle()
+                Capsule()
                     .foregroundColor(Color(hex: Colors.Primary.dark))
-                    .frame(width: geometry.size.width * CGFloat(self.percentage / total)).frame(height: barHeight, alignment: .bottom).cornerRadius(12)
+                    .frame(
+                        maxWidth: geometry.size.width
+                    )
+                    .frame(height: barHeight, alignment: .bottom)
+                    .offset(
+                        x: -geometry.size.width + (
+                            geometry.size.width
+                            * CGFloat(self.percentage / total)
+                            )
+                        )
             }
+            .frame(height: barHeight)
+            .cornerRadius(400)
             .frame(maxHeight: .infinity, alignment: .center)
-            .cornerRadius(12)
+            .clipped(antialiased: true)
             .overlay {
                 Color.clear
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)

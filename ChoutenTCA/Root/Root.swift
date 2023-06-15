@@ -59,7 +59,7 @@ struct Root: View {
             }
             .accentColor(Color(hex: Colors.Primary.dark))
             .navigationViewStyle(.stack)
-            .navigationTransition(.fade(.in))
+            //.navigationTransition(.fade(.in))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .ignoresSafeArea()
             .onAppear {
