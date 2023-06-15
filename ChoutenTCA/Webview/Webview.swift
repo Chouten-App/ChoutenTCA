@@ -85,7 +85,6 @@ struct WebView: UIViewRepresentable {
         let webView = WKWebView(frame: .zero, configuration: configuration)
         
         webView.navigationDelegate = context.coordinator
-        print("HTML: \(viewStore.javaScript)")
         webView.loadHTMLString(viewStore.htmlString, baseURL: URL(string: "http://localhost/")!)
         
         return webView
@@ -111,6 +110,7 @@ struct WebView: UIViewRepresentable {
         let requestType: String
         @Binding var nextUrl: String
         let viewStore: ViewStoreOf<WebviewDomain>
+        @Dependency(\.globalData) var globalData
         
         init(javaScript: String, requestType: String, nextUrl: Binding<String>, viewStore: ViewStoreOf<WebviewDomain>) {
             self.javaScript = javaScript
@@ -127,7 +127,20 @@ struct WebView: UIViewRepresentable {
                     let decoder = JSONDecoder()
                     print("test")
                     print(requestType)
-                    if requestType == "search" {
+                    if requestType == "home" {
+                        do {
+                            let homeComponents = try decoder.decode(DecodableResult<[HomeComponent]>.self, from: data!)
+                            
+                            viewStore.send(.setGlobalHomeData(data: homeComponents.result))
+                            viewStore.send(.setGlobalNextUrl(url: homeComponents.nextUrl))
+                        } catch {
+                            print(error.localizedDescription)
+                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
+                            NotificationCenter.default
+                                .post(name:           NSNotification.Name("floaty"),
+                                      object: nil, userInfo: data)
+                        }
+                    } else if requestType == "search" {
                         do {
                             let searchResults = try decoder.decode([SearchData].self, from: data!)
                             print(searchResults)
@@ -144,7 +157,82 @@ struct WebView: UIViewRepresentable {
                             let info = try decoder.decode(DecodableResult<InfoData>.self, from: data!)
                             print(info.result)
                             viewStore.send(.setGlobalInfoData(data: info.result))
+                            viewStore.send(.setGlobalNextUrl(url: info.nextUrl))
                             return
+                        } catch {
+                            print(error.localizedDescription)
+                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
+                            NotificationCenter.default
+                                .post(name:           NSNotification.Name("floaty"),
+                                      object: nil, userInfo: data)
+                        }
+                        do {
+                            let info = try decoder.decode(DecodableResult<String>.self, from: data!)
+                            viewStore.send(.setGlobalNextUrl(url: info.nextUrl))
+                            return
+                        } catch {
+                            print(error.localizedDescription)
+                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
+                            NotificationCenter.default
+                                .post(name:           NSNotification.Name("floaty"),
+                                      object: nil, userInfo: data)
+                        }
+                        do {
+                            let info = try decoder.decode(MediaList.self, from: data!)
+                            viewStore.send(.setMediaList(list: [info]))
+                            return
+                        } catch {
+                            print(error.localizedDescription)
+                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
+                            NotificationCenter.default
+                                .post(name:           NSNotification.Name("floaty"),
+                                      object: nil, userInfo: data)
+                        }
+                    } else if requestType == "media" {
+                        do {
+                            let info = try decoder.decode(DecodableResult<[ServerData]>.self, from: data!)
+                            
+                            print("\n\n\n\nINFO: \(info)\n\n\n\n")
+                            
+                            viewStore.send(.setGlobalServers(list: info.result))
+                            viewStore.send(.setGlobalNextUrl(url: info.nextUrl))
+                            
+                            return
+                        } catch {
+                            print(error.localizedDescription)
+                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
+                            NotificationCenter.default
+                                .post(name:           NSNotification.Name("floaty"),
+                                      object: nil, userInfo: data)
+                        }
+                        do {
+                            let info = try decoder.decode(DecodableResult<VideoData>.self, from: data!)
+                            viewStore.send(.setGlobalVideoData(data: info.result))
+                            viewStore.send(.setGlobalNextUrl(url: info.nextUrl))
+                            return
+                        } catch {
+                            print(error.localizedDescription)
+                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
+                            NotificationCenter.default
+                                .post(name:           NSNotification.Name("floaty"),
+                                      object: nil, userInfo: data)
+                        }
+                        /*
+                        do {
+                            let info = try decoder.decode(DecodableResult<[String]>.self, from: data!)
+                            mediaConsumeBookData = info.result
+                            nextUrl = info.nextUrl ?? ""
+                        } catch {
+                            print(error.localizedDescription)
+                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
+                            NotificationCenter.default
+                                .post(name:           NSNotification.Name("floaty"),
+                                      object: nil, userInfo: data)
+                        }
+                         */
+                        do {
+                            let info = try decoder.decode(DecodableResult<String>.self, from: data!)
+                            viewStore.send(.setGlobalNextUrl(url: info.nextUrl))
                         } catch {
                             print(error.localizedDescription)
                             let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
@@ -163,6 +251,11 @@ struct WebView: UIViewRepresentable {
                     do {
                         if data != nil {
                             var consoleData = try decoder.decode(ConsoleData.self, from: data!)
+                            let module = globalData.getModule()
+                            consoleData.moduleName = module?.name ?? ""
+                            consoleData.moduleIconPath = module?.icon ?? ""
+                            print(consoleData)
+                            viewStore.send(.appendGlobalLog(item: consoleData))
                         }
                     } catch {
                         print(error.localizedDescription)

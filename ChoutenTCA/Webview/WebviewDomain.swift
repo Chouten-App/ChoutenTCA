@@ -23,7 +23,13 @@ struct WebviewDomain: ReducerProtocol {
         case setJsString(newString: String)
         case setRequestType(type: String)
         case setGlobalInfoData(data: InfoData)
+        case setGlobalHomeData(data: [HomeComponent])
         case setGlobalSearchResults(results: [SearchData])
+        case setGlobalServers(list: [ServerData])
+        case setGlobalVideoData(data: VideoData)
+        case setGlobalNextUrl(url: String?)
+        case appendGlobalLog(item: ConsoleData)
+        case setMediaList(list: [MediaList])
     }
     
     @Dependency(\.globalData)
@@ -46,8 +52,32 @@ struct WebviewDomain: ReducerProtocol {
         case .setGlobalInfoData(let data):
             globalData.setInfoData(data)
             return .none
+        case .setGlobalVideoData(let data):
+            globalData.setVideoData(data)
+            return .none
+        case .setGlobalServers(let list):
+            if globalData.getServers().count > 0 {
+                globalData.setServers(list)
+            }
+            return .none
+        case .setGlobalHomeData(let data):
+            if globalData.getHomeData().isEmpty {
+                globalData.setHomeData(data)
+            } else {
+                globalData.appendHomeData(data)
+            }
+            return .none
+        case .setGlobalNextUrl(let newUrl):
+            globalData.setNextUrl(newUrl)
+            return .none
+        case .appendGlobalLog(let item):
+            globalData.appendLogs(item)
+            return .none
         case .setRequestType(let type):
             state.requestType = type
+            return .none
+        case .setMediaList(let list):
+            globalData.setInfoDataMediaList(list)
             return .none
         }
     }

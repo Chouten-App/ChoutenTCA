@@ -7,6 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E91F9A142A2FDDD800870245 /* DeveloperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91F9A132A2FDDD800870245 /* DeveloperView.swift */; };
+		E91F9A172A2FDE8500870245 /* NetworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91F9A162A2FDE8500870245 /* NetworkView.swift */; };
+		E91F9A1B2A3010E700870245 /* LogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91F9A1A2A3010E700870245 /* LogsView.swift */; };
+		E91F9A1D2A30112300870245 /* LogsDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91F9A1C2A30112300870245 /* LogsDomain.swift */; };
+		E92106692A296B8900074C54 /* CloudflareWebview.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92106682A296B8800074C54 /* CloudflareWebview.swift */; };
+		E921066C2A298AB000074C54 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921066B2A298AB000074C54 /* HomeView.swift */; };
+		E921066E2A298B3300074C54 /* HomeDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921066D2A298B3300074C54 /* HomeDomain.swift */; };
+		E92106702A2995DD00074C54 /* HomeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921066F2A2995DD00074C54 /* HomeData.swift */; };
+		E92106732A299FFC00074C54 /* WatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92106722A299FFC00074C54 /* WatchView.swift */; };
+		E92106762A29A0BF00074C54 /* WatchDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92106752A29A0BF00074C54 /* WatchDomain.swift */; };
+		E92106782A29A36600074C54 /* VideoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92106772A29A36600074C54 /* VideoData.swift */; };
+		E921067A2A29B0A900074C54 /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92106792A29B0A900074C54 /* PlayerView.swift */; };
+		E921067D2A29B10D00074C54 /* PlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921067C2A29B10D00074C54 /* PlayerViewModel.swift */; };
+		E92106802A29B13F00074C54 /* SwiftWebVTT in Frameworks */ = {isa = PBXBuildFile; productRef = E921067F2A29B13F00074C54 /* SwiftWebVTT */; };
+		E92106832A29B18800074C54 /* CustomVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92106822A29B18800074C54 /* CustomVideoPlayer.swift */; };
+		E92106852A29B1C600074C54 /* CustomPlayerWithControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92106842A29B1C600074C54 /* CustomPlayerWithControls.swift */; };
+		E92106892A2AD58000074C54 /* ActivityIndicatorView in Frameworks */ = {isa = PBXBuildFile; productRef = E92106882A2AD58000074C54 /* ActivityIndicatorView */; };
+		E921068B2A2B05BD00074C54 /* VolumeSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921068A2A2B05BD00074C54 /* VolumeSlider.swift */; };
+		E921068E2A2FC34000074C54 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921068D2A2FC34000074C54 /* SettingsView.swift */; };
+		E92106902A2FC72200074C54 /* SettingsComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921068F2A2FC72200074C54 /* SettingsComponent.swift */; };
 		E97C33222A1F026400979A91 /* Info.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = E97C33202A1F026400979A91 /* Info.xcdatamodeld */; };
 		E97C33252A1F060300979A91 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C33242A1F060300979A91 /* SceneDelegate.swift */; };
 		E97C33272A1F064200979A91 /* DataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C33262A1F064200979A91 /* DataController.swift */; };
@@ -21,6 +41,9 @@
 		E97C333D2A27FF4300979A91 /* ConsoleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C333C2A27FF4300979A91 /* ConsoleData.swift */; };
 		E97C33402A28002700979A91 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = E97C333F2A28002700979A91 /* SwiftyJSON */; };
 		E97C33422A2801CA00979A91 /* WebviewDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C33412A2801CA00979A91 /* WebviewDomain.swift */; };
+		E9A09BE92A30267B0035F57B /* Dropdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A09BE82A30267B0035F57B /* Dropdown.swift */; };
+		E9A09BEC2A3A4E8A0035F57B /* Shimmer in Frameworks */ = {isa = PBXBuildFile; productRef = E9A09BEB2A3A4E8A0035F57B /* Shimmer */; };
+		E9A09BEE2A3A54D70035F57B /* Shimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A09BED2A3A54D70035F57B /* Shimmer.swift */; };
 		E9A382F029F7132C0098A3D5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E9A382EF29F7132C0098A3D5 /* Assets.xcassets */; };
 		E9A382F429F7132C0098A3D5 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E9A382F329F7132C0098A3D5 /* Preview Assets.xcassets */; };
 		E9A382FC29F713480098A3D5 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = E9A382FB29F713480098A3D5 /* ComposableArchitecture */; };
@@ -68,6 +91,25 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E91F9A132A2FDDD800870245 /* DeveloperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperView.swift; sourceTree = "<group>"; };
+		E91F9A162A2FDE8500870245 /* NetworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkView.swift; sourceTree = "<group>"; };
+		E91F9A1A2A3010E700870245 /* LogsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsView.swift; sourceTree = "<group>"; };
+		E91F9A1C2A30112300870245 /* LogsDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsDomain.swift; sourceTree = "<group>"; };
+		E92106682A296B8800074C54 /* CloudflareWebview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudflareWebview.swift; sourceTree = "<group>"; };
+		E921066B2A298AB000074C54 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		E921066D2A298B3300074C54 /* HomeDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeDomain.swift; sourceTree = "<group>"; };
+		E921066F2A2995DD00074C54 /* HomeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeData.swift; sourceTree = "<group>"; };
+		E92106722A299FFC00074C54 /* WatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchView.swift; sourceTree = "<group>"; };
+		E92106752A29A0BF00074C54 /* WatchDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchDomain.swift; sourceTree = "<group>"; };
+		E92106772A29A36600074C54 /* VideoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoData.swift; sourceTree = "<group>"; };
+		E92106792A29B0A900074C54 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
+		E921067C2A29B10D00074C54 /* PlayerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewModel.swift; sourceTree = "<group>"; };
+		E92106822A29B18800074C54 /* CustomVideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVideoPlayer.swift; sourceTree = "<group>"; };
+		E92106842A29B1C600074C54 /* CustomPlayerWithControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPlayerWithControls.swift; sourceTree = "<group>"; };
+		E92106862A2AB01A00074C54 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		E921068A2A2B05BD00074C54 /* VolumeSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeSlider.swift; sourceTree = "<group>"; };
+		E921068D2A2FC34000074C54 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		E921068F2A2FC72200074C54 /* SettingsComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsComponent.swift; sourceTree = "<group>"; };
 		E97C33212A1F026400979A91 /* CoreDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CoreDataModel.xcdatamodel; sourceTree = "<group>"; };
 		E97C33242A1F060300979A91 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		E97C33262A1F064200979A91 /* DataController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataController.swift; sourceTree = "<group>"; };
@@ -81,6 +123,8 @@
 		E97C333A2A27FEE500979A91 /* Webview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Webview.swift; sourceTree = "<group>"; };
 		E97C333C2A27FF4300979A91 /* ConsoleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleData.swift; sourceTree = "<group>"; };
 		E97C33412A2801CA00979A91 /* WebviewDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebviewDomain.swift; sourceTree = "<group>"; };
+		E9A09BE82A30267B0035F57B /* Dropdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dropdown.swift; sourceTree = "<group>"; };
+		E9A09BED2A3A54D70035F57B /* Shimmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shimmer.swift; sourceTree = "<group>"; };
 		E9A382E829F7132A0098A3D5 /* ChoutenTCA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChoutenTCA.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9A382EF29F7132C0098A3D5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E9A382F129F7132C0098A3D5 /* ChoutenTCA.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChoutenTCA.entitlements; sourceTree = "<group>"; };
@@ -130,6 +174,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				E97C33402A28002700979A91 /* SwiftyJSON in Frameworks */,
+				E92106802A29B13F00074C54 /* SwiftWebVTT in Frameworks */,
+				E92106892A2AD58000074C54 /* ActivityIndicatorView in Frameworks */,
+				E9A09BEC2A3A4E8A0035F57B /* Shimmer in Frameworks */,
 				E9B6016D2A1CF1EB009E6EFE /* PopupView in Frameworks */,
 				E9A3831129F723FB0098A3D5 /* Kingfisher in Frameworks */,
 				E9A382FC29F713480098A3D5 /* ComposableArchitecture in Frameworks */,
@@ -141,6 +188,95 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E91F9A122A2FDDC300870245 /* Developer */ = {
+			isa = PBXGroup;
+			children = (
+				E91F9A192A3010DC00870245 /* Logs */,
+				E91F9A132A2FDDD800870245 /* DeveloperView.swift */,
+			);
+			path = Developer;
+			sourceTree = "<group>";
+		};
+		E91F9A152A2FDE7300870245 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				E91F9A162A2FDE8500870245 /* NetworkView.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		E91F9A182A2FDEF600870245 /* Appearance */ = {
+			isa = PBXGroup;
+			children = (
+				E921068D2A2FC34000074C54 /* SettingsView.swift */,
+			);
+			path = Appearance;
+			sourceTree = "<group>";
+		};
+		E91F9A192A3010DC00870245 /* Logs */ = {
+			isa = PBXGroup;
+			children = (
+				E91F9A1A2A3010E700870245 /* LogsView.swift */,
+				E91F9A1C2A30112300870245 /* LogsDomain.swift */,
+			);
+			path = Logs;
+			sourceTree = "<group>";
+		};
+		E92106672A296B7800074C54 /* Cloudflare */ = {
+			isa = PBXGroup;
+			children = (
+				E92106682A296B8800074C54 /* CloudflareWebview.swift */,
+			);
+			path = Cloudflare;
+			sourceTree = "<group>";
+		};
+		E921066A2A298A8100074C54 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				E921066B2A298AB000074C54 /* HomeView.swift */,
+				E921066D2A298B3300074C54 /* HomeDomain.swift */,
+				E921066F2A2995DD00074C54 /* HomeData.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		E92106742A299FFF00074C54 /* Watch */ = {
+			isa = PBXGroup;
+			children = (
+				E92106722A299FFC00074C54 /* WatchView.swift */,
+				E92106752A29A0BF00074C54 /* WatchDomain.swift */,
+			);
+			path = Watch;
+			sourceTree = "<group>";
+		};
+		E921067B2A29B0D000074C54 /* Player */ = {
+			isa = PBXGroup;
+			children = (
+				E92106792A29B0A900074C54 /* PlayerView.swift */,
+				E921067C2A29B10D00074C54 /* PlayerViewModel.swift */,
+			);
+			path = Player;
+			sourceTree = "<group>";
+		};
+		E92106812A29B17B00074C54 /* VideoPlayer */ = {
+			isa = PBXGroup;
+			children = (
+				E92106822A29B18800074C54 /* CustomVideoPlayer.swift */,
+				E92106842A29B1C600074C54 /* CustomPlayerWithControls.swift */,
+			);
+			path = VideoPlayer;
+			sourceTree = "<group>";
+		};
+		E921068C2A2FC32700074C54 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				E91F9A182A2FDEF600870245 /* Appearance */,
+				E91F9A152A2FDE7300870245 /* Network */,
+				E91F9A122A2FDDC300870245 /* Developer */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
 		E97C33232A1F055800979A91 /* CoreDataFiles */ = {
 			isa = PBXGroup;
 			children = (
@@ -152,8 +288,13 @@
 		E97C332E2A25835600979A91 /* Video */ = {
 			isa = PBXGroup;
 			children = (
+				E92106812A29B17B00074C54 /* VideoPlayer */,
+				E921067B2A29B0D000074C54 /* Player */,
+				E92106742A299FFF00074C54 /* Watch */,
 				E97C332F2A25836500979A91 /* VideoControlsView.swift */,
 				E97C33312A2585DD00979A91 /* Seekbar.swift */,
+				E92106772A29A36600074C54 /* VideoData.swift */,
+				E921068A2A2B05BD00074C54 /* VolumeSlider.swift */,
 			);
 			path = Video;
 			sourceTree = "<group>";
@@ -208,6 +349,8 @@
 		E9A382EA29F7132A0098A3D5 /* ChoutenTCA */ = {
 			isa = PBXGroup;
 			children = (
+				E92106862A2AB01A00074C54 /* Info.plist */,
+				E92106672A296B7800074C54 /* Cloudflare */,
 				E9F921692A28452400A75AFA /* Info */,
 				E97C33392A27FED900979A91 /* Webview */,
 				E97C33332A27FDED00979A91 /* Models */,
@@ -274,6 +417,7 @@
 		E9B6014E2A1BE182009E6EFE /* Main */ = {
 			isa = PBXGroup;
 			children = (
+				E921066A2A298A8100074C54 /* Home */,
 				E9B601792A1D0E4A009E6EFE /* History */,
 				E9B601652A1CEF84009E6EFE /* Module */,
 				E9B6015D2A1C1D11009E6EFE /* More */,
@@ -291,6 +435,7 @@
 				E9B601562A1BE592009E6EFE /* Color.swift */,
 				E9B601842A1D2550009E6EFE /* RoundedCorners.swift */,
 				E9B6018F2A1D359B009E6EFE /* String.swift */,
+				E9A09BED2A3A54D70035F57B /* Shimmer.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -307,6 +452,7 @@
 		E9B6015D2A1C1D11009E6EFE /* More */ = {
 			isa = PBXGroup;
 			children = (
+				E921068C2A2FC32700074C54 /* Settings */,
 				E9B6015E2A1C1D24009E6EFE /* MoreView.swift */,
 				E9B601602A1C1D71009E6EFE /* MoreDomain.swift */,
 			);
@@ -320,6 +466,7 @@
 				E9B6016E2A1CF51B009E6EFE /* Floaty */,
 				E9B601632A1C1F5D009E6EFE /* M3ToggleStyle.swift */,
 				E9F9216E2A28482200A75AFA /* FillAspectImage.swift */,
+				E921068F2A2FC72200074C54 /* SettingsComponent.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -413,6 +560,7 @@
 				E9F9216A2A28452D00A75AFA /* InfoView.swift */,
 				E9F9216C2A28465E00A75AFA /* InfoDomain.swift */,
 				E9F921702A28502E00A75AFA /* InfoData.swift */,
+				E9A09BE82A30267B0035F57B /* Dropdown.swift */,
 			);
 			path = Info;
 			sourceTree = "<group>";
@@ -440,6 +588,9 @@
 				E9B601772A1D0A92009E6EFE /* NavigationTransitions */,
 				E9B601922A1D3743009E6EFE /* ZIPFoundation */,
 				E97C333F2A28002700979A91 /* SwiftyJSON */,
+				E921067F2A29B13F00074C54 /* SwiftWebVTT */,
+				E92106882A2AD58000074C54 /* ActivityIndicatorView */,
+				E9A09BEB2A3A4E8A0035F57B /* Shimmer */,
 			);
 			productName = ChoutenTCA;
 			productReference = E9A382E829F7132A0098A3D5 /* ChoutenTCA.app */;
@@ -476,6 +627,9 @@
 				E9B601762A1D0A92009E6EFE /* XCRemoteSwiftPackageReference "swiftui-navigation-transitions" */,
 				E9B601912A1D3742009E6EFE /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				E97C333E2A28002700979A91 /* XCRemoteSwiftPackageReference "SwiftyJSON" */,
+				E921067E2A29B13F00074C54 /* XCRemoteSwiftPackageReference "SwiftWebVTT" */,
+				E92106872A2AD58000074C54 /* XCRemoteSwiftPackageReference "ActivityIndicatorView" */,
+				E9A09BEA2A3A4E8A0035F57B /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */,
 			);
 			productRefGroup = E9A382E929F7132A0098A3D5 /* Products */;
 			projectDirPath = "";
@@ -506,8 +660,11 @@
 			files = (
 				E97C333D2A27FF4300979A91 /* ConsoleData.swift in Sources */,
 				E9B601522A1BE244009E6EFE /* MainDomain.swift in Sources */,
+				E92106732A299FFC00074C54 /* WatchView.swift in Sources */,
+				E92106702A2995DD00074C54 /* HomeData.swift in Sources */,
 				E9F9216D2A28465E00A75AFA /* InfoDomain.swift in Sources */,
 				E9B601642A1C1F5D009E6EFE /* M3ToggleStyle.swift in Sources */,
+				E921067A2A29B0A900074C54 /* PlayerView.swift in Sources */,
 				E97C332B2A1F065600979A91 /* AppDelegate.swift in Sources */,
 				E9B601732A1D0660009E6EFE /* Root.swift in Sources */,
 				E9B6015C2A1BEDC3009E6EFE /* NavbarDomain.swift in Sources */,
@@ -517,16 +674,23 @@
 				E97C33382A27FE1600979A91 /* SearchData.swift in Sources */,
 				E9B6016A2A1CF0E4009E6EFE /* FloatyDisplay.swift in Sources */,
 				E97C33222A1F026400979A91 /* Info.xcdatamodeld in Sources */,
+				E92106832A29B18800074C54 /* CustomVideoPlayer.swift in Sources */,
 				E9B6015F2A1C1D24009E6EFE /* MoreView.swift in Sources */,
+				E92106692A296B8900074C54 /* CloudflareWebview.swift in Sources */,
+				E91F9A1B2A3010E700870245 /* LogsView.swift in Sources */,
 				E9B601502A1BE193009E6EFE /* MainView.swift in Sources */,
+				E91F9A1D2A30112300870245 /* LogsDomain.swift in Sources */,
 				E9B601802A1D1B3B009E6EFE /* ModuleSelectorDomain.swift in Sources */,
 				E9F921712A28502E00A75AFA /* InfoData.swift in Sources */,
 				E9F921612A2810A800A75AFA /* ModuleSelectorButton.swift in Sources */,
 				E9B601702A1CF52D009E6EFE /* FloatyDomain.swift in Sources */,
+				E921066E2A298B3300074C54 /* HomeDomain.swift in Sources */,
 				E97C33272A1F064200979A91 /* DataController.swift in Sources */,
 				E97C33322A2585DD00979A91 /* Seekbar.swift in Sources */,
 				E9B601612A1C1D71009E6EFE /* MoreDomain.swift in Sources */,
+				E9A09BE92A30267B0035F57B /* Dropdown.swift in Sources */,
 				E9B6018E2A1D3405009E6EFE /* ReturnedData.swift in Sources */,
+				E921068E2A2FC34000074C54 /* SettingsView.swift in Sources */,
 				E97C33252A1F060300979A91 /* SceneDelegate.swift in Sources */,
 				E9B601962A1D445C009E6EFE /* GlobalData.swift in Sources */,
 				E9B601572A1BE592009E6EFE /* Color.swift in Sources */,
@@ -542,16 +706,26 @@
 				E9B6018C2A1D3371009E6EFE /* Module.swift in Sources */,
 				E97C33292A1F064D00979A91 /* HostingController.swift in Sources */,
 				E97C333B2A27FEE500979A91 /* Webview.swift in Sources */,
+				E921066C2A298AB000074C54 /* HomeView.swift in Sources */,
+				E9A09BEE2A3A54D70035F57B /* Shimmer.swift in Sources */,
+				E92106852A29B1C600074C54 /* CustomPlayerWithControls.swift in Sources */,
+				E91F9A142A2FDDD800870245 /* DeveloperView.swift in Sources */,
+				E92106902A2FC72200074C54 /* SettingsComponent.swift in Sources */,
 				E97C33302A25836500979A91 /* VideoControlsView.swift in Sources */,
 				E9B601682A1CEF99009E6EFE /* ModuleButton.swift in Sources */,
 				E9B601832A1D24B7009E6EFE /* CustomBottomSheet.swift in Sources */,
 				E9F9216B2A28452D00A75AFA /* InfoView.swift in Sources */,
 				E9A3830C29F722BE0098A3D5 /* GridCardView.swift in Sources */,
+				E921068B2A2B05BD00074C54 /* VolumeSlider.swift in Sources */,
+				E921067D2A29B10D00074C54 /* PlayerViewModel.swift in Sources */,
 				E97C33422A2801CA00979A91 /* WebviewDomain.swift in Sources */,
 				E9B6018A2A1D317F009E6EFE /* ModuleManager.swift in Sources */,
+				E91F9A172A2FDE8500870245 /* NetworkView.swift in Sources */,
 				E9F921632A2810F600A75AFA /* ModuleSelectorButtonDomain.swift in Sources */,
+				E92106782A29A36600074C54 /* VideoData.swift in Sources */,
 				E9B601852A1D2550009E6EFE /* RoundedCorners.swift in Sources */,
 				E9B601902A1D359B009E6EFE /* String.swift in Sources */,
+				E92106762A29A0BF00074C54 /* WatchDomain.swift in Sources */,
 				E9A3830E29F722D90098A3D5 /* GridCardDomain.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -677,13 +851,15 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChoutenTCA/ChoutenTCA.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 17;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"ChoutenTCA/Preview Content\"";
 				DEVELOPMENT_TEAM = A9QQBWPHB7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ChoutenTCA/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Chouten;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -694,12 +870,13 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 12.3;
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.ChoutenTCA;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.Chouten;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
@@ -716,13 +893,15 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChoutenTCA/ChoutenTCA.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 17;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"ChoutenTCA/Preview Content\"";
 				DEVELOPMENT_TEAM = A9QQBWPHB7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ChoutenTCA/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Chouten;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -733,12 +912,13 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 12.3;
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.ChoutenTCA;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.Chouten;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
@@ -772,12 +952,36 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		E921067E2A29B13F00074C54 /* XCRemoteSwiftPackageReference "SwiftWebVTT" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/thisIsTheFoxe/SwiftWebVTT";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.0;
+			};
+		};
+		E92106872A2AD58000074C54 /* XCRemoteSwiftPackageReference "ActivityIndicatorView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/exyte/ActivityIndicatorView.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		E97C333E2A28002700979A91 /* XCRemoteSwiftPackageReference "SwiftyJSON" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SwiftyJSON/SwiftyJSON.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 5.0.0;
+			};
+		};
+		E9A09BEA2A3A4E8A0035F57B /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/markiv/SwiftUI-Shimmer.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
 			};
 		};
 		E9A382FA29F713480098A3D5 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */ = {
@@ -823,10 +1027,25 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		E921067F2A29B13F00074C54 /* SwiftWebVTT */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E921067E2A29B13F00074C54 /* XCRemoteSwiftPackageReference "SwiftWebVTT" */;
+			productName = SwiftWebVTT;
+		};
+		E92106882A2AD58000074C54 /* ActivityIndicatorView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E92106872A2AD58000074C54 /* XCRemoteSwiftPackageReference "ActivityIndicatorView" */;
+			productName = ActivityIndicatorView;
+		};
 		E97C333F2A28002700979A91 /* SwiftyJSON */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E97C333E2A28002700979A91 /* XCRemoteSwiftPackageReference "SwiftyJSON" */;
 			productName = SwiftyJSON;
+		};
+		E9A09BEB2A3A4E8A0035F57B /* Shimmer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9A09BEA2A3A4E8A0035F57B /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */;
+			productName = Shimmer;
 		};
 		E9A382FB29F713480098A3D5 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;

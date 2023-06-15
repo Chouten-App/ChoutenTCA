@@ -17,6 +17,11 @@ private enum GlobalDataKey: DependencyKey {
         let incognito: CurrentValueSubject<Bool, Never> = .init(false)
         var searchResults: CurrentValueSubject<[SearchData], Never> = .init([])
         var infoData: CurrentValueSubject<InfoData?, Never> = .init(nil)
+        var homeData: CurrentValueSubject<[HomeComponent], Never> = .init([])
+        var servers: CurrentValueSubject<[ServerData], Never> = .init([])
+        var videoData: CurrentValueSubject<VideoData?, Never> = .init(nil)
+        var nextUrl: CurrentValueSubject<String?, Never> = .init(nil)
+        var logs: CurrentValueSubject<[ConsoleData], Never> = .init([])
         
         return GlobalData(
             setModule: { newModule in
@@ -67,11 +72,67 @@ private enum GlobalDataKey: DependencyKey {
             setInfoData: { info in
                 infoData.value = info
             },
+            setInfoDataMediaList: { list in
+                if infoData.value != nil {
+                    infoData.value!.mediaList = list
+                }
+            },
             getInfoData: {
                 return infoData.value
             },
             observeInfoData: {
                 infoData.values.eraseToStream()
+            },
+            setNextUrl: { next in
+                nextUrl.value = next
+            },
+            getNextUrl: {
+                return nextUrl.value
+            },
+            observeNextUrl: {
+                nextUrl.values.eraseToStream()
+            },
+            setHomeData: { data in
+                homeData.value = data
+            },
+            appendHomeData: { data in
+                homeData.value.append(contentsOf: data)
+            },
+            getHomeData: {
+                return homeData.value
+            },
+            observeHomeData: {
+                homeData.values.eraseToStream()
+            },
+            setServers: { list in
+                servers.value = list
+            },
+            getServers: {
+                return servers.value
+            },
+            observeServers: {
+                servers.values.eraseToStream()
+            },
+            setVideoData: { data in
+                videoData.value = data
+            },
+            getVideoData: {
+                return videoData.value
+            },
+            observeVideoData: {
+                videoData.values.eraseToStream()
+            },
+            setLogs: { data in
+                logs.value = data
+            },
+            appendLogs: { data in
+                logs.value.append(data)
+            },
+            getLogs: {
+                return logs.value
+            },
+            observeLogs: {
+                logs.values.eraseToStream()
             }
         )
     }()
@@ -104,7 +165,30 @@ struct GlobalData {
     var getSearchResults: () -> [SearchData]
     var observeSearchResults: () -> AsyncStream<[SearchData]>
     
-    var setInfoData: (_ results: InfoData) -> Void
+    var setInfoData: (_ results: InfoData?) -> Void
+    var setInfoDataMediaList: (_ results: [MediaList]) -> Void
     var getInfoData: () -> InfoData?
     var observeInfoData: () -> AsyncStream<InfoData?>
+    
+    var setNextUrl: (_ results: String?) -> Void
+    var getNextUrl: () -> String?
+    var observeNextUrl: () -> AsyncStream<String?>
+    
+    var setHomeData: (_ results: [HomeComponent]) -> Void
+    var appendHomeData: (_ results: [HomeComponent]) -> Void
+    var getHomeData: () -> [HomeComponent]
+    var observeHomeData: () -> AsyncStream<[HomeComponent]>
+    
+    var setServers: (_ results: [ServerData]) -> Void
+    var getServers: () -> [ServerData]
+    var observeServers: () -> AsyncStream<[ServerData]>
+    
+    var setVideoData: (_ results: VideoData?) -> Void
+    var getVideoData: () -> VideoData?
+    var observeVideoData: () -> AsyncStream<VideoData?>
+    
+    var setLogs: (_ results: [ConsoleData]) -> Void
+    var appendLogs: (_ results: ConsoleData) -> Void
+    var getLogs: () -> [ConsoleData]
+    var observeLogs: () -> AsyncStream<[ConsoleData]>
 }

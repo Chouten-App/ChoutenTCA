@@ -13,6 +13,7 @@ struct ReturnedData: Codable, Equatable {
     var allowExternalScripts: Bool = false
     var removeScripts: Bool = false
     var imports: [String] = []
+    var separator: String = ""
     var js: String = ""
 }
 
@@ -22,6 +23,7 @@ struct StringReturn: Codable, Equatable {
     let allowExternalScripts: Bool
     let removeScripts: Bool
     var imports: [String] = []
+    var separator: String = ""
 }
 
 struct Request: Hashable, Equatable, Codable {

@@ -45,6 +45,8 @@ struct SearchDomain: ReducerProtocol {
         case requestHtml(TaskResult<String>)
         
         case resetWebview
+        case resetInfoData
+        case resetSearch
     }
     
     @Dependency(\.moduleManager)
@@ -73,9 +75,17 @@ struct SearchDomain: ReducerProtocol {
                     .send(.webview(.setJsString(newString: ""))),
                     .send(.search)
                 )
+            case .resetSearch:
+                return .merge(
+                    .send(.webview(.setHtmlString(newString: ""))),
+                    .send(.webview(.setJsString(newString: ""))),
+                    .send(.setQuery(query: "")),
+                    .send(.setSearchResult(results: []))
+                )
             case .search:
                 let query = state.query
                 state.htmlString = ""
+                state.loading = true
                 
                 // get search code.js data
                 if query.isEmpty {
@@ -107,9 +117,12 @@ struct SearchDomain: ReducerProtocol {
                             return .none
                         }
                         let url = state.returnData!.request!.url
-                            .replacingOccurrences(of: "<query>", with: query.replacingOccurrences(of: " ", with: "%20"))
+                            .replacingOccurrences(of: "<query>", with: query)
+                            .replacingOccurrences(of: " ", with: state.returnData!.separator.isEmpty ? "%20" : state.returnData!.separator)
                             .replacingOccurrences(of: "’", with: "")
                             .replacingOccurrences(of: ",", with: "")
+                        
+                        print(url)
                         
                         return .task {
                             await .requestHtml(
@@ -166,6 +179,7 @@ struct SearchDomain: ReducerProtocol {
             case .onAppear:
                 state.isDownloadedOnly = globalData.getDownloadedOnly()
                 state.searchResult = globalData.getSearchResults()
+                globalData.setInfoData(nil)
                 return .merge(
                     .run { send in
                         let downloadedOnly = globalData.observeDownloadedOnly()
@@ -182,10 +196,13 @@ struct SearchDomain: ReducerProtocol {
                 )
             case .setSearchResult(let results):
                 state.searchResult = results
-                return .none
+                return .send(.setLoading(newLoading: false))
             case .webview:
                 return .none
             case .info:
+                return .none
+            case .resetInfoData:
+                globalData.setInfoData(nil)
                 return .none
             }
         }

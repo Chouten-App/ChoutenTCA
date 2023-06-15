@@ -18,12 +18,17 @@ struct InfoData: Codable, Equatable {
     let totalMediaCount: Int?
     let mediaType: String
     let seasons: [SeasonData]
-    var mediaList: [[MediaItem]]
+    var mediaList: [MediaList]
 }
 
 struct SeasonData: Codable, Equatable {
     let name: String
     let url: String
+}
+
+struct MediaList: Codable, Equatable {
+    let title: String
+    var list: [MediaItem]
 }
 
 struct MediaItem: Codable, Equatable {
