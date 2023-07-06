@@ -44,6 +44,7 @@
 		E9A09BE92A30267B0035F57B /* Dropdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A09BE82A30267B0035F57B /* Dropdown.swift */; };
 		E9A09BEC2A3A4E8A0035F57B /* Shimmer in Frameworks */ = {isa = PBXBuildFile; productRef = E9A09BEB2A3A4E8A0035F57B /* Shimmer */; };
 		E9A09BEE2A3A54D70035F57B /* Shimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A09BED2A3A54D70035F57B /* Shimmer.swift */; };
+		E9A09BF02A4147FB0035F57B /* ServerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A09BEF2A4147FB0035F57B /* ServerCard.swift */; };
 		E9A382F029F7132C0098A3D5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E9A382EF29F7132C0098A3D5 /* Assets.xcassets */; };
 		E9A382F429F7132C0098A3D5 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E9A382F329F7132C0098A3D5 /* Preview Assets.xcassets */; };
 		E9A382FC29F713480098A3D5 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = E9A382FB29F713480098A3D5 /* ComposableArchitecture */; };
@@ -125,6 +126,7 @@
 		E97C33412A2801CA00979A91 /* WebviewDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebviewDomain.swift; sourceTree = "<group>"; };
 		E9A09BE82A30267B0035F57B /* Dropdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dropdown.swift; sourceTree = "<group>"; };
 		E9A09BED2A3A54D70035F57B /* Shimmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shimmer.swift; sourceTree = "<group>"; };
+		E9A09BEF2A4147FB0035F57B /* ServerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerCard.swift; sourceTree = "<group>"; };
 		E9A382E829F7132A0098A3D5 /* ChoutenTCA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChoutenTCA.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9A382EF29F7132C0098A3D5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E9A382F129F7132C0098A3D5 /* ChoutenTCA.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChoutenTCA.entitlements; sourceTree = "<group>"; };
@@ -467,6 +469,7 @@
 				E9B601632A1C1F5D009E6EFE /* M3ToggleStyle.swift */,
 				E9F9216E2A28482200A75AFA /* FillAspectImage.swift */,
 				E921068F2A2FC72200074C54 /* SettingsComponent.swift */,
+				E9A09BEF2A4147FB0035F57B /* ServerCard.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -692,6 +695,7 @@
 				E9B6018E2A1D3405009E6EFE /* ReturnedData.swift in Sources */,
 				E921068E2A2FC34000074C54 /* SettingsView.swift in Sources */,
 				E97C33252A1F060300979A91 /* SceneDelegate.swift in Sources */,
+				E9A09BF02A4147FB0035F57B /* ServerCard.swift in Sources */,
 				E9B601962A1D445C009E6EFE /* GlobalData.swift in Sources */,
 				E9B601572A1BE592009E6EFE /* Color.swift in Sources */,
 				E9B6017E2A1D191C009E6EFE /* ModuleSelector.swift in Sources */,

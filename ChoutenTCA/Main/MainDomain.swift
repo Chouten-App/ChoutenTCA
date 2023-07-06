@@ -16,6 +16,9 @@ struct MainDomain: ReducerProtocol {
         var isIncognito: Bool = false
         var isDownloadedOnly: Bool = false
         
+        var cookies: ModuleCookies? = nil
+        var showOverlay: Bool = false
+        
         var navbarState = NavbarDomain.State()
         var searchState = SearchDomain.State()
         var moreState = MoreDomain.State()
@@ -41,6 +44,8 @@ struct MainDomain: ReducerProtocol {
         case onAppear
         case setIncognito(newValue: Bool)
         case setDownloadedOnly(newValue: Bool)
+        case setCookies(newValue: ModuleCookies?)
+        case setShowOverlay(newBool: Bool)
     }
     
     @Dependency(\.globalData)
@@ -118,6 +123,12 @@ struct MainDomain: ReducerProtocol {
             case .setDownloadedOnly(let newValue):
                 state.isDownloadedOnly = newValue
                 return .none
+            case .setCookies(let newValue):
+                state.cookies = newValue
+                return .none
+            case .setShowOverlay(let newBool):
+                state.showOverlay = newBool
+                return .none
             case .onAppear:
                 state.isIncognito = globalData.getIncognito()
                 state.isDownloadedOnly = globalData.getIncognito()
@@ -133,6 +144,18 @@ struct MainDomain: ReducerProtocol {
                         let downloadedOnly = globalData.observeDownloadedOnly()
                         for await value in downloadedOnly {
                             await send(.setDownloadedOnly(newValue: value), animation: .easeOut(duration: 0.2))
+                        }
+                    },
+                    .run { send in
+                        let cookies = globalData.observeCookies()
+                        for await value in cookies {
+                            await send(.setCookies(newValue: value), animation: .easeOut(duration: 0.2))
+                        }
+                    },
+                    .run { send in
+                        let showOverlay = globalData.observeShowOverlay()
+                        for await value in showOverlay {
+                            await send(.setShowOverlay(newBool: value), animation: .easeOut(duration: 0.2))
                         }
                     }
                 )

@@ -12,6 +12,7 @@ struct VolumeSlider: View {
     @Binding var isDragging: Bool
     var total: Double
     @State var barWidth: CGFloat = 6
+    @State var i_percentage: Float = 1.0
     
     @StateObject var Colors = DynamicColors.shared
     
@@ -35,10 +36,9 @@ struct VolumeSlider: View {
                     .offset(
                         y: geometry.size.height - (
                             geometry.size.height
-                            * CGFloat(self.percentage / Float(total))
+                            * CGFloat(self.i_percentage / Float(total))
                             )
                         )
-                    .animation(.linear, value: self.percentage)
             }
             .frame(width: barWidth)
             .cornerRadius(400)
@@ -51,7 +51,13 @@ struct VolumeSlider: View {
                     .gesture(
                         DragGesture(minimumDistance: 0)
                             .onEnded { value in
-                                self.percentage = Float(min(max(0, Double((-value.location.y + geometry.size.height) / geometry.size.height * total)), total))
+                                self.percentage = Float(
+                                    min(
+                                        max(0, (-value.location.y + geometry.size.height) / geometry.size.height * total
+                                           ), total
+                                    )
+                                )
+                                self.i_percentage = self.percentage
                                 self.isDragging = false
                                 self.barWidth = 6
                             }
@@ -60,7 +66,12 @@ struct VolumeSlider: View {
                                 self.isDragging = true
                                 self.barWidth = 10
                                 // TODO: - maybe use other logic here
-                                self.percentage = Float(min(max(0, Double((-value.location.y + geometry.size.height) / geometry.size.height * total)), total))
+                                self.i_percentage = Float(
+                                    min(
+                                        max(0, (-value.location.y + geometry.size.height) / geometry.size.height * total
+                                           ), total
+                                    )
+                                )
                             }
                     )
             }

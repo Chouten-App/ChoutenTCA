@@ -462,9 +462,9 @@ struct InfoView: View {
                                                     .fill(Color(hex: Colors.Primary.dark))
                                                     .frame(height: 4)
                                                     .offset(
-                                                        x: -proxy.size.width
+                                                        x: -134
                                                         + (
-                                                            proxy.size.width * (
+                                                            134 * (
                                                                 (prog.progress / prog.duration)
                                                             )
                                                         )
