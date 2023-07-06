@@ -22,6 +22,8 @@ private enum GlobalDataKey: DependencyKey {
         var videoData: CurrentValueSubject<VideoData?, Never> = .init(nil)
         var nextUrl: CurrentValueSubject<String?, Never> = .init(nil)
         var logs: CurrentValueSubject<[ConsoleData], Never> = .init([])
+        var cookies: CurrentValueSubject<ModuleCookies?, Never> = .init(nil)
+        let showOverlay: CurrentValueSubject<Bool, Never> = .init(false)
         
         return GlobalData(
             setModule: { newModule in
@@ -133,6 +135,24 @@ private enum GlobalDataKey: DependencyKey {
             },
             observeLogs: {
                 logs.values.eraseToStream()
+            },
+            setCookies: { data in
+                cookies.value = data
+            },
+            getCookies: {
+                return cookies.value
+            },
+            observeCookies: {
+                cookies.values.eraseToStream()
+            },
+            setShowOverlay: { newValue in
+                showOverlay.value = newValue
+            },
+            getShowOverlay: {
+                return showOverlay.value
+            },
+            observeShowOverlay: {
+                showOverlay.values.eraseToStream()
             }
         )
     }()
@@ -191,4 +211,12 @@ struct GlobalData {
     var appendLogs: (_ results: ConsoleData) -> Void
     var getLogs: () -> [ConsoleData]
     var observeLogs: () -> AsyncStream<[ConsoleData]>
+    
+    var setCookies: (_ results: ModuleCookies?) -> Void
+    var getCookies: () -> ModuleCookies?
+    var observeCookies: () -> AsyncStream<ModuleCookies?>
+    
+    var setShowOverlay: (_ newValue: Bool) -> Void
+    var getShowOverlay: () -> Bool
+    var observeShowOverlay: () -> AsyncStream<Bool>
 }

@@ -137,6 +137,14 @@ struct MainView: View {
                     )
                     .padding(.bottom, viewStore.navbarState.screenWidth > 600 ? 0 : 100)
                 }
+                .overlay(alignment: .bottom) {
+                    CloudflareView(
+                        isShowing: viewStore.binding(
+                            get: \.showOverlay,
+                            send: MainDomain.Action.setShowOverlay(newBool:)
+                        )
+                    )
+                }
                 // Navbar
                 .overlay(alignment: viewStore.navbarState.screenWidth > 600 ? .leading : .bottom) {
                     Navbar(

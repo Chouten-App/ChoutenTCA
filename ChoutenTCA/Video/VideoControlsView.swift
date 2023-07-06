@@ -25,14 +25,24 @@ struct VideoControlsView: View {
     @Dependency(\.globalData) var globalData
     @Environment(\.presentationMode) var presentationMode
     
+    private func formatDecimalNumber(_ value: Double) -> String {
+        if value == Double(Int(value)) {
+            return String(format: "%.0f", value)
+        } else {
+            return String(format: "%.1f", value)
+        }
+    }
+    
     var body: some View {
         GeometryReader { proxy in
             VStack(alignment: .leading) {
                 TopBar()
+                    .offset(y: showUI ? 0 : -80)
                 
-                Spacer()
+                MiddleBar()
                 
                 BottomBar()
+                    .offset(y: showUI ? 0 : 80)
             }
             .padding(.horizontal, 60)
             .padding(.vertical, 12)
@@ -40,9 +50,6 @@ struct VideoControlsView: View {
             .background {
                 PlayPause()
                     .foregroundColor(Color(hex: Colors.onSurface.dark))
-            }
-            .background {
-                MiddleBar()
             }
             .opacity(showUI ? 1.0 : 0.0)
             .background {
@@ -55,6 +62,20 @@ struct VideoControlsView: View {
                         .padding(.trailing, 60)
                 }
             }
+            .overlay(alignment: .leading) {
+                BottomSheet(
+                    store: Store(
+                        initialState: CustomBottomSheetDomain.State(
+                            fromLeft: true
+                        ),
+                        reducer: CustomBottomSheetDomain()
+                    ),
+                    isShowing: $showServers,
+                    content: AnyView(
+                        ServerList(proxy: proxy)
+                    )
+                )
+            }
             .background {
                 Color(.black).opacity(showUI ? 0.4 : 0.0)
                     .contentShape(Rectangle())
@@ -64,6 +85,64 @@ struct VideoControlsView: View {
             }
             .animation(.spring(response: 0.3), value: showUI)
             .ignoresSafeArea()
+        }
+    }
+    
+    let tempList: [ServerData] = [
+        ServerData(
+            title: "Sub",
+            list: [
+                Server(name: "Vidstreaming", url: ""),
+                Server(name: "Vizcloud", url: ""),
+                Server(name: "Streamtape", url: ""),
+                Server(name: "Filemoon", url: ""),
+            ]
+        ),
+        ServerData(
+            title: "Dub",
+            list: [
+                Server(name: "Vidstreaming", url: ""),
+                Server(name: "Vizcloud", url: ""),
+                Server(name: "Streamtape", url: ""),
+                Server(name: "Filemoon", url: ""),
+            ]
+        )
+    ]
+    
+    @State var selectedServerId: Int = 0
+    @State var selectedServer: Int = 0
+    @State var showServers: Bool = false
+    
+    @ViewBuilder
+    func ServerList(proxy: GeometryProxy) -> some View {
+        ScrollView {
+            VStack(alignment: .leading) {
+                ForEach(0..<tempList.count) {index in
+                    Text(tempList[index].title)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    VStack(spacing: 12) {
+                        ForEach(0..<tempList[index].list.count) { listIndex in
+                            ServerCard(title: tempList[index].list[listIndex].name, selected: selectedServer == index && selectedServer == listIndex)
+                                .onTapGesture {
+                                    //selectedServerData = index
+                                    //selectedServer = listIndex
+                                    
+                                    //globalData.serverUrl = globalData.servers[index].list[listIndex].url
+                                }
+                        }
+                    }
+                }
+            }
+            .padding(.vertical, 20)
+        }
+        .padding(.leading, 60)
+        .padding(.trailing, 32)
+        .frame(maxWidth: 360, maxHeight: proxy.size.height, alignment: .topLeading)
+        .foregroundColor(Color(hex: Colors.onSurface.dark))
+        .background {
+            Color(hex: Colors.SurfaceContainer.dark)
         }
     }
     
@@ -191,7 +270,7 @@ struct VideoControlsView: View {
             if info != nil {
                 VStack(alignment: .leading) {
                     if info!.mediaList.count > 0 && info!.mediaList[0].list.count >= index {
-                        Text("\(info!.mediaList[0].list[index].number): \(info!.mediaList[0].list[index].title ?? "Episode")")
+                        Text("\(formatDecimalNumber(info!.mediaList[0].list[index].number)): \(info!.mediaList[0].list[index].title ?? "Episode")")
                             .fontWeight(.bold)
                     }
                         
@@ -233,10 +312,22 @@ struct VideoControlsView: View {
                 VolumeSlider(percentage: $playerVM.player.volume, isDragging: $isDragging, total: 1.0)
                     .frame(maxWidth: 20, maxHeight: 140)
                 
-                Image(systemName: "speaker.wave.2.fill")
+                Image(
+                    systemName: playerVM.player.volume == 0.0
+                                    ? ("speaker.slash.fill")
+                                    : (
+                                        playerVM.player.volume <= 0.33
+                                        ? ("speaker.wave.1.fill")
+                                        : (
+                                            playerVM.player.volume <= 0.66
+                                            ? ("speaker.wave.2.fill")
+                                            : ("speaker.wave.3.fill")
+                                        )
+                                    )
+                )
             }
+            .offset(x: showUI ? 0 : 80)
         }
-        .padding(.horizontal, 60)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
@@ -332,21 +423,39 @@ struct VideoControlsView: View {
             Text("10")
                 .font(.system(size: 10, weight: .bold))
                 .offset(y: 2)
-                .opacity(animateForward || animateBackward ? 0.0 : 1.0)
+                .opacity(
+                    forward ?
+                    (animateForward ? 0.0 : 1.0)
+                    : (animateBackward ? 0.0 : 1.0)
+                )
                 .animation(.spring(response: 0.3), value: animateForward)
-                .animation(.spring(response: 0.3), value: animateForward)
+                .animation(.spring(response: 0.3), value: animateBackward)
             
             Image(systemName: forward ? "goforward" : "gobackward")
                 .font(.system(size: 32))
-                .rotationEffect(animateForward ? Angle(degrees: 30) : .zero)
-                .rotationEffect(animateBackward ? Angle(degrees: -30) : .zero)
+                .rotationEffect(
+                    forward ?
+                    (animateForward ? Angle(degrees: 30) : .zero)
+                    : (animateBackward ? Angle(degrees: -30) : .zero)
+                )
+                .animation(.spring(response: 0.3), value: animateForward)
+                .animation(.spring(response: 0.3), value: animateBackward)
             
             Text("\(forward ? "+" : "-")10")
                 .font(.system(size: 18, weight: .semibold))
-                .offset(x: forward ? (animateForward ? 80 : 0.0) : (animateBackward ? -80 : 0.0), y: 2)
-                .opacity(animateForward || animateBackward ? 1.0 : 0.0)
+                .offset(x:
+                            forward ?
+                        (animateForward ? 80 : 0.0)
+                        : (animateBackward ? -80 : 0.0)
+                        , y: 2
+                )
+                .opacity(
+                    forward ?
+                    (animateForward ? 1.0 : 0.0)
+                    : (animateBackward ? 1.0 : 0.0)
+                )
                 .animation(.spring(response: 0.3), value: animateForward)
-                .animation(.spring(response: 0.3), value: animateForward)
+                .animation(.spring(response: 0.3), value: animateBackward)
         }
         .contentShape(Rectangle())
         .onTapGesture {
@@ -404,6 +513,9 @@ struct VideoControlsView: View {
                 HStack(spacing: 20) {
                     Image(systemName: "server.rack")
                         .clipShape(Rectangle())
+                        .onTapGesture {
+                            showServers.toggle()
+                        }
                     
                     Image(systemName: "rectangle.stack.fill")
                         .clipShape(Rectangle())
