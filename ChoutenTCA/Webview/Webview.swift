@@ -10,8 +10,34 @@ import WebKit
 import SwiftyJSON
 import ComposableArchitecture
 
+func setCookiesInWebView(cookies: [Cookie], webView: WKWebView) {
+    let httpCookies = convertToHTTPCookies(cookies: cookies)
+    let cookieStore = webView.configuration.websiteDataStore.httpCookieStore
+    
+    for cookie in httpCookies {
+        cookieStore.setCookie(cookie)
+    }
+}
+
+func convertToHTTPCookies(cookies: [Cookie]) -> [HTTPCookie] {
+    return cookies.compactMap { cookie in
+        let httpCookieProperties: [HTTPCookiePropertyKey: Any] = [
+            .name: cookie.name,
+            .value: cookie.value,
+            .domain: cookie.domain,
+            .path: cookie.path,
+            .version: cookie.version,
+            .expires: cookie.expiresDate ?? Date.distantFuture
+        ]
+        
+        return HTTPCookie(properties: httpCookieProperties)
+    }
+}
+
 struct WebView: UIViewRepresentable {
     @ObservedObject var viewStore: ViewStore<WebviewDomain.State, WebviewDomain.Action>
+    
+    @Dependency(\.globalData) var globalData
     
     func makeUIView(context: Context) -> WKWebView {
         // inject JS to capture console.log output and send to iOS
@@ -83,6 +109,12 @@ struct WebView: UIViewRepresentable {
         configuration.defaultWebpagePreferences = preferences
         
         let webView = WKWebView(frame: .zero, configuration: configuration)
+        
+        let cookies = globalData.getCookies()
+        
+        if cookies != nil {
+            setCookiesInWebView(cookies: cookies!.cookies, webView: webView)
+        }
         
         webView.navigationDelegate = context.coordinator
         webView.loadHTMLString(viewStore.htmlString, baseURL: URL(string: "http://localhost/")!)

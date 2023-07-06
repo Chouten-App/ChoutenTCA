@@ -15,6 +15,7 @@ struct WebviewDomain: ReducerProtocol {
         var requestType: String = ""
         let enableExternalScripts: Bool = false
         var nextUrl: String = ""
+        var cookies: ModuleCookies? = nil
     }
     
     enum Action: Equatable {
@@ -30,6 +31,7 @@ struct WebviewDomain: ReducerProtocol {
         case setGlobalNextUrl(url: String?)
         case appendGlobalLog(item: ConsoleData)
         case setMediaList(list: [MediaList])
+        case setCookies
     }
     
     @Dependency(\.globalData)
@@ -78,6 +80,9 @@ struct WebviewDomain: ReducerProtocol {
             return .none
         case .setMediaList(let list):
             globalData.setInfoDataMediaList(list)
+            return .none
+        case .setCookies:
+            state.cookies = globalData.getCookies()
             return .none
         }
     }

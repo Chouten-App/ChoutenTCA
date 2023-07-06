@@ -20,7 +20,6 @@ struct SearchView: View {
             WithViewStore(self.store) { viewStore in
                 VStack {
                     Group {
-                        
                         if viewStore.searchResult.isEmpty {
                             VStack {
                                 Text("Nothing to show")

@@ -16,6 +16,7 @@ struct SearchDomain: ReducerProtocol {
         var returnData: ReturnedData? = nil
         
         var loading: Bool = false
+        var showOverlay: Bool = false
         
         var webviewState = WebviewDomain.State()
         var infoState = InfoDomain.State()
@@ -93,7 +94,7 @@ struct SearchDomain: ReducerProtocol {
                     return .none
                 }
                 let module = globalData.getModule()
-                print(module)
+                
                 if module != nil {
                     state.searchResult = []
                     
@@ -127,17 +128,55 @@ struct SearchDomain: ReducerProtocol {
                         return .task {
                             await .requestHtml(
                                 TaskResult {
-                                    let (data, response) = try await URLSession.shared.data(
-                                        from: URL(
-                                            string: url
-                                        )!
-                                    )
-                                    guard let httpResponse = response as? HTTPURLResponse,
-                                            httpResponse.statusCode == 200,
-                                            let html = String(data: data, encoding: .utf8) else {
-                                        throw "Failed to load data from \(url)"
+                                    let url = URL(
+                                        string: url
+                                    )!
+                                    var request = URLRequest(url: url)
+
+                                    let c_cookies = globalData.getCookies()
+
+                                    print(c_cookies)
+                                    
+                                    /*if c_cookies != nil {
+                                        let cookies = convertToHTTPCookies(cookies: c_cookies!.cookies)
+                                        
+                                        print(cookies)
+                                        
+                                        let headerFields = HTTPCookie.requestHeaderFields(with: cookies)
+                                        for (field, value) in headerFields {
+                                            request.addValue(value, forHTTPHeaderField: field)
+                                        }
+                                        
+                                        
                                     }
-                                    return html
+                                     */
+                                    
+                                    let userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
+                                    request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+                                    
+                                    request.setValue("cf_clearance=v9VkTW72jt0qb1PiO2fXPuOldU.RZU3QbECQAi0MD1U-1688608961-0-160; _ga_NCRY038TTP=GS1.1.1688607035.2.1.1688610466.0.0.0", forHTTPHeaderField: "Cookie")
+                                    
+                                    print(request.allHTTPHeaderFields)
+                                    
+                                    let (data, response) = try await URLSession.shared.data(for: request)
+                                    
+                                    if let statusCode = (response as? HTTPURLResponse)?.statusCode {
+                                        var html: String = ""
+                                        print(statusCode)
+                                        switch statusCode {
+                                        case 200:
+                                            html = String(data: data, encoding: .utf8) ?? ""
+                                            break
+                                        case 403:
+                                            // Cloudflare detected, open website in visible webview
+                                            throw "CF"
+                                        case _:
+                                            throw "Failed to load data from \(url)"
+                                        }
+                                        return html
+                                    }
+                                    
+                                    throw "UNKNOWN ERROR"
                                 }
                             )
                         }
@@ -168,6 +207,12 @@ struct SearchDomain: ReducerProtocol {
                 state.loading = newLoading
                 return .none
             case .requestHtml(.failure(let error)):
+                
+                if error as? String == "CF" {
+                    state.returnData = nil
+                    globalData.setShowOverlay(true)
+                }
+                
                 let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
                 NotificationCenter.default
                     .post(name:           NSNotification.Name("floaty"),
