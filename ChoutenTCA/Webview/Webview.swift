@@ -34,6 +34,16 @@ func convertToHTTPCookies(cookies: [Cookie]) -> [HTTPCookie] {
     }
 }
 
+
+struct RequestOption: Codable {
+    let action: String;
+    let reqId: String;
+    let url: String?;
+    var shouldExit: Bool?;
+    let headers: Dictionary<String, String>?;
+    let result: String?;
+}
+
 struct WebView: UIViewRepresentable {
     @ObservedObject var viewStore: ViewStore<WebviewDomain.State, WebviewDomain.Action>
     
@@ -70,34 +80,118 @@ struct WebView: UIViewRepresentable {
         }
         window.console.error = captureError;
         """
-        let script = WKUserScript(source: source, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-        let divCreationString = """
-            let choutenDivElement = document.createElement('div');
-            choutenDivElement.setAttribute('id', 'chouten');
-            document.body.prepend(choutenDivElement);
+        
+        let commonCode = """
+            let reqId = 0;
+            let resolveFunctions = {};
+            
+            const Native = {};
+            Native.sendHttpRequest = window.webkit.messageHandlers.Native.postMessage;
+
+            window.onmessage = async function (event) {
+                console.log("Test")
+                const data = JSON.parse(event.data);
+                let payload = {};
+
+                try{
+                    payload = JSON.parse(data.payload);
+                }catch(err){
+                    payload = data.payload;
+                }
+
+                if (data.action === "logic"){
+                    try{
+                        if(payload.action === "eplist"){
+                            await getEpList(payload);
+                        }else if(payload.action === "video"){
+                            await getSource(payload);
+                        }else{
+                            await logic(payload);
+                        }
+                    }catch(err){
+                        console.error(err);
+                        sendSignal(1, err.toString());
+                    }
+                }else{
+                    resolveFunctions[data.reqId](data.responseText);
+                }
+            }
+
+            function sendRequest(url, headers) {
+                return new Promise((resolve, reject) => {
+                    const currentReqId = (++reqId).toString();
+
+                    resolveFunctions[currentReqId] = resolve;
+
+                    // @ts-ignore
+                    console.log(Native.sendHttpRequest)
+                    window.webkit.messageHandlers.Native.postMessage(JSON.stringify({
+                        reqId: currentReqId,
+                        action: "HTTPRequest",
+                        url,
+                        headers
+                    }));
+                });
+            }
+
+            function sendResult(result, last = false) {
+                const currentReqId = (++reqId).toString();
+
+                // @ts-ignore
+                                    window.webkit.messageHandlers.Native.postMessage(JSON.stringify({
+                    reqId: currentReqId,
+                    action: "result",
+                    shouldExit: last,
+                    result
+                }));
+            }
+
+            function sendSignal(signal, message = ""){
+                const currentReqId = (++reqId).toString();
+
+                // @ts-ignore
+                                    window.webkit.messageHandlers.Native.postMessage(JSON.stringify({
+                    reqId: currentReqId,
+                    action: signal === 0 ? "exit" : "error",
+                    result: message
+                }));
+            }
+
+            function loadScript(url){
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    
+                    script.src = url;
+                    script.onload = resolve;
+                    script.onerror = reject;
+            
+                    document.head.appendChild(script);
+                });
+            }
+
             """
         
-        let divCreation = WKUserScript(source: divCreationString, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+        let caller = """
+        var data = {
+            'reqId': -1,
+            'action': 'logic',
+            'payload': {
+                query: 'something',
+                'action': 'actionName'
+            }
+        };
+        var event = new MessageEvent('message', { data: JSON.stringify(data) });
+        window.dispatchEvent(event);
+        """
+        
+        let script = WKUserScript(source: source, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+        let callerInject = WKUserScript(source: caller, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
         
         let userContentController = WKUserContentController()
-        userContentController.addUserScript(divCreation)
         userContentController.addUserScript(script)
+        userContentController.addUserScript(callerInject)
         
-        let jsInject = WKUserScript(source: viewStore.javaScript, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
-        
-        userContentController.addUserScript(jsInject)
-        
-        let scriptHandlerString = """
-            window.webkit.messageHandlers.callbackHandler.postMessage(document.getElementById('chouten').innerText);
-            """
-        
-        let scriptHandler = WKUserScript(source: scriptHandlerString, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
-        userContentController.addUserScript(scriptHandler)
-        
-        
-        
-        let handlerName = "callbackHandler"
-        userContentController.add(context.coordinator, name: handlerName)
+        userContentController.add(context.coordinator, name: "Native")
         userContentController.add(context.coordinator, name: "logHandler")
 
         let configuration = WKWebViewConfiguration()
@@ -117,7 +211,8 @@ struct WebView: UIViewRepresentable {
         }
         
         webView.navigationDelegate = context.coordinator
-        webView.loadHTMLString(viewStore.htmlString, baseURL: URL(string: "http://localhost/")!)
+        
+        webView.loadHTMLString("<script>" + commonCode + viewStore.javaScript + "</script>", baseURL: URL(string: "http://localhost/")!)
         
         return webView
     }
@@ -152,127 +247,13 @@ struct WebView: UIViewRepresentable {
         }
         
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            if message.name == "callbackHandler" {
-                print("WEBKIT: \(message.body)")
-                if let message = message.body as? String {
-                    let data = message.data(using: .utf8)
-                    let decoder = JSONDecoder()
-                    print("test")
-                    print(requestType)
-                    if requestType == "home" {
-                        do {
-                            let homeComponents = try decoder.decode(DecodableResult<[HomeComponent]>.self, from: data!)
-                            
-                            viewStore.send(.setGlobalHomeData(data: homeComponents.result))
-                            viewStore.send(.setGlobalNextUrl(url: homeComponents.nextUrl))
-                        } catch {
-                            print(error.localizedDescription)
-                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
-                            NotificationCenter.default
-                                .post(name:           NSNotification.Name("floaty"),
-                                      object: nil, userInfo: data)
-                        }
-                    } else if requestType == "search" {
-                        do {
-                            let searchResults = try decoder.decode([SearchData].self, from: data!)
-                            print(searchResults)
-                            viewStore.send(.setGlobalSearchResults(results: searchResults))
-                        } catch {
-                            print(error.localizedDescription)
-                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
-                            NotificationCenter.default
-                                .post(name:           NSNotification.Name("floaty"),
-                                      object: nil, userInfo: data)
-                        }
-                    } else if requestType == "info" {
-                        do {
-                            let info = try decoder.decode(DecodableResult<InfoData>.self, from: data!)
-                            print(info.result)
-                            viewStore.send(.setGlobalInfoData(data: info.result))
-                            viewStore.send(.setGlobalNextUrl(url: info.nextUrl))
-                            return
-                        } catch {
-                            print(error.localizedDescription)
-                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
-                            NotificationCenter.default
-                                .post(name:           NSNotification.Name("floaty"),
-                                      object: nil, userInfo: data)
-                        }
-                        do {
-                            let info = try decoder.decode(DecodableResult<String>.self, from: data!)
-                            viewStore.send(.setGlobalNextUrl(url: info.nextUrl))
-                            return
-                        } catch {
-                            print(error.localizedDescription)
-                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
-                            NotificationCenter.default
-                                .post(name:           NSNotification.Name("floaty"),
-                                      object: nil, userInfo: data)
-                        }
-                        do {
-                            let info = try decoder.decode(MediaList.self, from: data!)
-                            viewStore.send(.setMediaList(list: [info]))
-                            return
-                        } catch {
-                            print(error.localizedDescription)
-                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
-                            NotificationCenter.default
-                                .post(name:           NSNotification.Name("floaty"),
-                                      object: nil, userInfo: data)
-                        }
-                    } else if requestType == "media" {
-                        do {
-                            let info = try decoder.decode(DecodableResult<[ServerData]>.self, from: data!)
-                            
-                            print("\n\n\n\nINFO: \(info)\n\n\n\n")
-                            
-                            viewStore.send(.setGlobalServers(list: info.result))
-                            viewStore.send(.setGlobalNextUrl(url: info.nextUrl))
-                            
-                            return
-                        } catch {
-                            print(error.localizedDescription)
-                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
-                            NotificationCenter.default
-                                .post(name:           NSNotification.Name("floaty"),
-                                      object: nil, userInfo: data)
-                        }
-                        do {
-                            let info = try decoder.decode(DecodableResult<VideoData>.self, from: data!)
-                            viewStore.send(.setGlobalVideoData(data: info.result))
-                            viewStore.send(.setGlobalNextUrl(url: info.nextUrl))
-                            return
-                        } catch {
-                            print(error.localizedDescription)
-                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
-                            NotificationCenter.default
-                                .post(name:           NSNotification.Name("floaty"),
-                                      object: nil, userInfo: data)
-                        }
-                        /*
-                        do {
-                            let info = try decoder.decode(DecodableResult<[String]>.self, from: data!)
-                            mediaConsumeBookData = info.result
-                            nextUrl = info.nextUrl ?? ""
-                        } catch {
-                            print(error.localizedDescription)
-                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
-                            NotificationCenter.default
-                                .post(name:           NSNotification.Name("floaty"),
-                                      object: nil, userInfo: data)
-                        }
-                         */
-                        do {
-                            let info = try decoder.decode(DecodableResult<String>.self, from: data!)
-                            viewStore.send(.setGlobalNextUrl(url: info.nextUrl))
-                        } catch {
-                            print(error.localizedDescription)
-                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
-                            NotificationCenter.default
-                                .post(name:           NSNotification.Name("floaty"),
-                                      object: nil, userInfo: data)
-                        }
-                    }
+            
+            print("CALLED: \(message.name)")
+            
+            if message.name == "Native" {
+                print(message.body)
+                if let body = message.body as? String {
+                    sendHttpRequest(data: body)
                 }
             }
             else if message.name == "logHandler" {
@@ -300,8 +281,84 @@ struct WebView: UIViewRepresentable {
             }
         }
         
-        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            
+        func sendHttpRequest(data: String) {
+            // Your Swift function implementation here
+            // This function will be called when JavaScript calls Native.sendHttpRequest
+            // Implement your networking code or any other functionality you want to perform with the received data.
+            print("Received data from JavaScript:", data)
+        }
+        
+        func get(url: URL, headers: [String: String], completionHandler: @escaping (String?, Error?) -> Void) {
+            var request = URLRequest(url: url)
+            for (key, value) in headers {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+
+            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                if let error = error {
+                    completionHandler(nil, error)
+                    return
+                }
+
+                if let data = data, let responseString = String(data: data, encoding: .utf8) {
+                    completionHandler(responseString, nil)
+                } else {
+                    completionHandler(nil, NSError(domain: "", code: -1, userInfo: nil))
+                }
+            }
+
+            task.resume()
+        }
+        
+        func postMessage(message: String) {
+            if let jsonData = message.data(using: .utf8) {
+            do {
+                let req = try JSONDecoder().decode(RequestOption.self, from: jsonData)
+                
+                if(req.action == "HTTPRequest" && req.url != nil && req.headers != nil){
+                    get(url: URL(string: req.url!)!, headers: req.headers!) { responseString, error in
+                        if let error = error {
+                            print("Error:", error.localizedDescription)
+                        } else if let responseString = responseString {
+                            print("Response:", responseString)
+                            
+                            var response: Dictionary<String, String> = [
+                                "reqId": req.reqId,
+                                "responseText": responseString
+                            ]
+                            
+                            webView.postWebMessage(WebMessage(JSONObject(response).toString()), Uri.parse("*"))
+                        }
+                    }
+                    //var myWebView = this.webview;
+                    /*
+                    var response: Dictionary<String, String> = mapOf(
+                        "reqId" to req.reqId,
+                        "responseText" to responseText
+                    );
+                     */
+                    
+                    /*
+                    withContext(Dispatchers.Main) {
+                        myWebView.postWebMessage(WebMessage(JSONObject(response).toString()), Uri.parse("*"))
+                    }
+                     */
+                    
+                }else if(req.action == "result" && req.result != nil){
+                    //this.callback(req.result)
+                }else if(req.action == "error"){
+                    /*withContext(Dispatchers.Main) {
+                     self.destroy();
+                     }*/
+                    
+                    //throw Exception(req.result);
+                }else{
+                    //throw Exception("Action not found.");
+                }
+            } catch {
+                print("Error decoding JSON:", error)
+            }
+        }
         }
     }
 }
