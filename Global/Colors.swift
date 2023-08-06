@@ -74,6 +74,7 @@ struct SubColors: Codable {
 
 class DynamicColors: ObservableObject {
     static let shared = DynamicColors()
+    
     init(fileName: String = "default") {
         getFromJson(fileName: fileName)
     }
@@ -137,6 +138,104 @@ class DynamicColors: ObservableObject {
     @Published var InversePrimary: CustomColor = CustomColor(light: "#adc6ff", dark: "#005ac1")
     @Published var Scrim: CustomColor = CustomColor(light: "#000000", dark: "#000000")
     @Published var Shadow: CustomColor? = CustomColor(light: "#000000", dark: "#000000")
+    
+    func getColor(for key: String, colorScheme: CustomColorScheme) -> String {
+        switch key {
+        case "Primary":
+            return colorScheme == .dark ? Primary.dark : Primary.light
+        case "onPrimary":
+            return colorScheme == .dark ? onPrimary.dark : onPrimary.light
+        case "PrimaryContainer":
+            return colorScheme == .dark ? PrimaryContainer.dark : PrimaryContainer.light
+        case "onPrimaryContainer":
+            return colorScheme == .dark ? onPrimaryContainer.dark : onPrimaryContainer.light
+        case "PrimaryFixed":
+            return colorScheme == .dark ? (PrimaryFixed?.dark ?? "#000000") : (PrimaryFixed?.light ?? "#ffffff")
+        case "PrimaryFixedDim":
+            return colorScheme == .dark ? (PrimaryFixedDim?.dark ?? "#000000") : (PrimaryFixedDim?.light ?? "#ffffff")
+        case "onPrimaryFixed":
+            return colorScheme == .dark ? (onPrimaryFixed?.dark ?? "#000000") : (onPrimaryFixed?.light ?? "#ffffff")
+        case "onPrimaryFixedVariant":
+            return colorScheme == .dark ? (onPrimaryFixedVariant?.dark ?? "#000000") : (onPrimaryFixedVariant?.light ?? "#ffffff")
+        case "Secondary":
+            return colorScheme == .dark ? Secondary.dark : Secondary.light
+        case "onSecondary":
+            return colorScheme == .dark ? onSecondary.dark : onSecondary.light
+        case "SecondaryContainer":
+            return colorScheme == .dark ? SecondaryContainer.dark : SecondaryContainer.light
+        case "onSecondaryContainer":
+            return colorScheme == .dark ? onSecondaryContainer.dark : onSecondaryContainer.light
+        case "SecondaryFixed":
+            return colorScheme == .dark ? (SecondaryFixed?.dark ?? "#000000") : (SecondaryFixed?.light ?? "#ffffff")
+        case "SecondaryFixedDim":
+            return colorScheme == .dark ? (SecondaryFixedDim?.dark ?? "#000000") : (SecondaryFixedDim?.light ?? "#ffffff")
+        case "onSecondaryFixed":
+            return colorScheme == .dark ? (onSecondaryFixed?.dark ?? "#000000") : (onSecondaryFixed?.light ?? "#ffffff")
+        case "onSecondaryFixedVariant":
+            return colorScheme == .dark ? (onSecondaryFixedVariant?.dark ?? "#000000") : (onSecondaryFixedVariant?.light ?? "#ffffff")
+        case "Tertiary":
+            return colorScheme == .dark ? Tertiary.dark : Tertiary.light
+        case "onTertiary":
+            return colorScheme == .dark ? onTertiary.dark : onTertiary.light
+        case "TertiaryContainer":
+            return colorScheme == .dark ? TertiaryContainer.dark : TertiaryContainer.light
+        case "onTertiaryContainer":
+            return colorScheme == .dark ? onTertiaryContainer.dark : onTertiaryContainer.light
+        case "TertiaryFixed":
+            return colorScheme == .dark ? (TertiaryFixed?.dark ?? "#000000") : (TertiaryFixed?.light ?? "#ffffff")
+        case "TertiaryFixedDim":
+            return colorScheme == .dark ? (TertiaryFixedDim?.dark ?? "#000000") : (TertiaryFixedDim?.light ?? "#ffffff")
+        case "onTertiaryFixed":
+            return colorScheme == .dark ? (onTertiaryFixed?.dark ?? "#000000") : (onTertiaryFixed?.light ?? "#ffffff")
+        case "onTertiaryFixedVariant":
+            return colorScheme == .dark ? (onTertiaryFixedVariant?.dark ?? "#000000") : (onTertiaryFixedVariant?.light ?? "#ffffff")
+        case "Error":
+            return colorScheme == .dark ? Error.dark : Error.light
+        case "ErrorContainer":
+            return colorScheme == .dark ? ErrorContainer.dark : ErrorContainer.light
+        case "onError":
+            return colorScheme == .dark ? onError.dark : onError.light
+        case "onErrorContainer":
+            return colorScheme == .dark ? onErrorContainer.dark : onErrorContainer.light
+        case "Surface":
+            return colorScheme == .dark ? Surface.dark : Surface.light
+        case "SurfaceDim":
+            return colorScheme == .dark ? (SurfaceDim?.dark ?? "#000000") : (SurfaceDim?.light ?? "#ffffff")
+        case "SurfaceBright":
+            return colorScheme == .dark ? (SurfaceBright?.dark ?? "#000000") : (SurfaceBright?.light ?? "#ffffff")
+        case "SurfaceContainerLowest":
+            return colorScheme == .dark ? (SurfaceContainerLowest?.dark ?? "#000000") : (SurfaceContainerLowest?.light ?? "#ffffff")
+        case "SurfaceContainerLow":
+            return colorScheme == .dark ? (SurfaceContainerLow?.dark ?? "#000000") : (SurfaceContainerLow?.light ?? "#ffffff")
+        case "SurfaceContainer":
+            return colorScheme == .dark ? SurfaceContainer.dark : SurfaceContainer.light
+        case "SurfaceContainerHigh":
+            return colorScheme == .dark ? (SurfaceContainerHigh?.dark ?? "#000000") : (SurfaceContainerHigh?.light ?? "#ffffff")
+        case "SurfaceContainerHighest":
+            return colorScheme == .dark ? (SurfaceContainerHighest?.dark ?? "#000000") : (SurfaceContainerHighest?.light ?? "#ffffff")
+        case "onSurface":
+            return colorScheme == .dark ? onSurface.dark : onSurface.light
+        case "onSurfaceVariant":
+            return colorScheme == .dark ? onSurfaceVariant.dark : onSurfaceVariant.light
+        case "Outline":
+            return colorScheme == .dark ? Outline.dark : Outline.light
+        case "OutlineVariant":
+            return colorScheme == .dark ? OutlineVariant.dark : OutlineVariant.light
+        case "InverseSurface":
+            return colorScheme == .dark ? InverseSurface.dark : InverseSurface.light
+        case "InverseOnSurface":
+            return colorScheme == .dark ? InverseOnSurface.dark : InverseOnSurface.light
+        case "InversePrimary":
+            return colorScheme == .dark ? InversePrimary.dark : InversePrimary.light
+        case "Scrim":
+            return colorScheme == .dark ? Scrim.dark : Scrim.light
+        case "Shadow":
+            return colorScheme == .dark ? (Shadow?.dark ?? "#000000") : (Shadow?.light ?? "#ffffff")
+        default:
+            return colorScheme == .dark ? "#000000" : "#ffffff"
+        }
+    }
+
     
     func getFromJson(fileName: String) {
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!

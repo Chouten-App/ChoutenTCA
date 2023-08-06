@@ -35,12 +35,15 @@ struct RootDomain: ReducerProtocol {
             return .task {
                 await .setAvailableModules(
                     TaskResult {
-                        try moduleManager.getModules()
+                        let modules = try moduleManager.getModules()
+                        try moduleManager.validateModules()
+                        return modules
                     }
                 )
             }
         case .setAvailableModules(.success(let modules)):
             globalData.setAvailableModules(modules)
+            
             return .none
         case .setAvailableModules(.failure(let error)):
             print(error)
@@ -56,6 +59,8 @@ struct RootDomain: ReducerProtocol {
                 if temp.count > 0 {
                     globalData.setModule(temp[0])
                     let module = globalData.getModule()
+                    
+                    
                     
                     if module != nil {
                         moduleManager.setSelectedModuleName(module!)

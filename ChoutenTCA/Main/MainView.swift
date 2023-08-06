@@ -66,13 +66,23 @@ struct MainView: View {
                         )
                         .tag(0)
                         
-                        SearchView(
-                            store: self.store.scope(
-                                state: \.searchState,
-                                action: MainDomain.Action.search
+                        if viewStore.iosStyle {
+                            SearchViewiOS(
+                                store: self.store.scope(
+                                    state: \.searchState,
+                                    action: MainDomain.Action.search
+                                )
                             )
-                        )
-                        .tag(1)
+                            .tag(1)
+                        } else {
+                            SearchView(
+                                store: self.store.scope(
+                                    state: \.searchState,
+                                    action: MainDomain.Action.search
+                                )
+                            )
+                            .tag(1)
+                        }
                         
                         Text("History")
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -82,38 +92,71 @@ struct MainView: View {
                             .ignoresSafeArea()
                             .tag(2)
                         
-                        MoreView(
-                            store: self.store.scope(
-                                state: \.moreState,
-                                action: MainDomain.Action.more
+                        if viewStore.iosStyle {
+                            MoreViewiOS(
+                                store: self.store.scope(
+                                    state: \.moreState,
+                                    action: MainDomain.Action.more
+                                )
                             )
-                        )
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background {
-                            Color(hex: Colors.Surface.dark)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background {
+                                Color(hex: Colors.Surface.dark)
+                            }
+                            .ignoresSafeArea()
+                            .tag(3)
+                        } else {
+                            MoreView(
+                                store: self.store.scope(
+                                    state: \.moreState,
+                                    action: MainDomain.Action.more
+                                )
+                            )
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background {
+                                Color(hex: Colors.Surface.dark)
+                            }
+                            .ignoresSafeArea()
+                            .tag(3)
                         }
-                        .ignoresSafeArea()
-                        .tag(3)
+                        
                     }
                     .padding(.leading, UIScreen.main.bounds.width > 600 ? 80 : 0)
                 }
                 .foregroundColor(Color(hex: Colors.onSurface.dark))
                 // module button
                 .overlay(alignment: .bottomTrailing) {
-                    ModuleButton(
-                        store: self.store.scope(
-                            state: \.moduleButtonState,
-                            action: MainDomain.Action.moduleButton
-                        ),
-                        isShowing: viewStore.binding(
-                            get: \.isShowingBottomSheet,
-                            send: MainDomain.Action.setBottomSheet(newValue:)
-                        ),
-                        showButton: viewStore.binding(
-                            get: \.showModuleButton,
-                            send: MainDomain.Action.setModuleButton(newValue:)
+                    if viewStore.iosStyle {
+                        ModuleButtoniOS(
+                            store: self.store.scope(
+                                state: \.moduleButtonState,
+                                action: MainDomain.Action.moduleButton
+                            ),
+                            isShowing: viewStore.binding(
+                                get: \.isShowingBottomSheet,
+                                send: MainDomain.Action.setBottomSheet(newValue:)
+                            ),
+                            showButton: viewStore.binding(
+                                get: \.showModuleButton,
+                                send: MainDomain.Action.setModuleButton(newValue:)
+                            )
                         )
-                    )
+                    } else {
+                        ModuleButton(
+                            store: self.store.scope(
+                                state: \.moduleButtonState,
+                                action: MainDomain.Action.moduleButton
+                            ),
+                            isShowing: viewStore.binding(
+                                get: \.isShowingBottomSheet,
+                                send: MainDomain.Action.setBottomSheet(newValue:)
+                            ),
+                            showButton: viewStore.binding(
+                                get: \.showModuleButton,
+                                send: MainDomain.Action.setModuleButton(newValue:)
+                            )
+                        )
+                    }
                 }
                 // module selector
                 .overlay(alignment: .bottom) {
@@ -139,20 +182,31 @@ struct MainView: View {
                 }
                 .overlay(alignment: .bottom) {
                     CloudflareView(
+                        url: "https://aniwatch.to",
                         isShowing: viewStore.binding(
                             get: \.showOverlay,
                             send: MainDomain.Action.setShowOverlay(newBool:)
                         )
                     )
+                    .padding(.bottom, 100)
                 }
                 // Navbar
                 .overlay(alignment: viewStore.navbarState.screenWidth > 600 ? .leading : .bottom) {
-                    Navbar(
-                        store: self.store.scope(
-                            state: \.navbarState,
-                            action: MainDomain.Action.setTab
+                    if viewStore.iosStyle {
+                        NavbariOS(
+                            store: self.store.scope(
+                                state: \.navbarState,
+                                action: MainDomain.Action.setTab
+                            )
                         )
-                    )
+                    } else {
+                        Navbar(
+                            store: self.store.scope(
+                                state: \.navbarState,
+                                action: MainDomain.Action.setTab
+                            )
+                        )
+                    }
                 }
                 .popup(isPresented: viewStore.binding(
                     get: \.floatyState.showFloaty,

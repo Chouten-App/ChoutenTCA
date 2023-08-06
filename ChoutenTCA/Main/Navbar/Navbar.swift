@@ -11,6 +11,7 @@ import ComposableArchitecture
 struct Navbar: View {
     let store: StoreOf<NavbarDomain>
     @StateObject var Colors = DynamicColors.shared
+    @Dependency(\.globalData) var globalData
     
     var body: some View {
         WithViewStore(self.store) { viewStore in
@@ -37,7 +38,12 @@ struct Navbar: View {
                     .padding(.vertical, 8)
                     .frame(maxWidth: 80, maxHeight: .infinity)
                     .background {
-                        Color(hex: Colors.SurfaceContainer.dark)
+                        Color(hex:
+                                Colors.getColor(
+                                    for: "SurfaceContainer",
+                                    colorScheme: globalData.getColorScheme()
+                                )
+                        )
                     }
                 } else {
                     HStack(spacing: 8) {
@@ -61,7 +67,12 @@ struct Navbar: View {
                     .padding(.horizontal, 8)
                     .padding(.bottom, 24)
                     .background {
-                        Color(hex: Colors.SurfaceContainer.dark)
+                        Color(hex:
+                                Colors.getColor(
+                                    for: "SurfaceContainer",
+                                    colorScheme: globalData.getColorScheme()
+                                )
+                        )
                     }
                     
                 }
@@ -77,12 +88,20 @@ struct NavbarItem: View {
     let hasNotification: Bool
     
     @StateObject var Colors = DynamicColors.shared
+    @Dependency(\.globalData) var globalData
     
     var body: some View {
         VStack(spacing: 4) {
             ZStack {
                 Capsule()
-                    .fill(Color(hex: Colors.SecondaryContainer.dark))
+                    .fill(
+                        Color(hex:
+                                Colors.getColor(
+                                    for: "SecondaryContainer",
+                                    colorScheme: globalData.getColorScheme()
+                                )
+                        )
+                    )
                     .frame(maxWidth: 64, maxHeight: 32)
                     .opacity(selected ? 1.0 : 0.0)
                 
@@ -97,13 +116,24 @@ struct NavbarItem: View {
                 
                 Text("3")
                     .foregroundColor(
-                        Color(hex: Colors.onError.dark))
+                        Color(hex:
+                                Colors.getColor(
+                                    for: "onError",
+                                    colorScheme: globalData.getColorScheme()
+                                )
+                        )
+                    )
                     .font(.caption2)
                     .padding(4)
                     .background {
                         Circle()
                             .fill(
-                                Color(hex: Colors.Error.dark)
+                                Color(hex:
+                                        Colors.getColor(
+                                            for: "Error",
+                                            colorScheme: globalData.getColorScheme()
+                                        )
+                                )
                             )
                     }
                     .offset(x: 6, y: -6)
@@ -115,7 +145,12 @@ struct NavbarItem: View {
                 .fontWeight(.medium)
         }
         .foregroundColor(
-            Color(hex: Colors.onSecondaryContainer.dark)
+            Color(hex:
+                    Colors.getColor(
+                        for: "onSecondaryContainer",
+                        colorScheme: globalData.getColorScheme()
+                    )
+            )
         )
         .frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.width > 600 ? 56 : 80)
     }

@@ -9,6 +9,12 @@ import Foundation
 import ComposableArchitecture
 import Combine
 
+enum CustomColorScheme {
+    case light
+    case dark
+    case system
+}
+
 private enum GlobalDataKey: DependencyKey {
     static let liveValue: GlobalData = {
         var module: CurrentValueSubject<Module?, Never> = .init(nil)
@@ -24,6 +30,7 @@ private enum GlobalDataKey: DependencyKey {
         var logs: CurrentValueSubject<[ConsoleData], Never> = .init([])
         var cookies: CurrentValueSubject<ModuleCookies?, Never> = .init(nil)
         let showOverlay: CurrentValueSubject<Bool, Never> = .init(false)
+        let colorScheme: CurrentValueSubject<CustomColorScheme, Never> = .init(.dark)
         
         return GlobalData(
             setModule: { newModule in
@@ -153,6 +160,15 @@ private enum GlobalDataKey: DependencyKey {
             },
             observeShowOverlay: {
                 showOverlay.values.eraseToStream()
+            },
+            setColorScheme: { newValue in
+                colorScheme.value = newValue
+            },
+            getColorScheme: {
+                return colorScheme.value
+            },
+            observeColorScheme: {
+                colorScheme.values.eraseToStream()
             }
         )
     }()
@@ -219,4 +235,8 @@ struct GlobalData {
     var setShowOverlay: (_ newValue: Bool) -> Void
     var getShowOverlay: () -> Bool
     var observeShowOverlay: () -> AsyncStream<Bool>
+    
+    var setColorScheme: (_ newValue: CustomColorScheme) -> Void
+    var getColorScheme: () -> CustomColorScheme
+    var observeColorScheme: () -> AsyncStream<CustomColorScheme>
 }
