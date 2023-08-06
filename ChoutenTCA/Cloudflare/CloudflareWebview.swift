@@ -38,10 +38,10 @@ struct CloudflareWebview: UIViewRepresentable {
         
         preferences.allowsContentJavaScript = true // Enable JavaScript
         configuration.defaultWebpagePreferences = preferences
-        configuration.applicationNameForUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
         
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
+        webView.customUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1"
         
         webView.load(request)
         
@@ -134,6 +134,7 @@ struct CloudflareWebview: UIViewRepresentable {
 }
 
 struct CloudflareView: View {
+    let url: String
     @Binding var isShowing: Bool
     let store: StoreOf<CustomBottomSheetDomain> = Store(
         initialState: CustomBottomSheetDomain.State(),
@@ -154,49 +155,34 @@ struct CloudflareView: View {
                 CloudflareWebview(
                     request: URLRequest(
                         url: URL(
-                            string: "https://aniwatch.to/"
+                            string: url
                         )!
                     ),
                     cookies: $cookies,
                     fetchCookies: $fetchCookies,
                     resetCookies: $resetCookies
                 )
-                .frame(maxWidth: .infinity, maxHeight: 700)
+                .frame(maxWidth: .infinity, maxHeight: 600)
                 .overlay(alignment: .bottomTrailing) {
                     HStack {
-                        Button {
-                            resetCookies = true
-                        } label: {
-                            Image(systemName: "trash.fill")
-                                .font(.title3)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 16)
-                                .foregroundColor(Color(hex: Colors.onError.dark))
-                                .background {
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color(hex: Colors.Error.dark))
-                                }
-                        }
-                        
                         Spacer()
                         
-                        Button {
-                            fetchCookies = true
-                        } label: {
-                            Text("Done")
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 6)
-                                .foregroundColor(Color(hex: Colors.onPrimary.dark))
-                                .background {
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color(hex: Colors.Primary.dark))
-                                }
-                        }
+                        Text(url)
+                            .fontWeight(.medium)
+                            .font(.title3)
+                            .padding(.horizontal, 20)
+                            .frame(maxWidth: 320, maxHeight: 40, alignment: .leading)
+                            .background {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(
+                                        Color(hex: Colors.Surface.dark)
+                                    )
+                            }
+                            .foregroundColor(Color(hex: Colors.onSurface.dark))
+                        
+                        Spacer()
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 80)
+                    .padding(.bottom, 20)
                 }
             )
         )
@@ -205,6 +191,6 @@ struct CloudflareView: View {
 
 struct CloudflareWebview_Previews: PreviewProvider {
     static var previews: some View {
-        CloudflareView(isShowing: .constant(true))
+        CloudflareView(url: "https://aniwatch.to", isShowing: .constant(true))
     }
 }

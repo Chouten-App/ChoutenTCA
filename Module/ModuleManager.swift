@@ -34,9 +34,10 @@ struct ModuleManager {
     var getModules: () throws -> [Module]
     var getMetadata: (_ folderUrl: URL) -> Module?
     var getJsCount: (_ type: String) throws -> Int
-    var getJsForType: (_ type: String, _ num: Int) throws -> ReturnedData?
+    var getJsForType: (_ type: String, _ num: Int) throws -> String?
     var deleteModule: (_ module: Module) throws -> Bool
     var setSelectedModuleName: (_ module: Module) -> Void
+    var validateModules: () throws -> [Module]
     
     // data fetchers
     var search: (_ query: String) throws -> Decodable
@@ -48,6 +49,7 @@ extension ModuleManager {
     static var moduleFolderNames: [String] = []
     static var moduleIds: [String] = []
     static var selectedModuleName: String = ""
+    static let minimumFormatVersion: Int = 1
     
     static private var internalClass = ModuleManagerInternal()
     
@@ -147,60 +149,13 @@ extension ModuleManager {
             }
             return 0
         },
-        getJsForType:  { type, num in
+        getJsForType: { type, num in
             if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
                 let searchDirectory = documentsDirectory.appendingPathComponent("Modules").appendingPathComponent(selectedModuleName).appendingPathComponent(type.capitalized)
                 print("GETING JS")
-                let jsData = try Data(contentsOf: searchDirectory.appendingPathComponent(num == 0 ? "code.js" : "code\(num).js"))
+                let jsData = try Data(contentsOf: searchDirectory.appendingPathComponent("code.js"))
                 let jsString = String(data: jsData, encoding: .utf8)
-                // split js into logic and vars
-                let vars = jsString?.components(separatedBy: "function logic() {")[0]
-                var logic = jsString?.components(separatedBy: "function logic() {")[1].trimmingCharacters(in: .whitespaces)
-                if logic != nil {
-                    logic = """
-                    try {
-                        function logic() {
-                            \(logic!)
-                        logic()
-                    } catch (error) {
-                        const stacktrace = error.stack;
-                        const linesTemp = stacktrace.split("\\nglobal")[0];
-                        const lines = linesTemp.replace("logic@user-script:", "");
-                        console.error(`Uncaught ${error.name}: ${error.message}-----${lines}`);
-                    }
-                    """
-                }
-                let context = JSContext()
-                
-                print(vars)
-
-                let data: JSValue? = context?.evaluateScript((vars ?? "") + "requestData()")
-                
-                print(data)
-                
-                if data != nil && data!.isString {
-                    let string = data!.toString()
-                    if string != nil {
-                        if let dataFromString = string!.data(using: .utf8, allowLossyConversion: false) {
-                            let json = try JSON(data: dataFromString)
-                            
-                            let request = Request(url: json["request"]["url"].string ?? "", method: json["request"]["method"].string ?? "", headers: [], body: nil)
-                            
-                            print(json["imports"])
-                            
-                            let returnValue = ReturnedData(
-                                request: request,
-                                usesApi: json["usesApi"].bool ?? false,
-                                allowExternalScripts: json["allowExternalScripts"].bool ?? false,
-                                removeScripts: json["removeScripts"].bool ?? true,
-                                imports: json["imports"].arrayValue.map { $0.stringValue},
-                                separator: json["separator"].string ?? "",
-                                js: logic!
-                            )
-                            return returnValue
-                        }
-                    }
-                }
+                return jsString
             }
             return nil
         },
@@ -235,7 +190,43 @@ extension ModuleManager {
             if index != nil {
                 selectedModuleName = moduleFolderNames[index!]
             }
-        }, search: { query in
+        },
+        validateModules: {
+            if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                let modulesDir = documentsDirectory.appendingPathComponent("Modules")
+                
+                // check if any .module files still exist
+                let modulesDirContents = try FileManager.default.contentsOfDirectory(
+                    at: modulesDir,
+                    includingPropertiesForKeys: nil
+                )
+                for url in modulesDirContents {
+                    if url.lastPathComponent.contains(".module") {
+                        try FileManager.default.removeItem(at: url)
+                    } else if url.lastPathComponent == "TEMPORARY" {
+                        // remove temporary folder
+                        try FileManager.default.removeItem(at: url)
+                    }
+                }
+                
+                // read all modules in Modules folder
+                moduleFolderNames = try internalClass.getModules()
+                var list: [Module] = []
+                for module in moduleFolderNames {
+                    let m = internalClass.getMetadata(folderUrl: modulesDir.appendingPathComponent(module))
+                    if let m = m {
+                        // check format version
+                        if m.formatVersion >= minimumFormatVersion {
+                            list.append(m)
+                        }
+                    }
+                }
+                // return all modules that pass
+                return list
+            }
+            throw "Documents folder unavailable"
+        },
+        search: { query in
             print(query)
             return DecodableResult(result: "", nextUrl: nil)
         }
@@ -259,6 +250,8 @@ extension ModuleManager {
         },
         setSelectedModuleName: { module in
             
+        }, validateModules: {
+            return []
         }, search: { query in
             print(query)
             return DecodableResult(result: "", nextUrl: nil)

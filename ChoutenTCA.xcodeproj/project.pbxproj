@@ -25,8 +25,13 @@
 		E92106852A29B1C600074C54 /* CustomPlayerWithControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92106842A29B1C600074C54 /* CustomPlayerWithControls.swift */; };
 		E92106892A2AD58000074C54 /* ActivityIndicatorView in Frameworks */ = {isa = PBXBuildFile; productRef = E92106882A2AD58000074C54 /* ActivityIndicatorView */; };
 		E921068B2A2B05BD00074C54 /* VolumeSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921068A2A2B05BD00074C54 /* VolumeSlider.swift */; };
-		E921068E2A2FC34000074C54 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921068D2A2FC34000074C54 /* SettingsView.swift */; };
+		E921068E2A2FC34000074C54 /* AppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921068D2A2FC34000074C54 /* AppearanceView.swift */; };
 		E92106902A2FC72200074C54 /* SettingsComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921068F2A2FC72200074C54 /* SettingsComponent.swift */; };
+		E95161BE2A7282D000C56BCA /* NavbariOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95161BD2A7282D000C56BCA /* NavbariOS.swift */; };
+		E95161C02A72A7A100C56BCA /* MoreViewiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95161BF2A72A7A100C56BCA /* MoreViewiOS.swift */; };
+		E95161C22A72EB8200C56BCA /* AppearanceViewiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95161C12A72EB8200C56BCA /* AppearanceViewiOS.swift */; };
+		E95161C42A746BCB00C56BCA /* ModuleButtoniOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95161C32A746BCB00C56BCA /* ModuleButtoniOS.swift */; };
+		E95161C62A746DC000C56BCA /* SearchViewiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95161C52A746DC000C56BCA /* SearchViewiOS.swift */; };
 		E97C33222A1F026400979A91 /* Info.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = E97C33202A1F026400979A91 /* Info.xcdatamodeld */; };
 		E97C33252A1F060300979A91 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C33242A1F060300979A91 /* SceneDelegate.swift */; };
 		E97C33272A1F064200979A91 /* DataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C33262A1F064200979A91 /* DataController.swift */; };
@@ -109,8 +114,13 @@
 		E92106842A29B1C600074C54 /* CustomPlayerWithControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPlayerWithControls.swift; sourceTree = "<group>"; };
 		E92106862A2AB01A00074C54 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E921068A2A2B05BD00074C54 /* VolumeSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeSlider.swift; sourceTree = "<group>"; };
-		E921068D2A2FC34000074C54 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		E921068D2A2FC34000074C54 /* AppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceView.swift; sourceTree = "<group>"; };
 		E921068F2A2FC72200074C54 /* SettingsComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsComponent.swift; sourceTree = "<group>"; };
+		E95161BD2A7282D000C56BCA /* NavbariOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavbariOS.swift; sourceTree = "<group>"; };
+		E95161BF2A72A7A100C56BCA /* MoreViewiOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreViewiOS.swift; sourceTree = "<group>"; };
+		E95161C12A72EB8200C56BCA /* AppearanceViewiOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceViewiOS.swift; sourceTree = "<group>"; };
+		E95161C32A746BCB00C56BCA /* ModuleButtoniOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleButtoniOS.swift; sourceTree = "<group>"; };
+		E95161C52A746DC000C56BCA /* SearchViewiOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewiOS.swift; sourceTree = "<group>"; };
 		E97C33212A1F026400979A91 /* CoreDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CoreDataModel.xcdatamodel; sourceTree = "<group>"; };
 		E97C33242A1F060300979A91 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		E97C33262A1F064200979A91 /* DataController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataController.swift; sourceTree = "<group>"; };
@@ -210,7 +220,8 @@
 		E91F9A182A2FDEF600870245 /* Appearance */ = {
 			isa = PBXGroup;
 			children = (
-				E921068D2A2FC34000074C54 /* SettingsView.swift */,
+				E921068D2A2FC34000074C54 /* AppearanceView.swift */,
+				E95161C12A72EB8200C56BCA /* AppearanceViewiOS.swift */,
 			);
 			path = Appearance;
 			sourceTree = "<group>";
@@ -388,6 +399,7 @@
 			children = (
 				E9A382FE29F716A20098A3D5 /* SearchView.swift */,
 				E9A3830029F716B50098A3D5 /* SearchDomain.swift */,
+				E95161C52A746DC000C56BCA /* SearchViewiOS.swift */,
 			);
 			path = Search;
 			sourceTree = "<group>";
@@ -447,6 +459,7 @@
 			children = (
 				E9B601592A1BED82009E6EFE /* Navbar.swift */,
 				E9B6015B2A1BEDC3009E6EFE /* NavbarDomain.swift */,
+				E95161BD2A7282D000C56BCA /* NavbariOS.swift */,
 			);
 			path = Navbar;
 			sourceTree = "<group>";
@@ -457,6 +470,7 @@
 				E921068C2A2FC32700074C54 /* Settings */,
 				E9B6015E2A1C1D24009E6EFE /* MoreView.swift */,
 				E9B601602A1C1D71009E6EFE /* MoreDomain.swift */,
+				E95161BF2A72A7A100C56BCA /* MoreViewiOS.swift */,
 			);
 			path = More;
 			sourceTree = "<group>";
@@ -488,6 +502,7 @@
 			children = (
 				E9B601672A1CEF99009E6EFE /* ModuleButton.swift */,
 				E9F921642A2822BC00A75AFA /* ModuleButtonDomain.swift */,
+				E95161C32A746BCB00C56BCA /* ModuleButtoniOS.swift */,
 			);
 			path = Button;
 			sourceTree = "<group>";
@@ -684,6 +699,7 @@
 				E9B601502A1BE193009E6EFE /* MainView.swift in Sources */,
 				E91F9A1D2A30112300870245 /* LogsDomain.swift in Sources */,
 				E9B601802A1D1B3B009E6EFE /* ModuleSelectorDomain.swift in Sources */,
+				E95161C62A746DC000C56BCA /* SearchViewiOS.swift in Sources */,
 				E9F921712A28502E00A75AFA /* InfoData.swift in Sources */,
 				E9F921612A2810A800A75AFA /* ModuleSelectorButton.swift in Sources */,
 				E9B601702A1CF52D009E6EFE /* FloatyDomain.swift in Sources */,
@@ -693,11 +709,12 @@
 				E9B601612A1C1D71009E6EFE /* MoreDomain.swift in Sources */,
 				E9A09BE92A30267B0035F57B /* Dropdown.swift in Sources */,
 				E9B6018E2A1D3405009E6EFE /* ReturnedData.swift in Sources */,
-				E921068E2A2FC34000074C54 /* SettingsView.swift in Sources */,
+				E921068E2A2FC34000074C54 /* AppearanceView.swift in Sources */,
 				E97C33252A1F060300979A91 /* SceneDelegate.swift in Sources */,
 				E9A09BF02A4147FB0035F57B /* ServerCard.swift in Sources */,
 				E9B601962A1D445C009E6EFE /* GlobalData.swift in Sources */,
 				E9B601572A1BE592009E6EFE /* Color.swift in Sources */,
+				E95161BE2A7282D000C56BCA /* NavbariOS.swift in Sources */,
 				E9B6017E2A1D191C009E6EFE /* ModuleSelector.swift in Sources */,
 				E9F9216F2A28482200A75AFA /* FillAspectImage.swift in Sources */,
 				E9B6015A2A1BED82009E6EFE /* Navbar.swift in Sources */,
@@ -705,6 +722,7 @@
 				E9A3830129F716B50098A3D5 /* SearchDomain.swift in Sources */,
 				E9F921652A2822BC00A75AFA /* ModuleButtonDomain.swift in Sources */,
 				E9B601752A1D0883009E6EFE /* RootDomain.swift in Sources */,
+				E95161C02A72A7A100C56BCA /* MoreViewiOS.swift in Sources */,
 				E97C33362A27FE0000979A91 /* DecodableResult.swift in Sources */,
 				E9A3830929F7198B0098A3D5 /* Title.swift in Sources */,
 				E9B6018C2A1D3371009E6EFE /* Module.swift in Sources */,
@@ -712,6 +730,7 @@
 				E97C333B2A27FEE500979A91 /* Webview.swift in Sources */,
 				E921066C2A298AB000074C54 /* HomeView.swift in Sources */,
 				E9A09BEE2A3A54D70035F57B /* Shimmer.swift in Sources */,
+				E95161C42A746BCB00C56BCA /* ModuleButtoniOS.swift in Sources */,
 				E92106852A29B1C600074C54 /* CustomPlayerWithControls.swift in Sources */,
 				E91F9A142A2FDDD800870245 /* DeveloperView.swift in Sources */,
 				E92106902A2FC72200074C54 /* SettingsComponent.swift in Sources */,
@@ -728,6 +747,7 @@
 				E9F921632A2810F600A75AFA /* ModuleSelectorButtonDomain.swift in Sources */,
 				E92106782A29A36600074C54 /* VideoData.swift in Sources */,
 				E9B601852A1D2550009E6EFE /* RoundedCorners.swift in Sources */,
+				E95161C22A72EB8200C56BCA /* AppearanceViewiOS.swift in Sources */,
 				E9B601902A1D359B009E6EFE /* String.swift in Sources */,
 				E92106762A29A0BF00074C54 /* WatchDomain.swift in Sources */,
 				E9A3830E29F722D90098A3D5 /* GridCardDomain.swift in Sources */,

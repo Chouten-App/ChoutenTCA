@@ -15,6 +15,7 @@ struct MainDomain: ReducerProtocol {
         
         var isIncognito: Bool = false
         var isDownloadedOnly: Bool = false
+        var iosStyle: Bool = true
         
         var cookies: ModuleCookies? = nil
         var showOverlay: Bool = false
