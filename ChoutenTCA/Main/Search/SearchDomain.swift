@@ -48,6 +48,8 @@ struct SearchDomain: ReducerProtocol {
         case resetWebview
         case resetInfoData
         case resetSearch
+        
+        case parseResult(data: String)
     }
     
     @Dependency(\.moduleManager)
@@ -108,12 +110,6 @@ struct SearchDomain: ReducerProtocol {
                             .post(name: NSNotification.Name("floaty"),
                                   object: nil, userInfo: data)
                     }
-                    
-                    /*let url = state.returnData!.request!.url
-                        .replacingOccurrences(of: "<query>", with: query)
-                        .replacingOccurrences(of: " ", with: state.returnData!.separator.isEmpty ? "%20" : state.returnData!.separator)
-                        .replacingOccurrences(of: "’", with: "")
-                        .replacingOccurrences(of: ",", with: "")*/
                     
                     return .task {
                         await .requestHtml(
@@ -232,6 +228,21 @@ struct SearchDomain: ReducerProtocol {
                 return .none
             case .resetInfoData:
                 globalData.setInfoData(nil)
+                return .none
+            case .parseResult(let data):
+                if let jsonData = data.data(using: .utf8) {
+                    do {
+                        let decoder = JSONDecoder()
+                        let searchResult = try decoder.decode([SearchData].self, from: jsonData)
+                        
+                        print("Decoded search result:", searchResult)
+                        return .send(.setSearchResult(results: searchResult))
+                    } catch {
+                        print("Error decoding JSON ODSFG:", error)
+                    }
+                } else {
+                    print("Invalid JSON string")
+                }
                 return .none
             }
         }

@@ -49,7 +49,9 @@ struct HomeView: View {
                                     action: HomeDomain.Action.webview
                                 )
                             )
-                        )
+                        ) { result in
+                            viewStore.send(.parseResult(data: result))
+                        }
                         .hidden()
                         .frame(maxWidth: 0, maxHeight: 0)
                     }
@@ -58,11 +60,6 @@ struct HomeView: View {
             }
             .onAppear {
                 viewStore.send(.resetWebview)
-            }
-            .onChange(of: viewStore.nextUrl) { newValue in
-                if newValue != nil {
-                    viewStore.send(.resetWebviewChange(url: newValue!))
-                }
             }
         }
     }

@@ -66,16 +66,42 @@ struct InfoView: View {
                 }
                 .background {
                     if !viewStore.webviewState.htmlString.isEmpty && !viewStore.webviewState.javaScript.isEmpty {
-                        WebView(
-                            viewStore: ViewStore(
-                                self.store.scope(
-                                    state: \.webviewState,
-                                    action: InfoDomain.Action.webview
-                                )
-                            )
-                        )
-                        .hidden()
-                        .frame(maxWidth: 0, maxHeight: 0)
+                        if viewStore.infoData != nil {
+                            WebView(
+                                viewStore: ViewStore(
+                                    self.store.scope(
+                                        state: \.webviewState,
+                                        action: InfoDomain.Action.webview
+                                    )
+                                ),
+                                payload: viewStore.infoData!.epListURLs[0],
+                                action: "eplist"
+                            ) { result in
+                                print(result)
+                                //viewStore.send(.parseResult(data: result))
+                                viewStore.send(.parseMediaResult(data: result))
+                            }
+                            .hidden()
+                            .frame(maxWidth: 0, maxHeight: 0)
+                        } else {
+                            WebView(
+                                viewStore: ViewStore(
+                                    self.store.scope(
+                                        state: \.webviewState,
+                                        action: InfoDomain.Action.webview
+                                    )
+                                ),
+                                payload: self.url
+                            ) { result in
+                                print(result)
+                                if viewStore.infoData == nil {
+                                    viewStore.send(.parseResult(data: result))
+                                    viewStore.send(.resetWebviewChange(url: self.url))
+                                }
+                            }
+                            .hidden()
+                            .frame(maxWidth: 0, maxHeight: 0)
+                        }
                     }
                 }
                 .overlay(alignment: .top) {
@@ -85,11 +111,8 @@ struct InfoView: View {
             }
             .navigationBarBackButtonHidden()
             .onAppear {
-                viewStore.send(.resetWebview(url: url))
-            }
-            .onChange(of: viewStore.nextUrl) { newValue in
-                if newValue != nil {
-                    viewStore.send(.resetWebviewChange(url: newValue!))
+                if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" {
+                    viewStore.send(.resetWebview(url: url))
                 }
             }
         }
@@ -560,7 +583,35 @@ struct InfoView_Previews: PreviewProvider {
         InfoView(
             url: "",
             store: Store(
-                initialState: InfoDomain.State(),
+                initialState: InfoDomain.State(
+                    infoData: InfoData(
+                        id: "",
+                        titles: Titles(primary: "Primary", secondary: "Secondary"),
+                        altTitles: [],
+                        epListURLs: [],
+                        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc eget sem tellus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Sed maximus justo neque, vitae faucibus mauris facilisis non. Quisque volutpat nunc quis tortor commodo, at tempus ante imperdiet. Suspendisse lobortis dapibus justo. Nunc ut odio commodo, varius mauris tristique, consequat nibh. Mauris tincidunt sapien purus, id maximus purus posuere ut. Aliquam nec ex ligula. Sed viverra velit libero, quis euismod erat molestie ut. Nunc eleifend condimentum nulla ut rutrum. Sed condimentum eu lectus id facilisis. Integer ut velit feugiat, feugiat augue sit amet, finibus tortor. Etiam id magna ac odio feugiat semper. Donec sit amet diam eget est dignissim efficitur. Aliquam molestie ante porttitor lacus rutrum, non eleifend tellus facilisis.",
+                        poster: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg",
+                        banner: nil,
+                        status: "Finished",
+                        totalMediaCount: 12,
+                        mediaType: "Media",
+                        seasons: [],
+                        mediaList: [
+                            MediaList(
+                                title: "Title",
+                                list: [
+                                    MediaItem(
+                                        url: "",
+                                        number: 1,
+                                        title: "Media Title",
+                                        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc eget sem tellus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Sed maximus justo neque, vitae faucibus mauris facilisis non.",
+                                        image: nil
+                                    )
+                                ]
+                            )
+                        ]
+                    )
+                ),
                 reducer: InfoDomain()
             )
         )

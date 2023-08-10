@@ -44,6 +44,10 @@ struct InfoDomain: ReducerProtocol {
         
         case setHeader(newBool: Bool)
         case setRealHeader(newBool: Bool)
+        
+        case parseResult(data: String)
+        case parseMediaResult(data: String)
+        case setMediaList(data: [MediaList])
     }
     
     @Dependency(\.globalData)
@@ -71,226 +75,171 @@ struct InfoDomain: ReducerProtocol {
             case .watch:
                 return .none
             case .onAppear(let infoUrl):
-                print(infoUrl)
-                if globalData.getInfoData() != nil {
-                    state.infoData = globalData.getInfoData()
-                    return .none
-                }
+                state.htmlString = ""
+                let module = globalData.getModule()
                 
-                state.infoData = nil
-                state.returnData = nil
-                state.currentJsIndex = 0
-                globalData.setInfoData(nil)
-                let infoData: InfoData? = nil
-                if infoData == nil || (infoData!.mediaList.count == 0) {
-                    state.htmlString = ""
-                    let module = globalData.getModule()
-                    if module != nil {
-                        print(infoUrl)
-                        state.htmlString = ""
-                        
-                        // get search js file data
-                        if state.returnData == nil {
-                            do {
-                                state.jsString = try moduleManager.getJsForType("info", state.currentJsIndex) ?? ""
-                            } catch let error {
-                                let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
-                                NotificationCenter.default
-                                    .post(name:           NSNotification.Name("floaty"),
-                                          object: nil, userInfo: data)
-                            }
-                        }
-                        
-                        if state.returnData != nil {
-                            state.jsString = state.returnData!.js
-                            
-                            return .merge(
-                                .run { send in
-                                    let infoData = globalData.observeInfoData()
-                                    for await value in infoData {
-                                        await send(.setInfoData(newValue: value))
-                                    }
-                                },
-                                .run { send in
-                                    let nextUrl = globalData.observeNextUrl()
-                                    for await value in nextUrl {
-                                        await send(.setNextUrl(newValue: value))
-                                    }
-                                },
-                                .task {
-                                    await .requestHtml(
-                                        TaskResult {
-                                            let url = URL(
-                                                string: infoUrl
-                                            )!
-                                            var request = URLRequest(url: url)
+                if module != nil {
+                    state.infoData = nil
+                    
+                    // get search js file data
+                    do {
+                        state.jsString = try moduleManager.getJsForType("info", 0) ?? ""
+                    } catch let error {
+                        print(error)
+                        let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
+                        NotificationCenter.default
+                            .post(name: NSNotification.Name("floaty"),
+                                  object: nil, userInfo: data)
+                    }
+                    
+                    return .task {
+                        await .requestHtml(
+                            TaskResult {
+                                return """
+                                <!DOCTYPE html>
+                                <html lang="en">
+                                <head>
+                                    <meta charset="UTF-8">
+                                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                    <title>Document</title>
+                                </head>
+                                <body>
+                                    
+                                </body>
+                                </html>
+                                """
+                                
+                                
+                                /*
+                                let url = URL(
+                                    string: url
+                                )!
+                                var request = URLRequest(url: url)
 
-                                            let c_cookies = globalData.getCookies()
-
-                                            print(c_cookies)
-                                            
-                                            if c_cookies != nil {
-                                                let cookies = convertToHTTPCookies(cookies: c_cookies!.cookies)
-                                                
-                                                print(cookies)
-                                                
-                                                let headerFields = HTTPCookie.requestHeaderFields(with: cookies)
-                                                for (field, value) in headerFields {
-                                                    request.addValue(value, forHTTPHeaderField: field)
-                                                }
-                                                
-                                                
-                                            }
-                                            
-                                            let userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1"
-                                            request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
-                                            
-                                            print(request.allHTTPHeaderFields)
-                                            
-                                            let (data, response) = try await URLSession.shared.data(for: request)
-                                            
-                                            if let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                                                var html: String = ""
-                                                print(statusCode)
-                                                switch statusCode {
-                                                case 200:
-                                                    html = String(data: data, encoding: .utf8) ?? ""
-                                                    break
-                                                case 403:
-                                                    // Cloudflare detected, open website in visible webview
-                                                    throw "CF"
-                                                case _:
-                                                    throw "Failed to load data from \(url)"
-                                                }
-                                                return html
-                                            }
-                                            
-                                            throw "UNKNOWN ERROR"
-                                        }
-                                    )
+                                let c_cookies = globalData.getCookies()
+                                
+                                if c_cookies != nil {
+                                    let cookies = convertToHTTPCookies(cookies: c_cookies!.cookies)
+                                    let headerFields = HTTPCookie.requestHeaderFields(with: cookies)
+                                    for (field, value) in headerFields {
+                                        request.addValue(value, forHTTPHeaderField: field)
+                                    }
                                 }
-                            )
-                        }
+                                
+                                let userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1"
+                                request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+                                
+                                print(request.allHTTPHeaderFields)
+                                
+                                let (data, response) = try await URLSession.shared.data(for: request)
+                                
+                                if let statusCode = (response as? HTTPURLResponse)?.statusCode {
+                                    var html: String = ""
+                                    print(statusCode)
+                                    switch statusCode {
+                                    case 200:
+                                        html = String(data: data, encoding: .utf8) ?? ""
+                                        break
+                                    case 403:
+                                        // Cloudflare detected, open website in visible webview
+                                        throw "CF"
+                                    case _:
+                                        throw "Failed to load data from \(url)"
+                                    }
+                                    return html
+                                }
+                                
+                                throw "UNKNOWN ERROR"
+                                 */
+                            }
+                        )
                     }
                 }
                 return .none
             case .onChange(let infoUrl):
-                let infoData = globalData.getInfoData()
-                state.returnData = nil
-                if state.currentJsIndex == 0 {
-                    state.currentJsIndex = 2
-                } else {
-                    state.currentJsIndex += 1
-                }
+                state.htmlString = ""
+                let module = globalData.getModule()
                 
-                if infoData == nil || (infoData!.mediaList.count == 0) {
-                    state.htmlString = ""
-                    let module = globalData.getModule()
-                    if module != nil {
-                        print(infoUrl)
-                        state.htmlString = ""
-                        
-                        // get search js file data
-                        if state.returnData == nil {
-                            do {
-                                state.jsString = try moduleManager.getJsForType("info", state.currentJsIndex) ?? ""
-                            } catch let error {
-                                let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
-                                NotificationCenter.default
-                                    .post(name:           NSNotification.Name("floaty"),
-                                          object: nil, userInfo: data)
-                            }
-                        }
-                        
-                        if state.returnData != nil {
-                            state.jsString = state.returnData!.js
-                            
-                            return .merge(
-                                .run { send in
-                                    let infoData = globalData.observeInfoData()
-                                    for await value in infoData {
-                                        await send(.setInfoData(newValue: value))
-                                    }
-                                },
-                                .run { send in
-                                    let nextUrl = globalData.observeNextUrl()
-                                    for await value in nextUrl {
-                                        await send(.setNextUrl(newValue: value))
-                                    }
-                                },
-                                .task {
-                                    await .requestHtml(
-                                        TaskResult {
-                                            let url = URL(
-                                                string: infoUrl
-                                            )!
-                                            var request = URLRequest(url: url)
+                if module != nil {
+                    state.infoData!.mediaList = []
+                    
+                    // get search js file data
+                    do {
+                        state.jsString = try moduleManager.getJsForType("info", 0) ?? ""
+                    } catch let error {
+                        print(error)
+                        let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
+                        NotificationCenter.default
+                            .post(name: NSNotification.Name("floaty"),
+                                  object: nil, userInfo: data)
+                    }
+                    
+                    return .task {
+                        await .requestHtml(
+                            TaskResult {
+                                return """
+                                <!DOCTYPE html>
+                                <html lang="en">
+                                <head>
+                                    <meta charset="UTF-8">
+                                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                    <title>Document</title>
+                                </head>
+                                <body>
+                                    
+                                </body>
+                                </html>
+                                """
+                                
+                                
+                                /*
+                                let url = URL(
+                                    string: url
+                                )!
+                                var request = URLRequest(url: url)
 
-                                            let c_cookies = globalData.getCookies()
-
-                                            print(c_cookies)
-                                            
-                                            if c_cookies != nil {
-                                                let cookies = convertToHTTPCookies(cookies: c_cookies!.cookies)
-                                                
-                                                print(cookies)
-                                                
-                                                let headerFields = HTTPCookie.requestHeaderFields(with: cookies)
-                                                for (field, value) in headerFields {
-                                                    request.addValue(value, forHTTPHeaderField: field)
-                                                }
-                                                
-                                                
-                                            }
-                                            
-                                            let userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1"
-                                            request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
-                                            
-                                            print(request.allHTTPHeaderFields)
-                                            
-                                            let (data, response) = try await URLSession.shared.data(for: request)
-                                            
-                                            if let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                                                var html: String = ""
-                                                print(statusCode)
-                                                switch statusCode {
-                                                case 200:
-                                                    html = String(data: data, encoding: .utf8) ?? ""
-                                                    break
-                                                case 403:
-                                                    // Cloudflare detected, open website in visible webview
-                                                    throw "CF"
-                                                case _:
-                                                    throw "Failed to load data from \(url)"
-                                                }
-                                                return html
-                                            }
-                                            
-                                            throw "UNKNOWN ERROR"
-                                        }
-                                    )
+                                let c_cookies = globalData.getCookies()
+                                
+                                if c_cookies != nil {
+                                    let cookies = convertToHTTPCookies(cookies: c_cookies!.cookies)
+                                    let headerFields = HTTPCookie.requestHeaderFields(with: cookies)
+                                    for (field, value) in headerFields {
+                                        request.addValue(value, forHTTPHeaderField: field)
+                                    }
                                 }
-                            )
-                        }
+                                
+                                let userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1"
+                                request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+                                
+                                print(request.allHTTPHeaderFields)
+                                
+                                let (data, response) = try await URLSession.shared.data(for: request)
+                                
+                                if let statusCode = (response as? HTTPURLResponse)?.statusCode {
+                                    var html: String = ""
+                                    print(statusCode)
+                                    switch statusCode {
+                                    case 200:
+                                        html = String(data: data, encoding: .utf8) ?? ""
+                                        break
+                                    case 403:
+                                        // Cloudflare detected, open website in visible webview
+                                        throw "CF"
+                                    case _:
+                                        throw "Failed to load data from \(url)"
+                                    }
+                                    return html
+                                }
+                                
+                                throw "UNKNOWN ERROR"
+                                 */
+                            }
+                        )
                     }
                 }
                 return .none
             case .requestHtml(.success(let html)):
-                print(state.returnData)
-                if state.returnData != nil && state.returnData!.usesApi {
-                    let regexPattern = "&#\\d+;"
-                    let regex = try! NSRegularExpression(pattern: regexPattern)
-                    
-                    let range = NSRange(html.startIndex..., in: html)
-                    
-                    let modifiedString = regex.stringByReplacingMatches(in: html, options: [], range: range, withTemplate: "")
-                    
-                    let cleaned = modifiedString.replacingOccurrences(of: "'", with: "").replacingOccurrences(of: "\"", with: "'")
-                    
-                    state.htmlString = "<div id=\"json-result\" data-json=\"\(cleaned)\">UNRELATED</div>"
-                } else {
-                    state.htmlString = html
-                }
+                state.htmlString = html
                 return .merge(
                     .send(.webview(.setRequestType(type: "info"))),
                     .send(.webview(.setHtmlString(newString: state.htmlString))),
@@ -338,6 +287,39 @@ struct InfoDomain: ReducerProtocol {
                     .send(.webview(.setHtmlString(newString: ""))),
                     .send(.webview(.setJsString(newString: "")))
                 )
+            case .parseResult(let data):
+                if let jsonData = data.data(using: .utf8) {
+                    do {
+                        let decoder = JSONDecoder()
+                        let infoData = try decoder.decode(InfoData.self, from: jsonData)
+                        
+                        return .send(.setInfoData(newValue: infoData))
+                    } catch {
+                        print("Error decoding JSON ODSFG:", error)
+                    }
+                } else {
+                    print("Invalid JSON string")
+                }
+                return .none
+            case .parseMediaResult(let data):
+                if let jsonData = data.data(using: .utf8) {
+                    do {
+                        let decoder = JSONDecoder()
+                        let infoData = try decoder.decode([MediaList].self, from: jsonData)
+                        
+                        return .send(.setMediaList(data: infoData))
+                    } catch {
+                        print("Error decoding JSON ODSFG:", error)
+                    }
+                } else {
+                    print("Invalid JSON string")
+                }
+                return .none
+            case .setMediaList(let data):
+                if state.infoData != nil {
+                    state.infoData!.mediaList = data
+                }
+                return .none
             }
         }
     }

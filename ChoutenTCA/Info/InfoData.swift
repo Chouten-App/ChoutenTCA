@@ -11,6 +11,7 @@ struct InfoData: Codable, Equatable {
     let id: String
     let titles: Titles
     let altTitles: [String]
+    let epListURLs: [String]
     let description: String
     let poster: String
     let banner: String?

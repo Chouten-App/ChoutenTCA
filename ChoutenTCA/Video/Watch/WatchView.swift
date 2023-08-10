@@ -38,16 +38,40 @@ struct WatchView: View {
             .supportedOrientation(.landscape)
             .background {
                 if !viewStore.webviewState.htmlString.isEmpty && !viewStore.webviewState.javaScript.isEmpty {
-                    WebView(
-                        viewStore: ViewStore(
-                            self.store.scope(
-                                state: \.webviewState,
-                                action: WatchDomain.Action.webview
-                            )
-                        )
-                    )
-                    .hidden()
-                    .frame(maxWidth: 0, maxHeight: 0)
+                    if viewStore.servers.count > 0 {
+                        WebView(
+                            viewStore: ViewStore(
+                                self.store.scope(
+                                    state: \.webviewState,
+                                    action: WatchDomain.Action.webview
+                                )
+                            ),
+                            payload: viewStore.servers[0].list[0].url,
+                            action: "video"
+                        ) { result in
+                            print(result)
+                            //viewStore.send(.parseResult(data: result))
+                            viewStore.send(.parseMediaResult(data: result))
+                        }
+                        .hidden()
+                        .frame(maxWidth: 0, maxHeight: 0)
+                    } else {
+                        WebView(
+                            viewStore: ViewStore(
+                                self.store.scope(
+                                    state: \.webviewState,
+                                    action: WatchDomain.Action.webview
+                                )
+                            ),
+                            payload: self.url
+                        ) { result in
+                            print(result)
+                            viewStore.send(.parseResult(data: result))
+                            viewStore.send(.resetWebviewChange(url: self.url))
+                        }
+                        .hidden()
+                        .frame(maxWidth: 0, maxHeight: 0)
+                    }
                 }
             }
             .onAppear {
