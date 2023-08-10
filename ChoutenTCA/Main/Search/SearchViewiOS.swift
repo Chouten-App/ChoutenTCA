@@ -135,8 +135,12 @@ struct SearchViewiOS: View {
                                     state: \.webviewState,
                                     action: SearchDomain.Action.webview
                                 )
-                            )
-                        )
+                            ),
+                            payload: viewStore.query
+                        ) { result in
+                            print(result)
+                            viewStore.send(.parseResult(data: result))
+                        }
                         .hidden()
                         .frame(maxWidth: 0, maxHeight: 0)
                     }

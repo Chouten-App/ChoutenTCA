@@ -35,9 +35,10 @@ struct HomeDomain: ReducerProtocol {
         case resetWebviewChange(url: String)
         case onAppear
         case setNextUrl(newValue: String?)
-        case onChange(url: String)
         case requestHtml(TaskResult<String>)
         case setOverlay(data: ModuleCookies?)
+        
+        case parseResult(data: String)
     }
     
     @Dependency(\.globalData)
@@ -73,8 +74,7 @@ struct HomeDomain: ReducerProtocol {
             case .resetWebviewChange(let url):
                 return .merge(
                     .send(.webview(.setHtmlString(newString: ""))),
-                    .send(.webview(.setJsString(newString: ""))),
-                    .send(.onChange(url: url))
+                    .send(.webview(.setJsString(newString: "")))
                 )
             case .setNextUrl(let newValue):
                 state.nextUrl = newValue
@@ -85,190 +85,79 @@ struct HomeDomain: ReducerProtocol {
             case .onAppear:
                 state.htmlString = ""
                 let module = globalData.getModule()
-                if module != nil {
-                    state.htmlString = ""
-                    
-                    // get search js file data
-                    if state.returnData == nil {
-                        do {
-                            state.jsString = try moduleManager.getJsForType("home", state.currentJsIndex) ?? ""
-                        } catch let error {
-                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
-                            NotificationCenter.default
-                                .post(name:           NSNotification.Name("floaty"),
-                                      object: nil, userInfo: data)
-                        }
-                    }
-                    
-                    if state.returnData != nil {
-                        state.jsString = state.returnData!.js
-                        
-                        if state.returnData!.request != nil {
-                            let requestUrl = state.returnData!.request!.url
-                            
-                            return .merge(
-                                .run { send in
-                                    let cookies = globalData.observeCookies()
-                                    for await value in cookies {
-                                        await send(.setOverlay(data: value))
-                                    }
-                                },
-                                .run { send in
-                                    let homeData = globalData.observeHomeData()
-                                    for await value in homeData {
-                                        await send(.setHomeData(data: value))
-                                    }
-                                },
-                                .run { send in
-                                    let nextUrl = globalData.observeNextUrl()
-                                    for await value in nextUrl {
-                                        await send(.setNextUrl(newValue: value))
-                                    }
-                                },
-                                .task {
-                                    await .requestHtml(
-                                        TaskResult {
-                                            let url = URL(
-                                                string: requestUrl
-                                            )!
-                                            var request = URLRequest(url: url)
-
-                                            let c_cookies = globalData.getCookies()
-
-                                            print(c_cookies)
-                                            
-                                            if c_cookies != nil {
-                                                let cookies = convertToHTTPCookies(cookies: c_cookies!.cookies)
-                                                
-                                                print(cookies)
-                                                
-                                                let headerFields = HTTPCookie.requestHeaderFields(with: cookies)
-                                                for (field, value) in headerFields {
-                                                    request.addValue(value, forHTTPHeaderField: field)
-                                                }
-                                                
-                                                
-                                            }
-                                            
-                                            let userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1"
-                                            request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
-                                            
-                                            print(request.allHTTPHeaderFields)
-                                            
-                                            let (data, response) = try await URLSession.shared.data(for: request)
-                                            
-                                            if let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                                                var html: String = ""
-                                                print(statusCode)
-                                                switch statusCode {
-                                                case 200:
-                                                    html = String(data: data, encoding: .utf8) ?? ""
-                                                    break
-                                                case 403:
-                                                    // Cloudflare detected, open website in visible webview
-                                                    throw "CF"
-                                                case _:
-                                                    throw "Failed to load data from \(url)"
-                                                }
-                                                return html
-                                            }
-                                            
-                                            throw "UNKNOWN ERROR"
-                                        }
-                                    )
-                                }
-                            )
-                        }
-                    }
-                }
-                return .none
-            case .onChange(let infoUrl):
-                state.returnData = nil
-                if state.currentJsIndex == 0 {
-                    state.currentJsIndex = 2
-                } else {
-                    state.currentJsIndex += 1
-                }
                 
-                state.htmlString = ""
-                let module = globalData.getModule()
                 if module != nil {
-                    print(infoUrl)
-                    state.htmlString = ""
                     
                     // get search js file data
-                    if state.returnData == nil {
-                        do {
-                            state.jsString = try moduleManager.getJsForType("home", state.currentJsIndex) ?? ""
-                        } catch let error {
-                            let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
-                            NotificationCenter.default
-                                .post(name:           NSNotification.Name("floaty"),
-                                      object: nil, userInfo: data)
-                        }
+                    do {
+                        state.jsString = try moduleManager.getJsForType("home", 0) ?? ""
+                    } catch let error {
+                        print(error)
+                        let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
+                        NotificationCenter.default
+                            .post(name: NSNotification.Name("floaty"),
+                                  object: nil, userInfo: data)
                     }
                     
-                    if state.returnData != nil {
-                        state.jsString = state.returnData!.js
-                        
-                        return .merge(
-                            .run { send in
-                                let nextUrl = globalData.observeNextUrl()
-                                for await value in nextUrl {
-                                    await send(.setNextUrl(newValue: value))
-                                }
-                            },
-                            .task {
-                                await .requestHtml(
-                                    TaskResult {
-                                        let url = URL(
-                                            string: infoUrl
-                                        )!
-                                        var request = URLRequest(url: url)
+                    return .task {
+                        await .requestHtml(
+                            TaskResult {
+                                return """
+                                <!DOCTYPE html>
+                                <html lang="en">
+                                <head>
+                                    <meta charset="UTF-8">
+                                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                    <title>Document</title>
+                                </head>
+                                <body>
+                                    
+                                </body>
+                                </html>
+                                """
+                                
+                                
+                                /*
+                                let url = URL(
+                                    string: url
+                                )!
+                                var request = URLRequest(url: url)
 
-                                        let c_cookies = globalData.getCookies()
-
-                                        print(c_cookies)
-                                        
-                                        if c_cookies != nil {
-                                            let cookies = convertToHTTPCookies(cookies: c_cookies!.cookies)
-                                            
-                                            print(cookies)
-                                            
-                                            let headerFields = HTTPCookie.requestHeaderFields(with: cookies)
-                                            for (field, value) in headerFields {
-                                                request.addValue(value, forHTTPHeaderField: field)
-                                            }
-                                            
-                                            
-                                        }
-                                        
-                                        let userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1"
-                                        request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
-                                        
-                                        print(request.allHTTPHeaderFields)
-                                        
-                                        let (data, response) = try await URLSession.shared.data(for: request)
-                                        
-                                        if let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                                            var html: String = ""
-                                            print(statusCode)
-                                            switch statusCode {
-                                            case 200:
-                                                html = String(data: data, encoding: .utf8) ?? ""
-                                                break
-                                            case 403:
-                                                // Cloudflare detected, open website in visible webview
-                                                throw "CF"
-                                            case _:
-                                                throw "Failed to load data from \(url)"
-                                            }
-                                            return html
-                                        }
-                                        
-                                        throw "UNKNOWN ERROR"
+                                let c_cookies = globalData.getCookies()
+                                
+                                if c_cookies != nil {
+                                    let cookies = convertToHTTPCookies(cookies: c_cookies!.cookies)
+                                    let headerFields = HTTPCookie.requestHeaderFields(with: cookies)
+                                    for (field, value) in headerFields {
+                                        request.addValue(value, forHTTPHeaderField: field)
                                     }
-                                )
+                                }
+                                
+                                let userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1"
+                                request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+                                
+                                print(request.allHTTPHeaderFields)
+                                
+                                let (data, response) = try await URLSession.shared.data(for: request)
+                                
+                                if let statusCode = (response as? HTTPURLResponse)?.statusCode {
+                                    var html: String = ""
+                                    print(statusCode)
+                                    switch statusCode {
+                                    case 200:
+                                        html = String(data: data, encoding: .utf8) ?? ""
+                                        break
+                                    case 403:
+                                        // Cloudflare detected, open website in visible webview
+                                        throw "CF"
+                                    case _:
+                                        throw "Failed to load data from \(url)"
+                                    }
+                                    return html
+                                }
+                                
+                                throw "UNKNOWN ERROR"
+                                 */
                             }
                         )
                     }
@@ -310,6 +199,20 @@ struct HomeDomain: ReducerProtocol {
                 if let data, data.cookies.count > 0, !state.hasCookies {
                     state.hasCookies = true
                     return .send(.onAppear)
+                }
+                return .none
+            case .parseResult(let data):
+                if let jsonData = data.data(using: .utf8) {
+                    do {
+                        let decoder = JSONDecoder()
+                        let infoData = try decoder.decode([HomeComponent].self, from: jsonData)
+                        
+                        return .send(.setHomeData(data: infoData))
+                    } catch {
+                        print("Error decoding JSON ODSFG:", error)
+                    }
+                } else {
+                    print("Invalid JSON string")
                 }
                 return .none
             }
