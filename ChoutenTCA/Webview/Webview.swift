@@ -42,6 +42,8 @@ struct RequestOption: Codable {
     var shouldExit: Bool?;
     let headers: Dictionary<String, String>?;
     let result: String?;
+    let method: String?;
+    let body: String?;
 }
 
 struct Result: Codable {
@@ -59,7 +61,6 @@ struct WebView: UIViewRepresentable {
     @Dependency(\.globalData) var globalData
     
     func makeUIView(context: Context) -> WKWebView {
-        print(action)
         // inject JS to capture console.log output and send to iOS
         let source = """
         function captureLog(msg) {
@@ -133,14 +134,14 @@ struct WebView: UIViewRepresentable {
                 }
             }
             
-            function sendRequest(url: string, headers: { [key: string]: string }, method?: string, body?: string): Promise<string> {
+            function sendRequest(url, headers, method, body) {
                 return new Promise((resolve, reject) => {
                     const currentReqId = (++reqId).toString();
 
                     resolveFunctions[currentReqId] = resolve;
 
                     // @ts-ignore
-                    Native.sendHTTPRequest(JSON.stringify({
+                    window.webkit.messageHandlers.Native.postMessage(JSON.stringify({
                         reqId: currentReqId,
                         action: "HTTPRequest",
                         url,
@@ -197,8 +198,12 @@ struct WebView: UIViewRepresentable {
                 'action': '\(action)'
             }
         };
-        var event = new MessageEvent('message', { data: JSON.stringify(data) });
-        window.dispatchEvent(event);
+        console.log("HM");
+        try {
+        window.onmessage({data: JSON.stringify(data)});
+        } catch (error) {
+            console.log(error)
+        }
         """
         
         let script = WKUserScript(source: source, injectionTime: .atDocumentStart, forMainFrameOnly: false)
@@ -317,10 +322,15 @@ struct WebView: UIViewRepresentable {
             }
         }
         
-        func get(url: URL, headers: [String: String], completionHandler: @escaping (String?, Error?) -> Void) {
+        func request(url: URL, headers: [String: String], method: String? = "GET", body: String? = nil, completionHandler: @escaping (String?, Error?) -> Void) {
             var request = URLRequest(url: url)
+            request.httpMethod = method
             for (key, value) in headers {
                 request.setValue(value, forHTTPHeaderField: key)
+            }
+            
+            if let body = body {
+                request.httpBody = body.data(using: .utf8)
             }
             
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
@@ -345,7 +355,7 @@ struct WebView: UIViewRepresentable {
                     let req = try JSONDecoder().decode(RequestOption.self, from: jsonData)
                     
                     if(req.action == "HTTPRequest" && req.url != nil && req.headers != nil){
-                        get(url: URL(string: req.url!)!, headers: req.headers!) { responseString, error in
+                        request(url: URL(string: req.url!)!, headers: req.headers!, method: req.method, body: req.body) { responseString, error in
                             if let error = error {
                                 print("Error:", error.localizedDescription)
                             } else if let responseString = responseString {

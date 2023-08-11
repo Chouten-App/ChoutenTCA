@@ -74,9 +74,14 @@ struct InfoDomain: ReducerProtocol {
                 return .none
             case .watch:
                 return .none
-            case .onAppear(let infoUrl):
+            case .onAppear(let _):
                 state.htmlString = ""
                 let module = globalData.getModule()
+                
+                if let info = globalData.getInfoData() {
+                    state.infoData = info
+                    return .none
+                }
                 
                 if module != nil {
                     state.infoData = nil
@@ -293,7 +298,7 @@ struct InfoDomain: ReducerProtocol {
                         let decoder = JSONDecoder()
                         let infoData = try decoder.decode(InfoData.self, from: jsonData)
                         
-                        return .send(.setInfoData(newValue: infoData))
+                        return .send(.setGlobalInfoData(newValue: infoData))
                     } catch {
                         print("Error decoding JSON ODSFG:", error)
                     }
@@ -318,6 +323,7 @@ struct InfoDomain: ReducerProtocol {
             case .setMediaList(let data):
                 if state.infoData != nil {
                     state.infoData!.mediaList = data
+                    return .send(.setGlobalInfoData(newValue: state.infoData))
                 }
                 return .none
             }
