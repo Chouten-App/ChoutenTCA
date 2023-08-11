@@ -27,6 +27,8 @@
 		E921068B2A2B05BD00074C54 /* VolumeSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921068A2A2B05BD00074C54 /* VolumeSlider.swift */; };
 		E921068E2A2FC34000074C54 /* AppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921068D2A2FC34000074C54 /* AppearanceView.swift */; };
 		E92106902A2FC72200074C54 /* SettingsComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921068F2A2FC72200074C54 /* SettingsComponent.swift */; };
+		E930ACFE2A86DFCB002EA5D8 /* InfoViewiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = E930ACFD2A86DFCB002EA5D8 /* InfoViewiOS.swift */; };
+		E930AD002A86E5CF002EA5D8 /* UINavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E930ACFF2A86E5CF002EA5D8 /* UINavigationController.swift */; };
 		E95161BE2A7282D000C56BCA /* NavbariOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95161BD2A7282D000C56BCA /* NavbariOS.swift */; };
 		E95161C02A72A7A100C56BCA /* MoreViewiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95161BF2A72A7A100C56BCA /* MoreViewiOS.swift */; };
 		E95161C22A72EB8200C56BCA /* AppearanceViewiOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95161C12A72EB8200C56BCA /* AppearanceViewiOS.swift */; };
@@ -116,6 +118,8 @@
 		E921068A2A2B05BD00074C54 /* VolumeSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeSlider.swift; sourceTree = "<group>"; };
 		E921068D2A2FC34000074C54 /* AppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceView.swift; sourceTree = "<group>"; };
 		E921068F2A2FC72200074C54 /* SettingsComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsComponent.swift; sourceTree = "<group>"; };
+		E930ACFD2A86DFCB002EA5D8 /* InfoViewiOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoViewiOS.swift; sourceTree = "<group>"; };
+		E930ACFF2A86E5CF002EA5D8 /* UINavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UINavigationController.swift; sourceTree = "<group>"; };
 		E95161BD2A7282D000C56BCA /* NavbariOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavbariOS.swift; sourceTree = "<group>"; };
 		E95161BF2A72A7A100C56BCA /* MoreViewiOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreViewiOS.swift; sourceTree = "<group>"; };
 		E95161C12A72EB8200C56BCA /* AppearanceViewiOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceViewiOS.swift; sourceTree = "<group>"; };
@@ -450,6 +454,7 @@
 				E9B601842A1D2550009E6EFE /* RoundedCorners.swift */,
 				E9B6018F2A1D359B009E6EFE /* String.swift */,
 				E9A09BED2A3A54D70035F57B /* Shimmer.swift */,
+				E930ACFF2A86E5CF002EA5D8 /* UINavigationController.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -579,6 +584,7 @@
 				E9F9216C2A28465E00A75AFA /* InfoDomain.swift */,
 				E9F921702A28502E00A75AFA /* InfoData.swift */,
 				E9A09BE82A30267B0035F57B /* Dropdown.swift */,
+				E930ACFD2A86DFCB002EA5D8 /* InfoViewiOS.swift */,
 			);
 			path = Info;
 			sourceTree = "<group>";
@@ -689,6 +695,7 @@
 				E9B601542A1BE545009E6EFE /* Colors.swift in Sources */,
 				E9A382FF29F716A20098A3D5 /* SearchView.swift in Sources */,
 				E9B6017B2A1D0E57009E6EFE /* HistoryView.swift in Sources */,
+				E930AD002A86E5CF002EA5D8 /* UINavigationController.swift in Sources */,
 				E97C33382A27FE1600979A91 /* SearchData.swift in Sources */,
 				E9B6016A2A1CF0E4009E6EFE /* FloatyDisplay.swift in Sources */,
 				E97C33222A1F026400979A91 /* Info.xcdatamodeld in Sources */,
@@ -710,6 +717,7 @@
 				E9A09BE92A30267B0035F57B /* Dropdown.swift in Sources */,
 				E9B6018E2A1D3405009E6EFE /* ReturnedData.swift in Sources */,
 				E921068E2A2FC34000074C54 /* AppearanceView.swift in Sources */,
+				E930ACFE2A86DFCB002EA5D8 /* InfoViewiOS.swift in Sources */,
 				E97C33252A1F060300979A91 /* SceneDelegate.swift in Sources */,
 				E9A09BF02A4147FB0035F57B /* ServerCard.swift in Sources */,
 				E9B601962A1D445C009E6EFE /* GlobalData.swift in Sources */,
@@ -875,7 +883,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChoutenTCA/ChoutenTCA.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"ChoutenTCA/Preview Content\"";
 				DEVELOPMENT_TEAM = A9QQBWPHB7;
@@ -899,7 +907,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 12.3;
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.Chouten;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -917,7 +925,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChoutenTCA/ChoutenTCA.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"ChoutenTCA/Preview Content\"";
 				DEVELOPMENT_TEAM = A9QQBWPHB7;
@@ -941,7 +949,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 12.3;
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.Chouten;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;

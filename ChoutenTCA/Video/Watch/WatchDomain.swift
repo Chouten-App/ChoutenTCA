@@ -38,6 +38,7 @@ struct WatchDomain: ReducerProtocol {
         
         case parseResult(data: String)
         case parseMediaResult(data: String)
+        case resetWatchpage
     }
     
     @Dependency(\.globalData)
@@ -271,6 +272,9 @@ struct WatchDomain: ReducerProtocol {
                 state.nextUrl = newValue
                 return .none
             case .resetWebview(let url):
+                globalData.setVideoData(nil)
+                globalData.setServers([])
+                
                 return .merge(
                     .send(.webview(.setGlobalNextUrl(url: nil))),
                     .send(.webview(.setHtmlString(newString: ""))),
@@ -313,6 +317,11 @@ struct WatchDomain: ReducerProtocol {
                 return .none
             case .setServers(let newValue):
                 state.servers = newValue
+                return .none
+            case .resetWatchpage:
+                globalData.setVideoData(nil)
+                globalData.setServers([])
+                state.servers = []
                 return .none
             }
         }

@@ -62,6 +62,8 @@ struct Root: View {
             //.navigationTransition(.fade(.in))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .ignoresSafeArea()
+            .navigationBarHidden(true)
+            .navigationBarBackButtonHidden(true)
             .onAppear {
                 if !info.isEmpty {
                     let data = info.first { infoData in
