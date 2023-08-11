@@ -21,6 +21,7 @@ struct VideoData: Codable, Equatable {
     let sources: [Source]
     let subtitles: [Subtitle]
     let skips: [SkipTime]
+    let headers: [String: String]?
 }
 
 struct SkipTime: Codable, Equatable {

@@ -78,18 +78,25 @@ struct WatchView: View {
                 print(url)
                 viewStore.send(.resetWebview(url: url))
             }
-            .onChange(of: viewStore.nextUrl) { newValue in
-                if newValue != nil {
-                    viewStore.send(.resetWebviewChange(url: newValue!))
-                }
+            .onDisappear {
+                viewStore.send(.resetWatchpage)
             }
             .onChange(of: viewStore.videoData) { data in
                 if data != nil {
+                    
+                    let asset = AVURLAsset(
+                        url: URL(
+                            string: data!.sources[0].file
+                        )!
+                        /*options: [
+                            "AVURLAssetHTTPHeaderFieldsKey": data!.headers ?? []
+                        ]*/
+                    )
+                    
+                    
                     playerVM.setCurrentItem(
                         AVPlayerItem(
-                            url: URL(
-                                string: data!.sources[0].file
-                            )!
+                            asset: asset
                         )
                     )
                     if(data!.subtitles.count > 0) {

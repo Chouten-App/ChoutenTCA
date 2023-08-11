@@ -57,7 +57,7 @@ struct SearchViewiOS: View {
                                 ], spacing: 20) {
                                     ForEach(0..<viewStore.searchResult.count) { index in
                                         NavigationLink(
-                                            destination: InfoView(
+                                            destination: InfoViewiOS(
                                                 url: viewStore.searchResult[index].url,
                                                 store: self.store.scope(
                                                     state: \.infoState,
@@ -155,11 +155,13 @@ struct SearchViewiOS: View {
                                 
                                 Spacer()
                                 
-                                KFImage(URL(string: "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2f6ed149-c2f1-45b1-876c-0c26ccf7c2e2/dfw4wvo-a3c9af98-a621-4eeb-bffc-5ead4b300254.png/v1/fill/w_894,h_894,q_70,strp/anime_boy_pfp_by_artificialhub_dfw4wvo-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTAyNCIsInBhdGgiOiJcL2ZcLzJmNmVkMTQ5LWMyZjEtNDViMS04NzZjLTBjMjZjY2Y3YzJlMlwvZGZ3NHd2by1hM2M5YWY5OC1hNjIxLTRlZWItYmZmYy01ZWFkNGIzMDAyNTQucG5nIiwid2lkdGgiOiI8PTEwMjQifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.DlYWu-cCoC9x5CawZlOYzbmbZZmYXbnJakAciP5Yug4"))
+                                /*
+                                KFImage(URL(string: ""))
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 32, height: 32)
                                     .cornerRadius(64)
+                                 */
                             }
                             .foregroundColor(Color(hex: Colors.onSurface.dark))
                         }
