@@ -38,6 +38,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                         )
                     )
                     .environment(\.managedObjectContext, dataController.container.viewContext)
+                    .preferredColorScheme(.dark)
             )
             self.window = window
             window.makeKeyAndVisible()
@@ -99,6 +100,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                             )
                         )
                         .environment(\.managedObjectContext, dataController.container.viewContext)
+                        .preferredColorScheme(.dark)
                 )
                 window.rootViewController = hostingController
                 window.makeKeyAndVisible()
