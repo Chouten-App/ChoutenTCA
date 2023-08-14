@@ -84,6 +84,7 @@ struct HomeDomain: ReducerProtocol {
                 return .none
             case .onAppear:
                 state.htmlString = ""
+                globalData.setInfoData(nil)
                 let module = globalData.getModule()
                 
                 if module != nil {
