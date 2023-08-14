@@ -11,6 +11,7 @@ import ComposableArchitecture
 struct RootDomain: ReducerProtocol {
     struct State: Equatable {
         var navigate: Bool = false
+        var isLoadingDone: Bool = false
     }
     
     enum Action: Equatable {
@@ -18,6 +19,7 @@ struct RootDomain: ReducerProtocol {
         case onAppear
         case setAvailableModules(TaskResult<[Module]>)
         case setSelectedModuleId(id: String)
+        case setLoadingDone(bool: Bool)
     }
     
     @Dependency(\.globalData)
@@ -69,6 +71,9 @@ struct RootDomain: ReducerProtocol {
             } catch let error {
                 print(error)
             }
+            return .none
+        case .setLoadingDone(let bool):
+            state.isLoadingDone = bool
             return .none
         }
     }

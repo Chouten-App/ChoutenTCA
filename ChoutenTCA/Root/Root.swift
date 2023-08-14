@@ -20,18 +20,17 @@ struct Root: View {
     var body: some View {
         WithViewStore(self.store) { viewStore in
             NavigationView {
-                ZStack {
-                    Color(hex: Colors.Surface.dark)
-                    
-                    NavigationLink(destination: MainView(
+                if viewStore.isLoadingDone {
+                    MainView(
                         store: Store(
                             initialState: MainDomain.State(),
                             reducer: MainDomain()
                         )
-                    ), isActive: viewStore.binding(
-                        get: \.navigate,
-                        send: RootDomain.Action.setNavigate(newValue:)
-                    )) {
+                    )
+                } else {
+                    ZStack {
+                        Color(hex: Colors.Surface.dark)
+                        
                         VStack {
                             Image(uiImage: UIImage(named: "AppIcon") ?? UIImage())
                                 .resizable()
@@ -42,6 +41,7 @@ struct Root: View {
                                 .onAppear {
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                                         viewStore.send(.setNavigate(newValue: true))
+                                        viewStore.send(.setLoadingDone(bool: true))
                                     }
                                 }
                             
@@ -53,18 +53,18 @@ struct Root: View {
                                 )
                         }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .ignoresSafeArea()
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .ignoresSafeArea()
             }
             .accentColor(Color(hex: Colors.Primary.dark))
             .navigationViewStyle(.stack)
-            //.navigationTransition(.fade(.in))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .ignoresSafeArea()
             .navigationBarHidden(true)
             .navigationBarBackButtonHidden(true)
             .onAppear {
+                /*
                 if !info.isEmpty {
                     let data = info.first { infoData in
                         infoData.id == "classroom-of-the-elite-713"
@@ -79,6 +79,7 @@ struct Root: View {
                         viewStore.send(.setSelectedModuleId(id: userInfo[0].selectedModuleId!))
                     }
                 }
+                 */
                 
                 viewStore.send(.onAppear)
             }
