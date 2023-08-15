@@ -73,6 +73,7 @@ struct SearchDomain: ReducerProtocol {
                 state.query = query
                 return .none
             case .resetWebview:
+                
                 return .merge(
                     .send(.webview(.setHtmlString(newString: ""))),
                     .send(.webview(.setJsString(newString: ""))),

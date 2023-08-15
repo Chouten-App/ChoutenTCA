@@ -73,13 +73,13 @@ struct Root: View {
                         print(data.primaryTitle ?? "")
                     }
                 }
+                 */
                 if !userInfo.isEmpty {
                     print(userInfo[0].selectedModuleId)
                     if userInfo[0].selectedModuleId != nil {
                         viewStore.send(.setSelectedModuleId(id: userInfo[0].selectedModuleId!))
                     }
                 }
-                 */
                 
                 viewStore.send(.onAppear)
             }
