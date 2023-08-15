@@ -25,19 +25,6 @@ struct SearchViewiOS: View {
     // TEMP
     @State private var scrollPosition: CGPoint = .zero
     
-    func getLoadingName(_ status: DataLoadingStatus) -> String {
-        switch status {
-        case .notStarted:
-            return "Not Started"
-        case .loading:
-            return "Loading"
-        case .success:
-            return "Success"
-        case .error:
-            return "Error"
-        }
-    }
-    
     var body: some View {
         GeometryReader { proxy in
             WithViewStore(self.store) { viewStore in
@@ -265,9 +252,6 @@ struct SearchViewiOS: View {
                         Color(hex: Colors.Surface.dark)
                     }
                     .animation(.spring(response: 0.3), value: viewStore.query)
-                }
-                .overlay {
-                    Text("\(getLoadingName(viewStore.loadingStatus))")
                 }
                 .ignoresSafeArea()
                 .onAppear {
