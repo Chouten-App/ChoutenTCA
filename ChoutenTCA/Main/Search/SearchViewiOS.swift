@@ -48,17 +48,21 @@ struct SearchViewiOS: View {
                                 LazyVGrid(columns: [
                                     GridItem(.adaptive(minimum: 100), alignment: .top)
                                 ], spacing: 20) {
-                                    ForEach(0..<16, id: \.self) { _ in
+                                    ForEach(0..<16, id: \.self) { index in
                                         VStack {
                                             RoundedRectangle(cornerRadius: 12)
                                                 .frame(width: 110, height: 160)
                                                 .redacted(reason: .placeholder)
-                                                .shimmer()
+                                                .shimmer(
+                                                    delay: 0.2 * Double(index)
+                                                )
                                             
                                             RoundedRectangle(cornerRadius: 6)
                                                 .frame(width: 110, height: 16)
                                                 .redacted(reason: .placeholder)
-                                                .shimmer()
+                                                .shimmer(
+                                                    delay: 0.1 + ( 0.2 * Double(index) )
+                                                )
                                             
                                             HStack {
                                                 Spacer()
@@ -66,7 +70,9 @@ struct SearchViewiOS: View {
                                                 RoundedRectangle(cornerRadius: 4)
                                                     .frame(width: 40, height: 12)
                                                     .redacted(reason: .placeholder)
-                                                    .shimmer()
+                                                    .shimmer(
+                                                        delay: 0.2 + ( 0.2 * Double(index) )
+                                                    )
                                             }
                                             .frame(width: 110)
                                         }
