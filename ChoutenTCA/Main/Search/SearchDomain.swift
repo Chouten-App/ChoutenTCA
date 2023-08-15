@@ -8,8 +8,17 @@
 import Foundation
 import ComposableArchitecture
 
+enum DataLoadingStatus {
+    case notStarted
+    case loading
+    case success
+    case error
+}
+
 struct SearchDomain: ReducerProtocol {
     struct State: Equatable {
+        var loadingStatus: DataLoadingStatus = .notStarted
+        
         var query: String = ""
         var htmlString: String? = nil
         var jsString: String? = nil
@@ -33,6 +42,8 @@ struct SearchDomain: ReducerProtocol {
     }
     
     enum Action: Equatable {
+        case setLoadingStatus(status: DataLoadingStatus)
+        
         case setQuery(query: String)
         case search
         case webview(WebviewDomain.Action)
@@ -69,11 +80,13 @@ struct SearchDomain: ReducerProtocol {
         
         Reduce { state, action in
             switch action {
+            case .setLoadingStatus(let status):
+                state.loadingStatus = status
+                return .none
             case .setQuery(let query):
                 state.query = query
                 return .none
             case .resetWebview:
-                
                 return .merge(
                     .send(.webview(.setHtmlString(newString: ""))),
                     .send(.webview(.setJsString(newString: ""))),
@@ -88,8 +101,13 @@ struct SearchDomain: ReducerProtocol {
                 )
             case .search:
                 let query = state.query
+                
+                if query.isEmpty {
+                    return .send(.setLoadingStatus(status: .notStarted))
+                }
+                
                 state.htmlString = ""
-                state.loading = true
+                state.loadingStatus = .loading
                 
                 // get search code.js data
                 if query.isEmpty {
@@ -188,7 +206,6 @@ struct SearchDomain: ReducerProtocol {
                 state.loading = newLoading
                 return .none
             case .requestHtml(.failure(let error)):
-                
                 if error as? String == "CF" {
                     state.returnData = nil
                     globalData.setShowOverlay(true)
@@ -198,11 +215,12 @@ struct SearchDomain: ReducerProtocol {
                 NotificationCenter.default
                     .post(name:           NSNotification.Name("floaty"),
                           object: nil, userInfo: data)
-                return .none
+                return .send(.setLoadingStatus(status: .error))
             case .setDownloadedOnly(let newValue):
                 state.isDownloadedOnly = newValue
                 return .none
             case .onAppear:
+                state.loadingStatus = .notStarted
                 state.isDownloadedOnly = globalData.getDownloadedOnly()
                 state.searchResult = globalData.getSearchResults()
                 globalData.setInfoData(nil)
@@ -222,7 +240,10 @@ struct SearchDomain: ReducerProtocol {
                 )
             case .setSearchResult(let results):
                 state.searchResult = results
-                return .send(.setLoading(newLoading: false))
+                if results.count > 0 {
+                    return .send(.setLoadingStatus(status: .success))
+                }
+                return .send(.setLoadingStatus(status: .notStarted))
             case .webview:
                 return .none
             case .info:

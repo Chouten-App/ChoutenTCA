@@ -25,37 +25,77 @@ struct SearchViewiOS: View {
     // TEMP
     @State private var scrollPosition: CGPoint = .zero
     
+    func getLoadingName(_ status: DataLoadingStatus) -> String {
+        switch status {
+        case .notStarted:
+            return "Not Started"
+        case .loading:
+            return "Loading"
+        case .success:
+            return "Success"
+        case .error:
+            return "Error"
+        }
+    }
+    
     var body: some View {
         GeometryReader { proxy in
             WithViewStore(self.store) { viewStore in
                 VStack {
                     Group {
-                        if viewStore.searchResult.isEmpty {
-                            VStack {
-                                Text("Nothing to show")
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        } else if viewStore.loading {
-                            VStack{
-                                ActivityIndicatorView(
-                                    isVisible: viewStore.binding(
-                                        get: \.loading,
-                                        send: SearchDomain.Action.setLoading(newLoading:)
-                                    ),
-                                    type: .growingArc(
-                                        Color(hex: Colors.Primary.dark),
-                                        lineWidth: 4
-                                    )
-                                )
-                                .frame(width: 50.0, height: 50.0)
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                        } else {
+                        if viewStore.loadingStatus == .loading {
                             ScrollView {
                                 LazyVGrid(columns: [
                                     GridItem(.adaptive(minimum: 100), alignment: .top)
                                 ], spacing: 20) {
-                                    ForEach(0..<viewStore.searchResult.count) { index in
+                                    ForEach(0..<16, id: \.self) { _ in
+                                        VStack {
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .frame(width: 110, height: 160)
+                                                .redacted(reason: .placeholder)
+                                                .shimmer()
+                                            
+                                            RoundedRectangle(cornerRadius: 6)
+                                                .frame(width: 110, height: 16)
+                                                .redacted(reason: .placeholder)
+                                                .shimmer()
+                                            
+                                            HStack {
+                                                Spacer()
+                                                
+                                                RoundedRectangle(cornerRadius: 4)
+                                                    .frame(width: 40, height: 12)
+                                                    .redacted(reason: .placeholder)
+                                                    .shimmer()
+                                            }
+                                            .frame(width: 110)
+                                        }
+                                        .frame(maxWidth: 110)
+                                    }
+                                }
+                                .padding(.top, 190)
+                                .padding(.bottom, 120)
+                                .padding(.horizontal, 20)
+                                .background(
+                                    GeometryReader { geometry in
+                                    Color.clear
+                                        .preference(key: ScrollOffsetPreferenceKey.self, value: geometry.frame(in: .named("scroll")).origin)
+                                    }
+                                )
+                                .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
+                                    print(value)
+                                    withAnimation(.spring(response: 0.3)) {
+                                        scrollPosition = value
+                                    }
+                                }
+                            }
+                            .coordinateSpace(name: "scroll")
+                        } else if viewStore.loadingStatus == .success {
+                            ScrollView {
+                                LazyVGrid(columns: [
+                                    GridItem(.adaptive(minimum: 100), alignment: .top)
+                                ], spacing: 20) {
+                                    ForEach(0..<viewStore.searchResult.count, id: \.self) { index in
                                         NavigationLink(
                                             destination: InfoViewiOS(
                                                 url: viewStore.searchResult[index].url,
@@ -121,6 +161,11 @@ struct SearchViewiOS: View {
                                 }
                             }
                             .coordinateSpace(name: "scroll")
+                        } else {
+                            VStack {
+                                Text("Nothing to show")
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                         }
                     }
                 }
@@ -214,6 +259,9 @@ struct SearchViewiOS: View {
                         Color(hex: Colors.Surface.dark)
                     }
                     .animation(.spring(response: 0.3), value: viewStore.query)
+                }
+                .overlay {
+                    Text("\(getLoadingName(viewStore.loadingStatus))")
                 }
                 .ignoresSafeArea()
                 .onAppear {
