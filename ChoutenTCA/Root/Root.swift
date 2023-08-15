@@ -7,7 +7,6 @@
 
 import SwiftUI
 import ComposableArchitecture
-import NavigationTransitions
 
 struct Root: View {
     let store: StoreOf<RootDomain>
@@ -39,9 +38,9 @@ struct Root: View {
                                 .padding(.horizontal, 120)
                                 .frame(maxWidth: 400)
                                 .onAppear {
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                                        viewStore.send(.setNavigate(newValue: true))
-                                        viewStore.send(.setLoadingDone(bool: true))
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+                                        //viewStore.send(.setNavigate(newValue: true))
+                                        viewStore.send(.setLoadingDone(bool: true), animation: .spring(response: 0.3))
                                     }
                                 }
                             
@@ -55,6 +54,7 @@ struct Root: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .ignoresSafeArea()
+                    .transition(.opacity)
                 }
             }
             .accentColor(Color(hex: Colors.Primary.dark))

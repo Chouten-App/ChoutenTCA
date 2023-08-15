@@ -25,6 +25,10 @@ struct WatchView: View {
                     get: \.videoData,
                     send: WatchDomain.Action.setVideoData(newValue:)
                 ),
+                servers: viewStore.binding(
+                    get: \.servers,
+                    send: WatchDomain.Action.setServers(newValue:)
+                ),
                 index: index,
                 playerVM: playerVM
             )

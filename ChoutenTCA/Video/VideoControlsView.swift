@@ -11,6 +11,7 @@ import AVKit
 
 struct VideoControlsView: View {
     @Binding var videoData: VideoData?
+    @Binding var servers: [ServerData]
     let index: Int
     @StateObject var playerVM: PlayerViewModel
     @StateObject var Colors = DynamicColors.shared
@@ -45,7 +46,7 @@ struct VideoControlsView: View {
                     .offset(y: showUI ? 0 : 80)
             }
             .padding(.horizontal, 60)
-            .padding(.vertical, 12)
+            .padding(.vertical, 20)
             .foregroundColor(Color(hex: Colors.onSurface.dark))
             .background {
                 PlayPause()
@@ -284,8 +285,8 @@ struct VideoControlsView: View {
             VStack(alignment: .trailing) {
                 Text(module?.name ?? "Module Name")
                     .fontWeight(.bold)
-                if globalData.getVideoData() == nil {
-                    Text("Fetching \(globalData.getServers().isEmpty ? "Servers" : "Sources")")
+                if videoData == nil {
+                    Text("Fetching \(servers.isEmpty ? "Servers" : "Sources")")
                         .font(.caption)
                 }
                 Text(
@@ -500,6 +501,14 @@ struct VideoControlsView: View {
     @ViewBuilder
     func BottomBar() -> some View {
         VStack {
+            if playerVM.duration != nil {
+                Seekbar(percentage: $playerVM.currentTime, buffered: $playerVM.buffered, isDragging: $playerVM.isEditingCurrentTime, total: playerVM.duration!, isMacos: .constant(false))
+                    .frame(maxHeight: 20)
+            } else {
+                Seekbar(percentage: .constant(0.0), buffered: .constant(0.0), isDragging: .constant(false), total: 1.0, isMacos: .constant(false))
+                    .frame(maxHeight: 20)
+            }
+            
             HStack {
                 if playerVM.duration != nil {
                     Text("\(secondsToMinutesSeconds(Int(playerVM.currentTime))) / \(secondsToMinutesSeconds(Int(playerVM.duration!)))")
@@ -528,17 +537,9 @@ struct VideoControlsView: View {
                 }
                 .font(.system(size: 20))
             }
-            .offset(y: 6)
+            .offset(y: -4)
             
-            if playerVM.duration != nil {
-                Seekbar(percentage: $playerVM.currentTime, buffered: $playerVM.buffered, isDragging: $playerVM.isEditingCurrentTime, total: playerVM.duration!, isMacos: .constant(false))
-                    .frame(maxHeight: 20)
-            } else {
-                Seekbar(percentage: .constant(0.0), buffered: .constant(0.0), isDragging: .constant(false), total: 1.0, isMacos: .constant(false))
-                    .frame(maxHeight: 20)
-            }
         }
-        .padding(.bottom, 12)
     }
 }
 
@@ -547,7 +548,7 @@ struct VideoControlsView_Previews: PreviewProvider {
         ZStack {
             Color(.black)
             
-            VideoControlsView(videoData: .constant(nil), index: 0, playerVM: PlayerViewModel())
+            VideoControlsView(videoData: .constant(nil), servers: .constant([]), index: 0, playerVM: PlayerViewModel())
         }
         .prefersHomeIndicatorAutoHidden(true)
         .supportedOrientation(.landscape)

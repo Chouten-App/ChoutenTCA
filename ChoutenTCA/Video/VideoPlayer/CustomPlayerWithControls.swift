@@ -10,6 +10,7 @@ import AVKit
 
 struct CustomPlayerWithControls: View {
     @Binding var streamData: VideoData?
+    @Binding var servers: [ServerData]
     @State var index: Int
     @StateObject var playerVM: PlayerViewModel
     @State var doneLoading = false
@@ -20,8 +21,9 @@ struct CustomPlayerWithControls: View {
     
     @State var scaledVideo = true
     
-    init(streamData: Binding<VideoData?>, index: Int, playerVM: PlayerViewModel) {
+    init(streamData: Binding<VideoData?>, servers: Binding<[ServerData]>, index: Int, playerVM: PlayerViewModel) {
         self._streamData = streamData
+        self._servers = servers
         self.index = index
         self._playerVM = StateObject(wrappedValue: playerVM)
         // we need this to use Picture in Picture
@@ -52,7 +54,7 @@ struct CustomPlayerWithControls: View {
                     .frame(maxWidth: proxy.size.width, maxHeight: proxy.size.height, alignment: .center)
                     .ignoresSafeArea()
                     .overlay {
-                        VideoControlsView(videoData: $streamData, index: index, playerVM: playerVM)
+                        VideoControlsView(videoData: $streamData, servers: $servers, index: index, playerVM: playerVM)
                     }
                     .gesture(
                         MagnificationGesture()
@@ -83,7 +85,7 @@ struct CustomPlayerWithControls: View {
 
 struct CustomPlayerWithControls_Previews: PreviewProvider {
     static var previews: some View {
-        CustomPlayerWithControls(streamData: .constant(VideoData(sources: [Source(file: "", type: "hls", quality: "1080p")], subtitles: [], skips: [], headers: nil)), index: 0, playerVM: PlayerViewModel())
+        CustomPlayerWithControls(streamData: .constant(VideoData(sources: [Source(file: "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8", type: "hls", quality: "1080p")], subtitles: [], skips: [], headers: nil)), servers: .constant([]), index: 0, playerVM: PlayerViewModel())
             .supportedOrientation(.landscapeRight)
             .previewInterfaceOrientation(.landscapeRight)
     }
