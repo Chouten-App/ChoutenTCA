@@ -19,32 +19,38 @@ struct RepoView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 20)
             
-            VStack {
+            VStack(spacing: 12) {
                 ForEach(0..<4, id: \.self) { index in
                     HStack {
-                        KFImage(URL(string: "https://moodoffdp.com/wp-content/uploads/2023/06/anime-boy-pfp-128x128-1.jpg"))
+                        KFImage(URL(string: "https://i.pinimg.com/564x/b3/30/e8/b330e844ef0a94faf523df4101428c28.jpg"))
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(width: 64, height: 64)
-                            .cornerRadius(12)
+                            .frame(width: 52, height: 52)
+                            .cornerRadius(8)
                         
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
                                 Text("Chouten Modules")
-                                    .font(.title3)
                                     .fontWeight(.bold)
                                 
                                 Text("- Stars: 3")
+                                    .font(.subheadline)
                                     .fontWeight(.semibold)
                                     .opacity(0.7)
                             }
                             
                             Text("This will be the description of the Repo with long text")
+                                .font(.caption)
                                 .lineLimit(1)
                         }
                         
                         Image(systemName: "chevron.right")
                             .font(.title2)
+                    }
+                    .padding(12)
+                    .background {
+                        Color(hex: Colors.SurfaceContainer.dark)
+                            .cornerRadius(12)
                     }
                 }
             }
