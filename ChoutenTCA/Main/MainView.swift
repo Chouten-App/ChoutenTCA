@@ -8,6 +8,7 @@
 import SwiftUI
 import ComposableArchitecture
 import PopupView
+import Kingfisher
 
 struct MainView: View {
     let store: StoreOf<MainDomain>
@@ -84,12 +85,7 @@ struct MainView: View {
                             .tag(1)
                         }
                         
-                        Text("History")
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background {
-                                Color(hex: Colors.Surface.dark)
-                            }
-                            .ignoresSafeArea()
+                        RepoView()
                             .tag(2)
                         
                         if viewStore.iosStyle {

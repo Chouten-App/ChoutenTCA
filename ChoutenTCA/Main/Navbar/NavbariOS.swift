@@ -27,7 +27,7 @@ struct NavbariOS: View {
                             .onTapGesture {
                                 viewStore.send(.setTab(newTab: 1))
                             }
-                        NavbarItem(label: "History", icon: "clock.arrow.circlepath",selected: viewStore.tab == 2, hasNotification: false)
+                        NavbarItem(label: "Repo", icon: "clock.arrow.circlepath",selected: viewStore.tab == 2, hasNotification: false)
                             .onTapGesture {
                                 viewStore.send(.setTab(newTab: 2))
                             }
@@ -57,7 +57,7 @@ struct NavbariOS: View {
                             .onTapGesture {
                                 viewStore.send(.setTab(newTab: 1), animation: .spring(response: 0.3))
                             }
-                        NavbarItemiOS(label: "History", icon: "clock.arrow.circlepath",selected: viewStore.tab == 2, hasNotification: false, animation: animation)
+                        NavbarItemiOS(label: "Repo", icon: "shippingbox.fill",selected: viewStore.tab == 2, hasNotification: false, animation: animation)
                             .onTapGesture {
                                 viewStore.send(.setTab(newTab: 2), animation: .spring(response: 0.3))
                             }

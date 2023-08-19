@@ -48,6 +48,7 @@
 		E97C333D2A27FF4300979A91 /* ConsoleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C333C2A27FF4300979A91 /* ConsoleData.swift */; };
 		E97C33402A28002700979A91 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = E97C333F2A28002700979A91 /* SwiftyJSON */; };
 		E97C33422A2801CA00979A91 /* WebviewDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C33412A2801CA00979A91 /* WebviewDomain.swift */; };
+		E988AAF12A8D28DD00E1D580 /* RepoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E988AAF02A8D28DD00E1D580 /* RepoView.swift */; };
 		E9A09BE92A30267B0035F57B /* Dropdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A09BE82A30267B0035F57B /* Dropdown.swift */; };
 		E9A09BEC2A3A4E8A0035F57B /* Shimmer in Frameworks */ = {isa = PBXBuildFile; productRef = E9A09BEB2A3A4E8A0035F57B /* Shimmer */; };
 		E9A09BEE2A3A54D70035F57B /* Shimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A09BED2A3A54D70035F57B /* Shimmer.swift */; };
@@ -138,6 +139,7 @@
 		E97C333A2A27FEE500979A91 /* Webview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Webview.swift; sourceTree = "<group>"; };
 		E97C333C2A27FF4300979A91 /* ConsoleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleData.swift; sourceTree = "<group>"; };
 		E97C33412A2801CA00979A91 /* WebviewDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebviewDomain.swift; sourceTree = "<group>"; };
+		E988AAF02A8D28DD00E1D580 /* RepoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoView.swift; sourceTree = "<group>"; };
 		E9A09BE82A30267B0035F57B /* Dropdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dropdown.swift; sourceTree = "<group>"; };
 		E9A09BED2A3A54D70035F57B /* Shimmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shimmer.swift; sourceTree = "<group>"; };
 		E9A09BEF2A4147FB0035F57B /* ServerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerCard.swift; sourceTree = "<group>"; };
@@ -343,6 +345,14 @@
 			path = Webview;
 			sourceTree = "<group>";
 		};
+		E988AAEF2A8D28D200E1D580 /* Repo */ = {
+			isa = PBXGroup;
+			children = (
+				E988AAF02A8D28DD00E1D580 /* RepoView.swift */,
+			);
+			path = Repo;
+			sourceTree = "<group>";
+		};
 		E9A382DF29F7132A0098A3D5 = {
 			isa = PBXGroup;
 			children = (
@@ -435,6 +445,7 @@
 		E9B6014E2A1BE182009E6EFE /* Main */ = {
 			isa = PBXGroup;
 			children = (
+				E988AAEF2A8D28D200E1D580 /* Repo */,
 				E921066A2A298A8100074C54 /* Home */,
 				E9B601792A1D0E4A009E6EFE /* History */,
 				E9B601652A1CEF84009E6EFE /* Module */,
@@ -722,6 +733,7 @@
 				E9A09BF02A4147FB0035F57B /* ServerCard.swift in Sources */,
 				E9B601962A1D445C009E6EFE /* GlobalData.swift in Sources */,
 				E9B601572A1BE592009E6EFE /* Color.swift in Sources */,
+				E988AAF12A8D28DD00E1D580 /* RepoView.swift in Sources */,
 				E95161BE2A7282D000C56BCA /* NavbariOS.swift in Sources */,
 				E9B6017E2A1D191C009E6EFE /* ModuleSelector.swift in Sources */,
 				E9F9216F2A28482200A75AFA /* FillAspectImage.swift in Sources */,
