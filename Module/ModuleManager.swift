@@ -61,48 +61,60 @@ extension ModuleManager {
             if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
                 let fileManager = FileManager.default
                 
-                // Create a new directory for the unzipped files
-                let unzipDirectoryURL = documentsDirectory.appendingPathComponent("Modules").appendingPathComponent(fileUrl.lastPathComponent.components(separatedBy: ".")[0])
                 let tempDirectory = documentsDirectory.appendingPathComponent("Modules").appendingPathComponent("TEMPORARY")
                 try FileManager.default.unzipItem(at: fileUrl, to: tempDirectory)
                 
                 // check if id already exists in the apps directory
                 let tempData = internalClass.getMetadata(folderUrl: tempDirectory)
-                if tempData != nil {
-                    print(moduleFolderNames)
+                
+                var setModule = false
+                
+                if let tempData = tempData {
                     if moduleFolderNames.count > 0 {
                         for moduleFolder in moduleFolderNames {
                             let data = internalClass.getMetadata(folderUrl: documentsDirectory.appendingPathComponent("Modules").appendingPathComponent(moduleFolder))
-                            if data != nil {
-                                if tempData!.id == data!.id {
+                            if let data = data {
+                                if tempData.id == data.id {
                                     // module already exists, check versions
-                                    let ver = tempData!.version.versionCompare(data!.version)
+                                    let ver = tempData.version.versionCompare(data.version)
                                     
-                                    switch ver {
-                                    case .orderedAscending:
-                                        // installed version is higher
-                                        break
-                                    case .orderedSame:
-                                        // installed version is the same
-                                        break
-                                    case .orderedDescending:
-                                        // installed version is lower
-                                        try fileManager.removeItem(at: documentsDirectory.appendingPathComponent("Modules").appendingPathComponent(moduleFolder))
-                                        
-                                        try fileManager.copyItem(at: tempDirectory, to: unzipDirectoryURL)
+                                    if ver == .orderedDescending {
+                                        try fileManager.removeItem(
+                                            at: documentsDirectory
+                                                .appendingPathComponent("Modules")
+                                                .appendingPathComponent(moduleFolder)
+                                        )
+                                        try fileManager.copyItem(
+                                            at: tempDirectory,
+                                            to: documentsDirectory
+                                                .appendingPathComponent("Modules")
+                                                .appendingPathComponent(moduleFolder)
+                                        )
                                     }
                                     
-                                    try fileManager.removeItem(at: tempDirectory)
+                                    setModule = true
                                 }
                             }
                         }
-                    } else {
-                        print(unzipDirectoryURL)
-                        try fileManager.copyItem(at: tempDirectory, to: unzipDirectoryURL)
                         
-                        try fileManager.removeItem(at: tempDirectory)
+                        if !setModule {
+                            try fileManager.copyItem(
+                                at: tempDirectory,
+                                to: documentsDirectory
+                                    .appendingPathComponent("Modules")
+                                    .appendingPathComponent(tempData.name)
+                            )
+                        }
+                    } else {
+                        try fileManager.copyItem(
+                            at: tempDirectory,
+                            to: documentsDirectory
+                                .appendingPathComponent("Modules")
+                                .appendingPathComponent(tempData.name)
+                        )
                     }
                 }
+                try fileManager.removeItem(at: tempDirectory)
                 
                 try FileManager.default.removeItem(at: fileUrl)
                 
@@ -187,8 +199,8 @@ extension ModuleManager {
         },
         setSelectedModuleName: { module in
             let index = moduleIds.firstIndex(of: module.id)
-            if index != nil {
-                selectedModuleName = moduleFolderNames[index!]
+            if let index = index, moduleFolderNames.count > index {
+                selectedModuleName = moduleFolderNames[index]
             }
         },
         validateModules: {

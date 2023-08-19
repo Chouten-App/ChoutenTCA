@@ -49,6 +49,7 @@
 		E97C33402A28002700979A91 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = E97C333F2A28002700979A91 /* SwiftyJSON */; };
 		E97C33422A2801CA00979A91 /* WebviewDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C33412A2801CA00979A91 /* WebviewDomain.swift */; };
 		E988AAF12A8D28DD00E1D580 /* RepoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E988AAF02A8D28DD00E1D580 /* RepoView.swift */; };
+		E988AAFD2A917E0700E1D580 /* ModuleManagerUnitTesting.swift in Sources */ = {isa = PBXBuildFile; fileRef = E988AAFC2A917E0700E1D580 /* ModuleManagerUnitTesting.swift */; };
 		E9A09BE92A30267B0035F57B /* Dropdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A09BE82A30267B0035F57B /* Dropdown.swift */; };
 		E9A09BEC2A3A4E8A0035F57B /* Shimmer in Frameworks */ = {isa = PBXBuildFile; productRef = E9A09BEB2A3A4E8A0035F57B /* Shimmer */; };
 		E9A09BEE2A3A54D70035F57B /* Shimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A09BED2A3A54D70035F57B /* Shimmer.swift */; };
@@ -99,6 +100,16 @@
 		E9F921712A28502E00A75AFA /* InfoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9F921702A28502E00A75AFA /* InfoData.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		E988AAFE2A917E0700E1D580 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E9A382E029F7132A0098A3D5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E9A382E729F7132A0098A3D5;
+			remoteInfo = ChoutenTCA;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		E91F9A132A2FDDD800870245 /* DeveloperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperView.swift; sourceTree = "<group>"; };
 		E91F9A162A2FDE8500870245 /* NetworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkView.swift; sourceTree = "<group>"; };
@@ -140,6 +151,8 @@
 		E97C333C2A27FF4300979A91 /* ConsoleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleData.swift; sourceTree = "<group>"; };
 		E97C33412A2801CA00979A91 /* WebviewDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebviewDomain.swift; sourceTree = "<group>"; };
 		E988AAF02A8D28DD00E1D580 /* RepoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoView.swift; sourceTree = "<group>"; };
+		E988AAFA2A917E0700E1D580 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E988AAFC2A917E0700E1D580 /* ModuleManagerUnitTesting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleManagerUnitTesting.swift; sourceTree = "<group>"; };
 		E9A09BE82A30267B0035F57B /* Dropdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dropdown.swift; sourceTree = "<group>"; };
 		E9A09BED2A3A54D70035F57B /* Shimmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shimmer.swift; sourceTree = "<group>"; };
 		E9A09BEF2A4147FB0035F57B /* ServerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerCard.swift; sourceTree = "<group>"; };
@@ -187,6 +200,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		E988AAF72A917E0700E1D580 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E9A382E529F7132A0098A3D5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -373,9 +393,10 @@
 			path = App;
 			sourceTree = "<group>";
 		};
-		E988AAF32A917A4A00E1D580 /* Tests */ = {
+		E988AAFB2A917E0700E1D580 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				E988AAFC2A917E0700E1D580 /* ModuleManagerUnitTesting.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -395,6 +416,7 @@
 			isa = PBXGroup;
 			children = (
 				E9A382E829F7132A0098A3D5 /* ChoutenTCA.app */,
+				E988AAFA2A917E0700E1D580 /* Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -402,7 +424,7 @@
 		E9A382EA29F7132A0098A3D5 /* ChoutenTCA */ = {
 			isa = PBXGroup;
 			children = (
-				E988AAF32A917A4A00E1D580 /* Tests */,
+				E988AAFB2A917E0700E1D580 /* Tests */,
 				E988AAF22A917A4500E1D580 /* App */,
 				E9A382EF29F7132C0098A3D5 /* Assets.xcassets */,
 				E9A382F129F7132C0098A3D5 /* ChoutenTCA.entitlements */,
@@ -611,6 +633,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		E988AAF92A917E0700E1D580 /* Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E988AB002A917E0700E1D580 /* Build configuration list for PBXNativeTarget "Tests" */;
+			buildPhases = (
+				E988AAF62A917E0700E1D580 /* Sources */,
+				E988AAF72A917E0700E1D580 /* Frameworks */,
+				E988AAF82A917E0700E1D580 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E988AAFF2A917E0700E1D580 /* PBXTargetDependency */,
+			);
+			name = Tests;
+			productName = Tests;
+			productReference = E988AAFA2A917E0700E1D580 /* Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		E9A382E729F7132A0098A3D5 /* ChoutenTCA */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E9A382F729F7132C0098A3D5 /* Build configuration list for PBXNativeTarget "ChoutenTCA" */;
@@ -646,9 +686,13 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1400;
+				LastSwiftUpdateCheck = 1430;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					E988AAF92A917E0700E1D580 = {
+						CreatedOnToolsVersion = 14.3;
+						TestTargetID = E9A382E729F7132A0098A3D5;
+					};
 					E9A382E729F7132A0098A3D5 = {
 						CreatedOnToolsVersion = 14.0;
 					};
@@ -679,11 +723,19 @@
 			projectRoot = "";
 			targets = (
 				E9A382E729F7132A0098A3D5 /* ChoutenTCA */,
+				E988AAF92A917E0700E1D580 /* Tests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		E988AAF82A917E0700E1D580 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E9A382E629F7132A0098A3D5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -697,6 +749,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		E988AAF62A917E0700E1D580 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E988AAFD2A917E0700E1D580 /* ModuleManagerUnitTesting.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E9A382E429F7132A0098A3D5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -784,7 +844,56 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		E988AAFF2A917E0700E1D580 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E9A382E729F7132A0098A3D5 /* ChoutenTCA */;
+			targetProxy = E988AAFE2A917E0700E1D580 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		E988AB012A917E0700E1D580 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = A9QQBWPHB7;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ChoutenTCA.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ChoutenTCA";
+			};
+			name = Debug;
+		};
+		E988AB022A917E0700E1D580 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = A9QQBWPHB7;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ChoutenTCA.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ChoutenTCA";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		E9A382F529F7132C0098A3D5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -983,6 +1092,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		E988AB002A917E0700E1D580 /* Build configuration list for PBXNativeTarget "Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E988AB012A917E0700E1D580 /* Debug */,
+				E988AB022A917E0700E1D580 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E9A382E329F7132A0098A3D5 /* Build configuration list for PBXProject "ChoutenTCA" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
