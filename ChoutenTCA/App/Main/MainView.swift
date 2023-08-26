@@ -120,40 +120,6 @@ struct MainView: View {
                     .padding(.leading, UIScreen.main.bounds.width > 600 ? 80 : 0)
                 }
                 .foregroundColor(Color(hex: Colors.onSurface.dark))
-                // module button
-                .overlay(alignment: .bottomTrailing) {
-                    if viewStore.iosStyle {
-                        ModuleButtoniOS(
-                            store: self.store.scope(
-                                state: \.moduleButtonState,
-                                action: MainDomain.Action.moduleButton
-                            ),
-                            isShowing: viewStore.binding(
-                                get: \.isShowingBottomSheet,
-                                send: MainDomain.Action.setBottomSheet(newValue:)
-                            ),
-                            showButton: viewStore.binding(
-                                get: \.showModuleButton,
-                                send: MainDomain.Action.setModuleButton(newValue:)
-                            )
-                        )
-                    } else {
-                        ModuleButton(
-                            store: self.store.scope(
-                                state: \.moduleButtonState,
-                                action: MainDomain.Action.moduleButton
-                            ),
-                            isShowing: viewStore.binding(
-                                get: \.isShowingBottomSheet,
-                                send: MainDomain.Action.setBottomSheet(newValue:)
-                            ),
-                            showButton: viewStore.binding(
-                                get: \.showModuleButton,
-                                send: MainDomain.Action.setModuleButton(newValue:)
-                            )
-                        )
-                    }
-                }
                 // module selector
                 .overlay(alignment: .bottom) {
                     BottomSheet(
@@ -170,13 +136,17 @@ struct MainView: View {
                                 store: self.store.scope(
                                     state: \.moduleSelectorState,
                                     action: MainDomain.Action.selector
+                                ),
+                                showModules: viewStore.binding(
+                                    get: \.isShowingBottomSheet,
+                                    send: MainDomain.Action.setBottomSheet(newValue:)
                                 )
                             )
                         )
                     )
-                    .padding(.bottom, viewStore.navbarState.screenWidth > 600 ? 0 : 100)
                 }
                 .overlay(alignment: .bottom) {
+                    /*
                     CloudflareView(
                         url: "https://aniwatch.to",
                         isShowing: viewStore.binding(
@@ -184,7 +154,8 @@ struct MainView: View {
                             send: MainDomain.Action.setShowOverlay(newBool:)
                         )
                     )
-                    .padding(.bottom, 100)
+                    .padding(.bottom, 80)
+                     */
                 }
                 // Navbar
                 .overlay(alignment: viewStore.navbarState.screenWidth > 600 ? .leading : .bottom) {

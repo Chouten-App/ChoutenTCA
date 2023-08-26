@@ -38,14 +38,7 @@ struct NavbariOS: View {
                     }
                     .padding(.vertical, 8)
                     .frame(maxWidth: 80, maxHeight: .infinity)
-                    .background {
-                        Color(hex:
-                                Colors.getColor(
-                                    for: "SurfaceContainer",
-                                    colorScheme: globalData.getColorScheme()
-                                )
-                        )
-                    }
+                    .background(.ultraThinMaterial)
                 }
                 else {
                     HStack(alignment: .top, spacing: 8) {
@@ -69,6 +62,13 @@ struct NavbariOS: View {
                     .padding(.horizontal, 8)
                     .padding(.bottom, 24)
                     .background(.ultraThinMaterial)
+                    .overlay(alignment: .top) {
+                        Rectangle()
+                            .fill(Color(hex: Colors.onSurface.dark))
+                            .padding(.horizontal, 12)
+                            .frame(maxWidth: .infinity, maxHeight: 1)
+                            .opacity(0.4)
+                    }
                 }
             }
         }

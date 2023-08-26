@@ -50,6 +50,8 @@
 		E97C33422A2801CA00979A91 /* WebviewDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97C33412A2801CA00979A91 /* WebviewDomain.swift */; };
 		E988AAF12A8D28DD00E1D580 /* RepoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E988AAF02A8D28DD00E1D580 /* RepoView.swift */; };
 		E988AAFD2A917E0700E1D580 /* ModuleManagerUnitTesting.swift in Sources */ = {isa = PBXBuildFile; fileRef = E988AAFC2A917E0700E1D580 /* ModuleManagerUnitTesting.swift */; };
+		E988AB052A962D5700E1D580 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = E988AB042A962D5600E1D580 /* View.swift */; };
+		E988AB0E2A96557500E1D580 /* SheetDetentsModifier in Frameworks */ = {isa = PBXBuildFile; productRef = E988AB0D2A96557500E1D580 /* SheetDetentsModifier */; };
 		E9A09BE92A30267B0035F57B /* Dropdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A09BE82A30267B0035F57B /* Dropdown.swift */; };
 		E9A09BEC2A3A4E8A0035F57B /* Shimmer in Frameworks */ = {isa = PBXBuildFile; productRef = E9A09BEB2A3A4E8A0035F57B /* Shimmer */; };
 		E9A09BEE2A3A54D70035F57B /* Shimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A09BED2A3A54D70035F57B /* Shimmer.swift */; };
@@ -153,6 +155,7 @@
 		E988AAF02A8D28DD00E1D580 /* RepoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoView.swift; sourceTree = "<group>"; };
 		E988AAFA2A917E0700E1D580 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E988AAFC2A917E0700E1D580 /* ModuleManagerUnitTesting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleManagerUnitTesting.swift; sourceTree = "<group>"; };
+		E988AB042A962D5600E1D580 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
 		E9A09BE82A30267B0035F57B /* Dropdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dropdown.swift; sourceTree = "<group>"; };
 		E9A09BED2A3A54D70035F57B /* Shimmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shimmer.swift; sourceTree = "<group>"; };
 		E9A09BEF2A4147FB0035F57B /* ServerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerCard.swift; sourceTree = "<group>"; };
@@ -216,6 +219,7 @@
 				E92106892A2AD58000074C54 /* ActivityIndicatorView in Frameworks */,
 				E9A09BEC2A3A4E8A0035F57B /* Shimmer in Frameworks */,
 				E9B6016D2A1CF1EB009E6EFE /* PopupView in Frameworks */,
+				E988AB0E2A96557500E1D580 /* SheetDetentsModifier in Frameworks */,
 				E9A3831129F723FB0098A3D5 /* Kingfisher in Frameworks */,
 				E9A382FC29F713480098A3D5 /* ComposableArchitecture in Frameworks */,
 				E9B601782A1D0A92009E6EFE /* NavigationTransitions in Frameworks */,
@@ -376,7 +380,6 @@
 		E988AAF22A917A4500E1D580 /* App */ = {
 			isa = PBXGroup;
 			children = (
-				E92106862A2AB01A00074C54 /* Info.plist */,
 				E92106672A296B7800074C54 /* Cloudflare */,
 				E9F921692A28452400A75AFA /* Info */,
 				E97C33392A27FED900979A91 /* Webview */,
@@ -424,6 +427,7 @@
 		E9A382EA29F7132A0098A3D5 /* ChoutenTCA */ = {
 			isa = PBXGroup;
 			children = (
+				E92106862A2AB01A00074C54 /* Info.plist */,
 				E988AAFB2A917E0700E1D580 /* Tests */,
 				E988AAF22A917A4500E1D580 /* App */,
 				E9A382EF29F7132C0098A3D5 /* Assets.xcassets */,
@@ -496,6 +500,7 @@
 				E9B6018F2A1D359B009E6EFE /* String.swift */,
 				E9A09BED2A3A54D70035F57B /* Shimmer.swift */,
 				E930ACFF2A86E5CF002EA5D8 /* UINavigationController.swift */,
+				E988AB042A962D5600E1D580 /* View.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -674,6 +679,7 @@
 				E921067F2A29B13F00074C54 /* SwiftWebVTT */,
 				E92106882A2AD58000074C54 /* ActivityIndicatorView */,
 				E9A09BEB2A3A4E8A0035F57B /* Shimmer */,
+				E988AB0D2A96557500E1D580 /* SheetDetentsModifier */,
 			);
 			productName = ChoutenTCA;
 			productReference = E9A382E829F7132A0098A3D5 /* ChoutenTCA.app */;
@@ -717,6 +723,7 @@
 				E921067E2A29B13F00074C54 /* XCRemoteSwiftPackageReference "SwiftWebVTT" */,
 				E92106872A2AD58000074C54 /* XCRemoteSwiftPackageReference "ActivityIndicatorView" */,
 				E9A09BEA2A3A4E8A0035F57B /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */,
+				E988AB0C2A96557500E1D580 /* XCRemoteSwiftPackageReference "SheetDetentsModifier" */,
 			);
 			productRefGroup = E9A382E929F7132A0098A3D5 /* Products */;
 			projectDirPath = "";
@@ -826,6 +833,7 @@
 				E9B601682A1CEF99009E6EFE /* ModuleButton.swift in Sources */,
 				E9B601832A1D24B7009E6EFE /* CustomBottomSheet.swift in Sources */,
 				E9F9216B2A28452D00A75AFA /* InfoView.swift in Sources */,
+				E988AB052A962D5700E1D580 /* View.swift in Sources */,
 				E9A3830C29F722BE0098A3D5 /* GridCardView.swift in Sources */,
 				E921068B2A2B05BD00074C54 /* VolumeSlider.swift in Sources */,
 				E921067D2A29B10D00074C54 /* PlayerViewModel.swift in Sources */,
@@ -861,7 +869,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = A9QQBWPHB7;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.Tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -881,7 +889,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = A9QQBWPHB7;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.Tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1146,6 +1154,14 @@
 				minimumVersion = 5.0.0;
 			};
 		};
+		E988AB0C2A96557500E1D580 /* XCRemoteSwiftPackageReference "SheetDetentsModifier" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/bartleby/SheetDetentsModifier.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		E9A09BEA2A3A4E8A0035F57B /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/markiv/SwiftUI-Shimmer.git";
@@ -1211,6 +1227,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E97C333E2A28002700979A91 /* XCRemoteSwiftPackageReference "SwiftyJSON" */;
 			productName = SwiftyJSON;
+		};
+		E988AB0D2A96557500E1D580 /* SheetDetentsModifier */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E988AB0C2A96557500E1D580 /* XCRemoteSwiftPackageReference "SheetDetentsModifier" */;
+			productName = SheetDetentsModifier;
 		};
 		E9A09BEB2A3A4E8A0035F57B /* Shimmer */ = {
 			isa = XCSwiftPackageProductDependency;
