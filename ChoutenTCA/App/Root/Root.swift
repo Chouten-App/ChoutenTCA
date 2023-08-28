@@ -19,18 +19,22 @@ struct Root: View {
     var body: some View {
         WithViewStore(self.store) { viewStore in
             NavigationView {
-                if viewStore.isLoadingDone {
-                    MainView(
-                        store: Store(
-                            initialState: MainDomain.State(),
-                            reducer: MainDomain()
-                        )
-                    )
-                } else {
-                    ZStack {
-                        Color(hex: Colors.Surface.dark)
-                        
-                        VStack {
+                ZStack {
+                    Color(hex: Colors.Surface.dark)
+                    
+                    VStack {
+                        NavigationLink(
+                            destination: MainView(
+                                store: Store(
+                                    initialState: MainDomain.State(),
+                                    reducer: MainDomain()
+                                )
+                            ),
+                            isActive: viewStore.binding(
+                                get: \.isLoadingDone,
+                                send: RootDomain.Action.setLoadingDone(bool:)
+                            )
+                        ) {
                             Image(uiImage: UIImage(named: "AppIcon") ?? UIImage())
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
@@ -43,19 +47,17 @@ struct Root: View {
                                         viewStore.send(.setLoadingDone(bool: true), animation: .spring(response: 0.3))
                                     }
                                 }
-                            
-                            Text("CHOUTEN")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                                .foregroundColor(
-                                    Color(hex: Colors.onSurface.dark)
-                                )
                         }
+                        Text("CHOUTEN")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(
+                                Color(hex: Colors.onSurface.dark)
+                            )
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .ignoresSafeArea()
-                    .transition(.opacity)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .ignoresSafeArea()
             }
             .accentColor(Color(hex: Colors.Primary.dark))
             .navigationViewStyle(.stack)

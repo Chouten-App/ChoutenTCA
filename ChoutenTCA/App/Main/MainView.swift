@@ -121,6 +121,7 @@ struct MainView: View {
                 }
                 .foregroundColor(Color(hex: Colors.onSurface.dark))
                 // module selector
+                
                 .overlay(alignment: .bottom) {
                     BottomSheet(
                         store: self.store.scope(
@@ -145,8 +146,10 @@ struct MainView: View {
                         )
                     )
                 }
+                 
+                /*
                 .overlay(alignment: .bottom) {
-                    /*
+                    
                     CloudflareView(
                         url: "https://aniwatch.to",
                         isShowing: viewStore.binding(
@@ -155,8 +158,9 @@ struct MainView: View {
                         )
                     )
                     .padding(.bottom, 80)
-                     */
+                     
                 }
+                 */
                 // Navbar
                 .overlay(alignment: viewStore.navbarState.screenWidth > 600 ? .leading : .bottom) {
                     if viewStore.iosStyle {

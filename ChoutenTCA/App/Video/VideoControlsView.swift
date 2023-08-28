@@ -63,20 +63,6 @@ struct VideoControlsView: View {
                         .padding(.trailing, 60)
                 }
             }
-            .overlay(alignment: .leading) {
-                BottomSheet(
-                    store: Store(
-                        initialState: CustomBottomSheetDomain.State(
-                            fromLeft: true
-                        ),
-                        reducer: CustomBottomSheetDomain()
-                    ),
-                    isShowing: $showServers,
-                    content: AnyView(
-                        ServerList(proxy: proxy)
-                    )
-                )
-            }
             .background {
                 Color(.black).opacity(showUI ? 0.4 : 0.0)
                     .contentShape(Rectangle())
@@ -194,7 +180,11 @@ struct VideoControlsView: View {
         .padding(.bottom, showUI ? 80 : 32)
         .animation(.spring(response: 0.3), value: showUI)
         .foregroundColor(.white)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .frame(
+            maxWidth: .infinity,
+            maxHeight: .infinity,
+            alignment: .bottom
+        )
         .ignoresSafeArea()
     }
     
