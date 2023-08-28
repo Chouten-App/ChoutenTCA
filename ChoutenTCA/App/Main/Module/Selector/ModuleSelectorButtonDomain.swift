@@ -5,13 +5,13 @@
 //  Created by Inumaki on 01.06.23.
 //
 
+import ComposableArchitecture
 import Foundation
 import SwiftUI
-import ComposableArchitecture
 
 struct ModuleSelectorButtonDomain: ReducerProtocol {
     struct State: Equatable {
-        var module: Module = Module(
+        var module: Module = .init(
             id: "",
             type: "",
             subtypes: [],
@@ -34,7 +34,6 @@ struct ModuleSelectorButtonDomain: ReducerProtocol {
         var offset: CGFloat = 0
         var isSwiped: Bool = false
         
-        var showDetails = false
         var shouldAutoUpdate = false
     }
     
@@ -42,7 +41,6 @@ struct ModuleSelectorButtonDomain: ReducerProtocol {
         case loadModule
         case deleteModule
         case deleteResult(TaskResult<Bool>)
-        case toggleShowDetails
         case setShouldAutoUpdate(newBool: Bool)
         case onChanged(value: DragGesture.Value)
         case onEnded(value: DragGesture.Value)
@@ -74,11 +72,8 @@ struct ModuleSelectorButtonDomain: ReducerProtocol {
         case .deleteResult(.failure(let error)):
             let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
             NotificationCenter.default
-                .post(name:           NSNotification.Name("floaty"),
+                .post(name: NSNotification.Name("floaty"),
                       object: nil, userInfo: data)
-            return .none
-        case .toggleShowDetails:
-            state.showDetails.toggle()
             return .none
         case .setShouldAutoUpdate(let newBool):
             state.shouldAutoUpdate = newBool

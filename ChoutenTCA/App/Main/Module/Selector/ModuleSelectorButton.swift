@@ -5,9 +5,9 @@
 //  Created by Inumaki on 01.06.23.
 //
 
-import SwiftUI
 import ComposableArchitecture
 import Kingfisher
+import SwiftUI
 
 struct ModuleSelectorButton: View {
     let store: StoreOf<ModuleSelectorButtonDomain>
@@ -58,10 +58,10 @@ struct ModuleSelectorButton: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
                                     .frame(
-                                        minWidth: viewStore.showDetails ? 52 : 40,
-                                        maxWidth: viewStore.showDetails ? 52 : 40,
-                                        minHeight: viewStore.showDetails ? 52 : 40,
-                                        maxHeight: viewStore.showDetails ? 52 : 40
+                                        minWidth: 40,
+                                        maxWidth: 40,
+                                        minHeight: 40,
+                                        maxHeight: 40
                                     )
                                     .cornerRadius(12)
                                     .overlay {
@@ -87,7 +87,7 @@ struct ModuleSelectorButton: View {
                                     .foregroundColor(
                                         Color(hex: viewStore.module.general.fgColor)
                                     )
-                                    .font(.system(size: viewStore.showDetails ? 20 : 16, weight: .bold))
+                                    .font(.system(size: 16, weight: .bold))
                                     .lineLimit(1)
                                 
                                 HStack {
@@ -96,67 +96,19 @@ struct ModuleSelectorButton: View {
                                         .font(.system(size: 12, weight: .semibold))
                                         .lineLimit(1)
                                     Text("v\(viewStore.module.version)")
-                                            .foregroundColor(Color(hex: viewStore.module.general.fgColor).opacity(0.7))
-                                            .font(.system(size: 12, weight: .semibold))
+                                        .foregroundColor(Color(hex: viewStore.module.general.fgColor).opacity(0.7))
+                                        .font(.system(size: 12, weight: .semibold))
                                 }
                             }
-                            .padding(.top, viewStore.showDetails ? 6 : 0)
-                            .frame(minHeight: 52, alignment: viewStore.showDetails ? .top : .center)
-                            
-                            Spacer()
-                            
-                            Button {
-                                viewStore.send(.toggleShowDetails)
-                            } label: {
-                                Image(systemName: viewStore.showDetails ? "xmark" : "info")
-                                    .foregroundColor(
-                                        Color(hex: Colors.onPrimary.dark)
-                                    )
-                                    .padding(10)
-                                    .background {
-                                        Circle()
-                                            .fill(
-                                                Color(hex: Colors.Primary.dark)
-                                            )
-                                    }
-                            }
+                            .frame(minHeight: 52, alignment: .center)
                         }
-                        Text(viewStore.module.general.description)
-                            .fontWeight(.semibold)
-                            .foregroundColor(Color(hex: viewStore.module.general.fgColor).opacity(0.7))
-                        
-                        HStack {
-                            Text("Auto update Module")
-                                .font(.subheadline)
-                                .foregroundColor(
-                                    Color(hex: viewStore.module.general.fgColor)
-                                )
-                            
-                            Spacer()
-                            
-                            Toggle(isOn: viewStore.binding(
-                                get: \.shouldAutoUpdate,
-                                send: ModuleSelectorButtonDomain.Action.setShouldAutoUpdate(newBool:)
-                            ), label: {})
-                                .toggleStyle(M3ToggleStyle())
-                        }
-                        
                     }
-                    .padding(.top, viewStore.showDetails ? 20 : 0)
-                    .padding(.horizontal, 20)
-                    .frame(
-                        minWidth: 0,
-                        maxWidth: .infinity,
-                        minHeight: viewStore.showDetails ? 180 : 52,
-                        maxHeight: viewStore.showDetails ? 180 : 52,
-                        alignment: .topLeading
-                    )
                 }
                 .frame(
                     minWidth: 0,
                     maxWidth: .infinity,
-                    minHeight: viewStore.showDetails ? 180 : 52,
-                    maxHeight: viewStore.showDetails ? 180 : 52,
+                    minHeight: 52,
+                    maxHeight: 52,
                     alignment: .topLeading
                 )
                 .buttonStyle(PlainButtonStyle())
@@ -184,8 +136,8 @@ struct ModuleSelectorButton: View {
             .frame(
                 minWidth: 0,
                 maxWidth: .infinity,
-                minHeight: viewStore.showDetails ? 180 : 52,
-                maxHeight: viewStore.showDetails ? 180 : 52,
+                minHeight: 52,
+                maxHeight: 52,
                 alignment: .topLeading
             )
         }
