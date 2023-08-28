@@ -1,0 +1,18 @@
+# Xcode User Settings #
+xcuserdata/
+
+# Xcode <=8.0 #
+*.xcscmblueprint
+*.xccheckout
+
+# Patch #
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+/*.gcno
+**/xcshareddata/WorkspaceSettings.xcsettings
+
+# Misc. #
+.DS_Store
