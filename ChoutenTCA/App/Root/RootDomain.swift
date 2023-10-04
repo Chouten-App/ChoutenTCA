@@ -38,7 +38,7 @@ struct RootDomain: ReducerProtocol {
                 await .setAvailableModules(
                     TaskResult {
                         let modules = try moduleManager.getModules()
-                        try moduleManager.validateModules()
+                        let _ = try moduleManager.validateModules()
                         return modules
                     }
                 )

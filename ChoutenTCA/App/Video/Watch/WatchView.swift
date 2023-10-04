@@ -15,31 +15,128 @@ struct WatchView: View {
     let index: Int
     let store: StoreOf<WatchDomain>
     @StateObject var playerVM: PlayerViewModel = PlayerViewModel()
+    @StateObject var Colors = DynamicColors.shared
     @FetchRequest(sortDescriptors: []) var mediaProgress: FetchedResults<MediaProgress>
     @Environment(\.managedObjectContext) var moc
     
     var body: some View {
         WithViewStore(self.store) { viewStore in
-            CustomPlayerWithControls(
-                streamData: viewStore.binding(
-                    get: \.videoData,
-                    send: WatchDomain.Action.setVideoData(newValue:)
-                ),
-                servers: viewStore.binding(
-                    get: \.servers,
-                    send: WatchDomain.Action.setServers(newValue:)
-                ),
-                index: index,
-                playerVM: playerVM
-            )
+            GeometryReader { proxy in
+                VStack {
+                    ZStack {
+                        CustomVideoPlayer(playerVM: playerVM, showUI: false, scaledVideo: .constant(false))
+                            .frame(maxWidth: proxy.size.width, maxHeight: proxy.size.width / 16 * 9)
+                            .clipped()
+                            .blur(radius: 12)
+                            .scaleEffect(1.2)
+                            .opacity(0.3)
+                        
+                        CustomPlayerWithControls(
+                            streamData: viewStore.binding(
+                                get: \.videoData,
+                                send: WatchDomain.Action.setVideoData(newValue:)
+                            ),
+                            servers: viewStore.binding(
+                                get: \.servers,
+                                send: WatchDomain.Action.setServers(newValue:)
+                            ),
+                            index: index,
+                            playerVM: playerVM
+                        )
+                        .frame(maxWidth: proxy.size.width, maxHeight: proxy.size.width / 16 * 9)
+                        .clipped()
+                    }
+                    
+                    ScrollView {
+                        if let infoData = viewStore.infoData {
+                            VStack(alignment: .leading, spacing: 12) {
+                                // Info
+                                VStack(alignment: .leading) {
+                                    Text(infoData.titles.primary)
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                        .lineLimit(2)
+                                    if let secondary = infoData.titles.secondary {
+                                        Text(secondary)
+                                            .font(.caption)
+                                            .fontWeight(.heavy)
+                                            .lineLimit(2)
+                                            .opacity(0.7)
+                                    }
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.top, 6)
+                                
+                                Text(infoData.description)
+                                    .font(.subheadline)
+                                    .lineLimit(9)
+                                    .opacity(0.7)
+                                    .padding(.vertical, 6)
+                                    .contentShape(Rectangle())
+                                    .padding(.horizontal, 20)
+                                
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack {
+                                        Text("Season 1")
+                                            .font(.title3)
+                                            .fontWeight(.bold)
+                                        
+                                        Spacer()
+                                        
+                                        Image(systemName: "chevron.right")
+                                            .padding(6)
+                                            .background {
+                                                Circle()
+                                                    .fill(Color(hex: Colors.SurfaceContainer.dark))
+                                            }
+                                    }
+                                    .contentShape(Rectangle())
+                                    
+                                    HStack {
+                                        Text("\(infoData.totalMediaCount ?? 0) \(infoData.mediaType)")
+                                            .font(.subheadline)
+                                            .fontWeight(.semibold)
+                                            .opacity(0.7)
+                                        
+                                        Spacer()
+                                        
+                                        Image("arrow.down.filter")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 16, height: 16)
+                                            .foregroundColor(.white)
+                                            .opacity(0.7)
+                                            .contentShape(Rectangle())
+                                        
+                                        Image("arrow.down.filter")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 16, height: 16)
+                                            .scaleEffect(CGSize(width: 1.0, height: -1.0))
+                                            .foregroundColor(.white)
+                                            .opacity(1.0)
+                                            .contentShape(Rectangle())
+                                    }
+                                }
+                                .padding(.vertical, 6)
+                                .padding(.horizontal, 20)
+                                
+                                // Episode List
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .background(Color(hex: Colors.Surface.dark))
+                .foregroundColor(Color(hex: Colors.onSurface.dark))
+                .edgesIgnoringSafeArea(.bottom)
+            }
             .navigationBarBackButtonHidden(true)
             .contentShape(Rectangle())
-            .ignoresSafeArea(.all)
-            .edgesIgnoringSafeArea(.all)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationBarHidden(true)
             .navigationBarBackButtonHidden()
-            .supportedOrientation(.landscape)
             .background {
                 if !viewStore.webviewState.htmlString.isEmpty && !viewStore.webviewState.javaScript.isEmpty {
                     if viewStore.servers.count > 0 {
@@ -140,7 +237,7 @@ struct WatchView: View {
                     }
                     
                     if let mediaData: MediaItem = viewStore.infoData?.mediaList.first?.list[index] {
-                        var prog = mediaProgress.filter { progress in
+                        let prog = mediaProgress.filter { progress in
                             progress.url == self.url && progress.number == mediaData.number
                         }.first
                         
@@ -156,7 +253,7 @@ struct WatchView: View {
             }
             .onChange(of: playerVM.currentTime) { newValue in
                 if let mediaData: MediaItem = viewStore.infoData?.mediaList.first?.list[index] {
-                    var progress = mediaProgress.filter { progress in
+                    let progress = mediaProgress.filter { progress in
                         progress.url == self.url && progress.number == mediaData.number
                     }.first
                     
@@ -190,7 +287,5 @@ struct WatchView_Previews: PreviewProvider {
             )
         )
         .prefersHomeIndicatorAutoHidden(true)
-        .supportedOrientation(.landscape)
-        .previewInterfaceOrientation(.landscapeRight)
     }
 }

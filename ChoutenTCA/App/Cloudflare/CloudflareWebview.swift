@@ -27,108 +27,41 @@ struct Cookie: Codable, Equatable {
 }
 
 struct CloudflareWebview: UIViewRepresentable {
-    let request: URLRequest
+    let url: String
     @Binding var cookies: [HTTPCookie]
-    @Binding var fetchCookies: Bool
-    @Binding var resetCookies: Bool
-    
+    var onDone: () -> Void
+
     func makeUIView(context: Context) -> WKWebView {
-        let configuration = WKWebViewConfiguration()
-        let preferences = WKWebpagePreferences()
-        
-        preferences.allowsContentJavaScript = true // Enable JavaScript
-        configuration.defaultWebpagePreferences = preferences
-        
-        let webView = WKWebView(frame: .zero, configuration: configuration)
+        let webView = WKWebView()
+        webView.customUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS VERSION like Mac OS X) AppleWebKit/WEBKIT_VERSION (KHTML, like Gecko) Mobile/USER_AGENT_APP_NAME"
         webView.navigationDelegate = context.coordinator
-        webView.customUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1"
-        
-        webView.load(request)
-        
+        webView.load(URLRequest(url: URL(string: url)!))
         return webView
     }
-    
-    func updateUIView(_ webView: WKWebView, context: Context) {
-        if fetchCookies {
-            let cookieStore = webView.configuration.websiteDataStore.httpCookieStore
-            
-            cookieStore.getAllCookies { cookies in
-                DispatchQueue.main.async {
-                    self.cookies = cookies
-                    self.printCookie()
-                    self.fetchCookies = false
-                }
-            }
-            
-            //print(self.cookies)
-        }
-        if resetCookies {
-            removeAllCookies()
-            
-            self.resetCookies = false
-        }
-    }
-    
-    func removeAllCookies() {
-        let websiteDataTypes = NSSet(array: [WKWebsiteDataTypeCookies])
-        let date = NSDate(timeIntervalSince1970: 0)
-        
-        WKWebsiteDataStore.default().removeData(
-            ofTypes: websiteDataTypes as! Set<String>,
-            modifiedSince: date as Date,
-            completionHandler: {}
-        )
-    }
-    
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {}
+
     func makeCoordinator() -> Coordinator {
-        Coordinator()
+        Coordinator(self)
     }
-    
-    
-    
+
     class Coordinator: NSObject, WKNavigationDelegate {
-        @Dependency(\.globalData) var globalData
-        
+        var parent: CloudflareWebview
+
+        init(_ parent: CloudflareWebview) {
+            self.parent = parent
+        }
+
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            checkForCFClearanceCookie(webView: webView)
-        }
-        
-        func convertToCustomCookies(httpCookies: [HTTPCookie]) -> [Cookie] {
-            return httpCookies.map { httpCookie in
-                return Cookie(
-                    name: httpCookie.name,
-                    value: httpCookie.value,
-                    domain: httpCookie.domain,
-                    path: httpCookie.path,
-                    version: httpCookie.version,
-                    expiresDate: httpCookie.expiresDate
-                )
+            // Get cookies after captcha solving
+            webView.configuration.websiteDataStore.httpCookieStore.getAllCookies { cookies in
+                self.parent.cookies = cookies
             }
         }
-        
-        private func checkForCFClearanceCookie(webView: WKWebView) {
-            let cookieStore = webView.configuration.websiteDataStore.httpCookieStore
-            
-            cookieStore.getAllCookies { cookies in
-                if let cfClearanceCookie = cookies.first(where: { $0.name == "cf_clearance" }) {
-                    print("FOUND")
-                    print("cf_clearance cookie value: \(cfClearanceCookie.value)")
-                    
-                    let c = self.convertToCustomCookies(httpCookies: cookies)
-                    
-                    self.globalData.setCookies(ModuleCookies(moduleId: self.globalData.getModule()?.id ?? "", cookies: c))
-                    
-                    self.globalData.setShowOverlay(false)
-                }
-            }
-        }
-    }
-    
-    func printCookie() {
-        if let cfClearanceCookie = cookies.first(where: { $0.name == "cf_clearance" }) {
-            print("cf_clearance cookie value: \(cfClearanceCookie.value)")
-        } else {
-            print("cf_clearance cookie not found")
+
+        func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+            // Continue with the original request after captcha solving
+            parent.onDone()
         }
     }
 }
@@ -145,52 +78,115 @@ struct CloudflareView: View {
     @State private var cookies: [HTTPCookie] = []
     @State var fetchCookies: Bool = false
     @State var resetCookies: Bool = false
+    @State var loadingProgress: Double = 0.0
     
+    @Dependency(\.globalData) var globalData
+    
+    func setCookies() {
+        // Get the shared URLSession's cookie storage
+        let cookieStorage = HTTPCookieStorage.shared
+
+        // Delete any existing cookies with the same name and domain
+        for cookie in cookies {
+            if let existingCookie = cookieStorage.cookies?.first(where: {
+                $0.name == cookie.name && $0.domain == cookie.domain
+            }) {
+                cookieStorage.deleteCookie(existingCookie)
+            }
+        }
+        
+        // Add the new cookies to the cookie storage
+        for cookie in cookies {
+            cookieStorage.setCookie(cookie)
+        }
+        
+        globalData.setCfUrl(nil)
+        globalData.setShowOverlay(false)
+    }
     
     var body: some View {
-        BottomSheet(
-            store: self.store,
-            isShowing: $isShowing,
-            content: AnyView(
-                CloudflareWebview(
-                    request: URLRequest(
-                        url: URL(
-                            string: url
-                        )!
-                    ),
-                    cookies: $cookies,
-                    fetchCookies: $fetchCookies,
-                    resetCookies: $resetCookies
-                )
-                .frame(maxWidth: .infinity, maxHeight: 600)
-                .overlay(alignment: .bottomTrailing) {
+            VStack(spacing: 0) {
+                VStack {
                     HStack {
-                        Spacer()
+                        Button {
+                            setCookies()
+                        } label: {
+                            Text("Done")
+                                .foregroundColor(Color(hex: Colors.Primary.dark))
+                        }
+                        .padding(.horizontal)
                         
-                        Text(url)
-                            .fontWeight(.medium)
-                            .font(.title3)
-                            .padding(.horizontal, 20)
-                            .frame(maxWidth: 320, maxHeight: 40, alignment: .leading)
-                            .background {
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(
-                                        Color(hex: Colors.Surface.dark)
-                                    )
-                            }
-                            .foregroundColor(Color(hex: Colors.onSurface.dark))
+                        Text("Cloudflare detected.")
+                            .fontWeight(.semibold)
                         
                         Spacer()
                     }
-                    .padding(.bottom, 20)
+                    
+                    Text(url)
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .foregroundColor(Color(hex: Colors.onPrimaryContainer.dark))
+                        .background {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(
+                                    Color(hex: Colors.PrimaryContainer.dark)
+                                )
+                        }
+                        .padding(.horizontal)
                 }
-            )
-        )
-    }
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity)
+                .background {
+                    Color(hex: Colors.SurfaceContainer.dark)
+                }
+                .cornerRadius(20, corners: [.topLeft, .topRight])
+                .overlay(alignment: .bottomLeading) {
+                    Rectangle()
+                        .fill(
+                            Color(hex: Colors.Primary.dark)
+                        )
+                        .frame(width: UIScreen.main.bounds.width * loadingProgress, height: 4)
+                }
+                
+                CloudflareWebview(
+                    url: url,
+                    cookies: $cookies,
+                    onDone: {
+                        print("Cookies acquired:", cookies)
+                    }
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background {
+                    Color(hex: Colors.SurfaceContainer.dark)
+                }
+                
+                ZStack {
+                    Color(hex: Colors.Error.dark)
+                    
+                    VStack {
+                        Text("WARNING")
+                            .fontWeight(.bold)
+                        
+                        Text("Do not share credentials of any kind unless you trust the module.")
+                            .font(.caption)
+                            .multilineTextAlignment(.center)
+                            .opacity(0.7)
+                            .padding(.horizontal)
+                    }
+                    .foregroundColor(Color(hex: Colors.onError.dark))
+                    .padding(.bottom, 20)
+                    .padding(.top, 8)
+                }
+                .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            .ignoresSafeArea(.all, edges: .bottom)
+        }
 }
 
 struct CloudflareWebview_Previews: PreviewProvider {
     static var previews: some View {
-        CloudflareView(url: "https://aniwatch.to", isShowing: .constant(true))
+        CloudflareView(url: "https://nhentai.net", isShowing: .constant(true))
     }
 }

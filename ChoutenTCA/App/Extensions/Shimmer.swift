@@ -5,6 +5,7 @@
 //
 
 import SwiftUI
+import ComposableArchitecture
 
 public struct Shimmer: ViewModifier {
     let animation: Animation
@@ -58,10 +59,11 @@ public struct Shimmer: ViewModifier {
     /// The `phase` parameter shifts the gradient, moving the opaque band.
     struct GradientMask: View {
         let phase: CGFloat
-        let centerColor = Color(hex: "#8f8b8b")
-        let edgeColor = Color.white.opacity(0)
+        let centerColor = Color(hex: DynamicColors.shared.Primary.dark)
+        let edgeColor = Color(hex: DynamicColors.shared.Primary.dark).opacity(0)
         @Environment(\.layoutDirection) private var layoutDirection
-
+        
+        
         var body: some View {
             let isRightToLeft = layoutDirection == .rightToLeft
             LinearGradient(

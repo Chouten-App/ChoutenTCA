@@ -12,6 +12,8 @@ struct Root: View {
     let store: StoreOf<RootDomain>
     @StateObject var Colors = DynamicColors.shared
     
+    @Dependency(\.globalData) var globalData
+    
     @FetchRequest(sortDescriptors: []) var info: FetchedResults<Infodata>
     @FetchRequest(sortDescriptors: []) var userInfo: FetchedResults<UserInfo>
     @Environment(\.managedObjectContext) var moc
@@ -76,8 +78,18 @@ struct Root: View {
                     }
                 }
                  */
+                
+                // check formatVersion
+                let minimumVersion = 2
+                
+                var modules = globalData.getAvailableModules()
+                modules = modules.filter { module in
+                    module.formatVersion >= minimumVersion
+                }
+                globalData.setAvailableModules(modules)
+                
                 if !userInfo.isEmpty {
-                    print(userInfo[0].selectedModuleId)
+                    //print(userInfo[0].selectedModuleId)
                     if userInfo[0].selectedModuleId != nil {
                         viewStore.send(.setSelectedModuleId(id: userInfo[0].selectedModuleId!))
                     }

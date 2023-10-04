@@ -45,7 +45,7 @@ struct SearchView: View {
                                 LazyVGrid(columns: [
                                     GridItem(.adaptive(minimum: 100), alignment: .top)
                                 ], spacing: 20) {
-                                    ForEach(0..<viewStore.searchResult.count) { index in
+                                    ForEach(0..<viewStore.searchResult.count, id: \.self) { index in
                                         NavigationLink(
                                             destination: InfoView(
                                                 url: viewStore.searchResult[index].url,

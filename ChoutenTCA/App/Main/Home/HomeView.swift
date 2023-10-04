@@ -22,17 +22,23 @@ struct HomeView: View {
                             Carousel(viewStore: viewStore, component: viewStore.homeData[0], proxy: proxy)
                                 .padding(.bottom, 110)
                             
-                            ForEach(1..<viewStore.homeData.count) { index in
-                                if viewStore.homeData[index].type == "list" {
-                                    List(component: viewStore.homeData[index], proxy: proxy)
-                                } else if viewStore.homeData[index].type == "grid_2x" {
-                                    Grid2x(component: viewStore.homeData[index], proxy: proxy)
+                            if viewStore.homeData.count > 0 {
+                                ForEach(1..<viewStore.homeData.count, id:\.self) { index in
+                                    if viewStore.homeData[index].type == "list" {
+                                        List(component: viewStore.homeData[index], proxy: proxy)
+                                    } else if viewStore.homeData[index].type == "grid_2x" {
+                                        Grid2x(component: viewStore.homeData[index], proxy: proxy)
+                                    }
                                 }
                             }
                         }
                         .padding(.bottom, 120)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                         .ignoresSafeArea()
+                    } else {
+                        VStack {
+                            ProgressView()
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -59,7 +65,7 @@ struct HomeView: View {
                 .ignoresSafeArea()
             }
             .onAppear {
-                viewStore.send(.resetWebview)
+                viewStore.send(.onAppear)
             }
         }
     }
@@ -151,7 +157,7 @@ struct HomeView: View {
                 
                 HStack {
                     NavigationLink(
-                        destination: InfoView(
+                        destination: InfoViewiOS(
                             url: component.data[viewStore.carouselIndex].url,
                             store: self.store.scope(
                                 state: \.infoState,
@@ -201,9 +207,9 @@ struct HomeView: View {
                     GridItem(.flexible()),
                     GridItem(.flexible())
                 ], spacing: 12) {
-                    ForEach(0..<component.data.count) {gridIndex in
+                    ForEach(0..<component.data.count, id: \.self) {gridIndex in
                         NavigationLink(
-                            destination: InfoView(
+                            destination: InfoViewiOS(
                                 url: component.data[gridIndex].url,
                                 store: self.store.scope(
                                     state: \.infoState,
@@ -244,38 +250,40 @@ struct HomeView: View {
             
             ScrollView(.horizontal) {
                 HStack(spacing: 12) {
-                    ForEach(0..<component.data.count) { listIndex in
-                        NavigationLink(
-                            destination: InfoView(
-                                url: component.data[listIndex].url,
-                                store: self.store.scope(
-                                    state: \.infoState,
-                                    action: HomeDomain.Action.info
-                                )
-                            )
-                        ) {
-                            VStack {
-                                KFImage(URL(string: component.data[listIndex].image))
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 110, height: 160)
-                                    .cornerRadius(12)
-                                
-                                Text(component.data[listIndex].titles.primary)
-                                    .frame(width: 110)
-                                    .lineLimit(1)
-                                
-                                HStack {
-                                    Spacer()
-                                    
-                                    Text(
-                                        (component.data[listIndex].current != nil ? String(component.data[listIndex].current!) : "~") + " / " + (component.data[listIndex].total != nil ? String(component.data[listIndex].total!) : "~")
+                    if component.data.count > 0 {
+                        ForEach(0..<component.data.count, id: \.self) { listIndex in
+                            NavigationLink(
+                                destination: InfoViewiOS(
+                                    url: component.data[listIndex].url,
+                                    store: self.store.scope(
+                                        state: \.infoState,
+                                        action: HomeDomain.Action.info
                                     )
-                                    .font(.caption)
+                                )
+                            ) {
+                                VStack {
+                                    KFImage(URL(string: component.data[listIndex].image))
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 110, height: 160)
+                                        .cornerRadius(12)
+                                    
+                                    Text(component.data[listIndex].titles.primary)
+                                        .frame(width: 110)
+                                        .lineLimit(1)
+                                    
+                                    HStack {
+                                        Spacer()
+                                        
+                                        Text(
+                                            (component.data[listIndex].current != nil ? String(component.data[listIndex].current!) : "~") + " / " + (component.data[listIndex].total != nil ? String(component.data[listIndex].total!) : "~")
+                                        )
+                                        .font(.caption)
+                                    }
+                                    .frame(width: 110)
                                 }
-                                .frame(width: 110)
+                                .frame(maxWidth: 110)
                             }
-                            .frame(maxWidth: 110)
                         }
                     }
                 }

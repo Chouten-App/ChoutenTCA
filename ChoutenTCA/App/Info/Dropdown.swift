@@ -47,7 +47,7 @@ struct Dropdown: View {
             .overlay(alignment: .top) {
                 ScrollView {
                     VStack {
-                        ForEach(0..<options.count) { index in
+                        ForEach(0..<options.count, id: \.self) { index in
                             DropdownItem(
                                 Colors: Colors,
                                 option: options[index],

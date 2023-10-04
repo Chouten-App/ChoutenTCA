@@ -14,75 +14,81 @@ struct BottomSheet: View {
     var content: AnyView
     @StateObject var Colors = DynamicColors.shared
     
+    
+    // TEMP
+    @State var offset: CGFloat = 0
+    @State var lastOffset: CGFloat = 0
+    @GestureState var gestureOffset: CGFloat = 0
+    let minimum: CGFloat = 150
+    
     var body: some View {
         WithViewStore(self.store) { viewStore in
-            GeometryReader { proxy in
-                content
-                    .cornerRadius(
-                        20,
-                        corners: [.topLeft, .topRight]
-                    )
-                    .overlay(alignment: .top) {
-                        ZStack {
-                            Color.clear
-                            
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color(hex: Colors.Outline.dark))
-                                .frame(
-                                    maxWidth: viewStore.fromRight ? 6 : 40,
-                                    maxHeight: viewStore.fromRight ? 40 : 6
-                                )
-                                .padding(.top, viewStore.fromRight ? 0 : 4)
-                                .padding(.leading, viewStore.fromRight ? 16 : 0)
-                        }
-                        .frame(
-                            maxWidth: viewStore.fromRight ? nil : .infinity,
-                            maxHeight: 20
+            GeometryReader { proxy -> AnyView in
+                let height = proxy.frame(in: .global).height
+                
+                return AnyView(
+                    content
+                        .cornerRadius(
+                            20,
+                            corners: [.topLeft, .topRight]
                         )
-                        .contentShape(Rectangle())
-                        
-                    }
-                    .frame(
-                        height: max((proxy.size.height) - (viewStore.offsetY + viewStore.tempOffsetY), 20), // Minimum height of 100, adjust as needed
-                        alignment: .bottom
-                    )
-                    .frame(maxHeight: .infinity, alignment: .bottom)
-                    .animation(
-                        .linear,
-                        value: viewStore.offsetY
-                    )
-                    .clipped(antialiased: true)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                    .ignoresSafeArea()
-                    .gesture(DragGesture()
-                        .onChanged { val in
-                            viewStore.send(.setOffset(newY: val.translation.height))
-                        }
-                        .onEnded { val in
-                            let height = max((proxy.size.height) - (viewStore.offsetY + viewStore.tempOffsetY), 20)
-                            
-                            if(height / proxy.size.height >= 0.75) {
-                                // snap to top
-                                viewStore.send(.setTempOffset(newY: 0))
-                            } else if(height / proxy.size.height > 0.35 && height / proxy.size.height < 0.75) {
-                                // snap to middle
-                                viewStore.send(.setTempOffset(newY: proxy.size.height / 2 - 60))
-                            } else {
-                                // snap to bottom
-                                viewStore.send(.setTempOffset(newY: proxy.size.height))
+                        .overlay(alignment: .top) {
+                            ZStack {
+                                Color.clear
+                                
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color(hex: Colors.Outline.dark))
+                                    .frame(
+                                        maxWidth: viewStore.fromRight ? 6 : 40,
+                                        maxHeight: viewStore.fromRight ? 40 : 6
+                                    )
+                                    .padding(.top, viewStore.fromRight ? 0 : 4)
+                                    .padding(.leading, viewStore.fromRight ? 16 : 0)
                             }
-                            viewStore.send(.setOffset(newY: 0))
-                            
+                            .frame(
+                                maxWidth: viewStore.fromRight ? nil : .infinity,
+                                maxHeight: 20
+                            )
+                            .contentShape(Rectangle())
                         }
-                    )
-                    .onAppear {
-                        viewStore.send(.setTempOffset(newY: proxy.size.height))
-                    }
+                        .offset(y: height - minimum)
+                        .offset(y: offset)
+                        .gesture(
+                            DragGesture()
+                                .updating($gestureOffset) { value, out, _ in
+                                    out = value.translation.height
+                                    
+                                    onChange()
+                                }
+                                .onEnded { value in
+                                    let maxHeight = height - minimum
+                                    
+                                    withAnimation {
+                                        if -offset > minimum && -offset < maxHeight / 2 {
+                                            // MID
+                                            offset = -(maxHeight / 3)
+                                        } else if -offset > maxHeight / 2 {
+                                            offset = -maxHeight
+                                        } else {
+                                            offset = 0
+                                        }
+                                    }
+                                    
+                                    lastOffset = offset
+                                }
+                        )
+                )
             }
-            .padding(.top, 70)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-            .ignoresSafeArea()
-            
+            .ignoresSafeArea(.all, edges: .bottom)
+        }
+    }
+    
+    func onChange() {
+        DispatchQueue.main.async {
+            if offset < 32 {
+                self.offset = gestureOffset + lastOffset
+            }
         }
     }
 }
@@ -100,16 +106,22 @@ struct CustomBottomSheetPreviewBridge: View {
     
     @State var isShowing = true
     var body: some View {
-        BottomSheet(
-            store: self.store,
-            isShowing: $isShowing,
-            content: AnyView(
-                ModuleSelector(
-                    store: self.selectorStore,
-                    showModules: .constant(false)
+        ZStack {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.red)
+                .frame(width: 200, height: 320)
+            
+            BottomSheet(
+                store: self.store,
+                isShowing: $isShowing,
+                content: AnyView(
+                    ModuleSelector(
+                        store: self.selectorStore,
+                        showModules: .constant(false)
+                    )
                 )
             )
-        )
+        }
     }
 }
 

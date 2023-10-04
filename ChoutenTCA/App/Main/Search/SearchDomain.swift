@@ -20,6 +20,7 @@ struct SearchDomain: ReducerProtocol {
         var loadingStatus: DataLoadingStatus = .notStarted
         
         var query: String = ""
+        var oldQuery: String = ""
         var htmlString: String? = nil
         var jsString: String? = nil
         var returnData: ReturnedData? = nil
@@ -33,12 +34,6 @@ struct SearchDomain: ReducerProtocol {
         var searchResult: [SearchData] = []
         
         var isDownloadedOnly: Bool = false
-        
-        /*var results: [SearchData] {
-            searchResult != nil
-            ? searchResult!.results
-            : []
-        }*/
     }
     
     enum Action: Equatable {
@@ -100,24 +95,24 @@ struct SearchDomain: ReducerProtocol {
                     .send(.setSearchResult(results: []))
                 )
             case .search:
+                state.loadingStatus = .notStarted
+                state.searchResult = []
+                globalData.setSearchResults([])
                 let query = state.query
                 
                 if query.isEmpty {
-                    return .send(.setLoadingStatus(status: .notStarted))
+                    return .none
                 }
+                
+                state.oldQuery = query
                 
                 state.htmlString = ""
                 state.loadingStatus = .loading
                 
-                // get search code.js data
-                if query.isEmpty {
-                    state.searchResult = []
-                    return .none
-                }
                 let module = globalData.getModule()
                 
                 if module != nil {
-                    state.searchResult = []
+                    //print(module?.name)
                     
                     // get search js file data
                     do {
@@ -130,10 +125,7 @@ struct SearchDomain: ReducerProtocol {
                                   object: nil, userInfo: data)
                     }
                     
-                    return .task {
-                        await .requestHtml(
-                            TaskResult {
-                                return """
+                    state.htmlString = """
                                 <!DOCTYPE html>
                                 <html lang="en">
                                 <head>
@@ -146,52 +138,12 @@ struct SearchDomain: ReducerProtocol {
                                 </body>
                                 </html>
                                 """
-                                
-                                
-                                /*
-                                let url = URL(
-                                    string: url
-                                )!
-                                var request = URLRequest(url: url)
-
-                                let c_cookies = globalData.getCookies()
-                                
-                                if c_cookies != nil {
-                                    let cookies = convertToHTTPCookies(cookies: c_cookies!.cookies)
-                                    let headerFields = HTTPCookie.requestHeaderFields(with: cookies)
-                                    for (field, value) in headerFields {
-                                        request.addValue(value, forHTTPHeaderField: field)
-                                    }
-                                }
-                                
-                                let userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1"
-                                request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
-                                
-                                print(request.allHTTPHeaderFields)
-                                
-                                let (data, response) = try await URLSession.shared.data(for: request)
-                                
-                                if let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                                    var html: String = ""
-                                    print(statusCode)
-                                    switch statusCode {
-                                    case 200:
-                                        html = String(data: data, encoding: .utf8) ?? ""
-                                        break
-                                    case 403:
-                                        // Cloudflare detected, open website in visible webview
-                                        throw "CF"
-                                    case _:
-                                        throw "Failed to load data from \(url)"
-                                    }
-                                    return html
-                                }
-                                
-                                throw "UNKNOWN ERROR"
-                                 */
-                            }
-                        )
-                    }
+                    
+                    return .merge(
+                        .send(.webview(.setRequestType(type: "search"))),
+                        .send(.webview(.setHtmlString(newString: state.htmlString ?? ""))),
+                        .send(.webview(.setJsString(newString: state.jsString ?? "")))
+                    )
                 }
                 return .none
             case .requestHtml(.success(let html)):
@@ -243,7 +195,11 @@ struct SearchDomain: ReducerProtocol {
                 if results.count > 0 {
                     return .send(.setLoadingStatus(status: .success))
                 }
-                return .send(.setLoadingStatus(status: .notStarted))
+                return .merge(
+                    .send(.webview(.setHtmlString(newString: ""))),
+                    .send(.webview(.setJsString(newString: ""))),
+                    .send(.setLoadingStatus(status: .notStarted))
+                )
             case .webview:
                 return .none
             case .info:
@@ -258,7 +214,8 @@ struct SearchDomain: ReducerProtocol {
                         let searchResult = try decoder.decode([SearchData].self, from: jsonData)
                         
                         print("Decoded search result:", searchResult)
-                        return .send(.setSearchResult(results: searchResult))
+                        globalData.setSearchResults(searchResult)
+                        return .none
                     } catch {
                         print("Error decoding JSON ODSFG:", error)
                     }

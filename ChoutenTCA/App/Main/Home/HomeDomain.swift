@@ -34,6 +34,7 @@ struct HomeDomain: ReducerProtocol {
         case resetWebview
         case resetWebviewChange(url: String)
         case onAppear
+        case fetchHomedata
         case setNextUrl(newValue: String?)
         case requestHtml(TaskResult<String>)
         case setOverlay(data: ModuleCookies?)
@@ -69,9 +70,9 @@ struct HomeDomain: ReducerProtocol {
                 return .merge(
                     .send(.webview(.setHtmlString(newString: ""))),
                     .send(.webview(.setJsString(newString: ""))),
-                    .send(.onAppear)
+                    .send(.fetchHomedata)
                 )
-            case .resetWebviewChange(let url):
+            case .resetWebviewChange(_):
                 return .merge(
                     .send(.webview(.setHtmlString(newString: ""))),
                     .send(.webview(.setJsString(newString: "")))
@@ -81,13 +82,17 @@ struct HomeDomain: ReducerProtocol {
                 return .none
             case .setHomeData(let data):
                 state.homeData = data
-                globalData.setHomeData(data)
+                if state.homeData.count == 0 {
+                    return .send(.resetWebview)
+                }
+                //globalData.setHomeData(data)
                 return .none
-            case .onAppear:
-                state.htmlString = ""
-                if globalData.getHomeData().count > 0 {
+            case .fetchHomedata:
+                if state.homeData.count > 0 {
                     return .none
                 }
+                
+                state.htmlString = ""
                 
                 globalData.setInfoData(nil)
                 let module = globalData.getModule()
@@ -105,10 +110,7 @@ struct HomeDomain: ReducerProtocol {
                                   object: nil, userInfo: data)
                     }
                     
-                    return .task {
-                        await .requestHtml(
-                            TaskResult {
-                                return """
+                    state.htmlString = """
                                 <!DOCTYPE html>
                                 <html lang="en">
                                 <head>
@@ -121,54 +123,23 @@ struct HomeDomain: ReducerProtocol {
                                 </body>
                                 </html>
                                 """
-                                
-                                
-                                /*
-                                let url = URL(
-                                    string: url
-                                )!
-                                var request = URLRequest(url: url)
-
-                                let c_cookies = globalData.getCookies()
-                                
-                                if c_cookies != nil {
-                                    let cookies = convertToHTTPCookies(cookies: c_cookies!.cookies)
-                                    let headerFields = HTTPCookie.requestHeaderFields(with: cookies)
-                                    for (field, value) in headerFields {
-                                        request.addValue(value, forHTTPHeaderField: field)
-                                    }
-                                }
-                                
-                                let userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1"
-                                request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
-                                
-                                print(request.allHTTPHeaderFields)
-                                
-                                let (data, response) = try await URLSession.shared.data(for: request)
-                                
-                                if let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                                    var html: String = ""
-                                    print(statusCode)
-                                    switch statusCode {
-                                    case 200:
-                                        html = String(data: data, encoding: .utf8) ?? ""
-                                        break
-                                    case 403:
-                                        // Cloudflare detected, open website in visible webview
-                                        throw "CF"
-                                    case _:
-                                        throw "Failed to load data from \(url)"
-                                    }
-                                    return html
-                                }
-                                
-                                throw "UNKNOWN ERROR"
-                                 */
-                            }
-                        )
-                    }
+                    return .merge(
+                        .send(.webview(.setRequestType(type: "home"))),
+                        .send(.webview(.setHtmlString(newString: state.htmlString))),
+                        .send(.webview(.setJsString(newString: state.jsString)))
+                    )
                 }
                 return .none
+            case .onAppear:
+                return .merge(
+                    .run { send in
+                        let homeData = globalData.observeHomeData()
+                        for await value in homeData {
+                            await send(.setHomeData(data: value))
+                        }
+                    },
+                    .send(.resetWebview)
+                )
             case .requestHtml(.success(let html)):
                 if state.returnData != nil && state.returnData!.usesApi {
                     let regexPattern = "&#\\d+;"

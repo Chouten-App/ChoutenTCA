@@ -119,6 +119,7 @@ class DynamicColors: ObservableObject {
     
     // Surface
     @Published var Surface: CustomColor = CustomColor(light: "#faf9fd", dark: "#121316")
+    @Published var SurfaceTEMP: CustomColor = CustomColor(light: "#faf9fd", dark: "#121316")
     @Published var SurfaceDim: CustomColor? = CustomColor(light: "#dbd9dd", dark: "#121316")
     @Published var SurfaceBright: CustomColor? = CustomColor(light: "#faf9fd", dark: "#38393c")
     

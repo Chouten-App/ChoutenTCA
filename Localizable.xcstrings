@@ -1,0 +1,309 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "- Stars: 3" : {
+
+    },
+    "--:--/--:--" : {
+
+    },
+    "%@" : {
+
+    },
+    "%@ / %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ / %2$@"
+          }
+        }
+      }
+    },
+    "%@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "%@10" : {
+
+    },
+    "%lf" : {
+
+    },
+    "%lld / %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "%lld %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@"
+          }
+        }
+      }
+    },
+    "%lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "3" : {
+
+    },
+    "10" : {
+
+    },
+    "AMOLED Mode" : {
+
+    },
+    "Appearance" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Chapter 1: Prologue" : {
+
+    },
+    "Chapter Complete" : {
+
+    },
+    "CHOUTEN" : {
+
+    },
+    "Chouten Modules" : {
+
+    },
+    "Clear Logs" : {
+
+    },
+    "Cloudflare detected." : {
+
+    },
+    "CONFIG" : {
+
+    },
+    "Continue watching" : {
+
+    },
+    "Dark" : {
+
+    },
+    "Dark Theme" : {
+
+    },
+    "Developer" : {
+
+    },
+    "Do not share credentials of any kind unless you trust the module." : {
+
+    },
+    "Done" : {
+
+    },
+    "Downloaded Only" : {
+
+    },
+    "Dubbed" : {
+
+    },
+    "Episode %@" : {
+
+    },
+    "Episode %@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Episode %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "Episode 1" : {
+
+    },
+    "Error" : {
+
+    },
+    "Export Theme to JSON" : {
+
+    },
+    "Fetching %@" : {
+
+    },
+    "Filler" : {
+
+    },
+    "For the naughty naughty" : {
+
+    },
+    "History" : {
+
+    },
+    "Home" : {
+
+    },
+    "Incognito" : {
+
+    },
+    "Incognito Mode" : {
+
+    },
+    "iOS Style" : {
+
+    },
+    "Kimetsu no Yaiba" : {
+
+    },
+    "Light" : {
+
+    },
+    "Log" : {
+
+    },
+    "Logs" : {
+
+    },
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc eget sem tellus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Sed maximus justo neque, vitae faucibus mauris facilisis non. Quisque volutpat nunc quis tortor commodo, at tempus ante imperdiet. Suspendisse lobortis dapibus justo. Nunc ut odio commodo, varius mauris tristique, consequat nibh. Mauris tincidunt sapien purus, id maximus purus posuere ut. Aliquam nec ex ligula. Sed viverra velit libero, quis euismod erat molestie ut. Nunc eleifend condimentum nulla ut rutrum. Sed condimentum eu lectus id facilisis. Integer ut velit feugiat, feugiat augue sit amet, finibus tortor. Etiam id magna ac odio feugiat semper. Donec sit amet diam eget est dignissim efficitur. Aliquam molestie ante porttitor lacus rutrum, non eleifend tellus facilisis." : {
+
+    },
+    "LTR" : {
+
+    },
+    "More" : {
+
+    },
+    "MULTI QUALITY" : {
+
+    },
+    "Network" : {
+
+    },
+    "Next up!" : {
+
+    },
+    "No logs...Yay?" : {
+
+    },
+    "Nothing to change yet" : {
+
+    },
+    "Nothing to show" : {
+
+    },
+    "Off" : {
+
+    },
+    "On" : {
+
+    },
+    "Primary" : {
+
+    },
+    "Reading Mode" : {
+
+    },
+    "Repo" : {
+
+    },
+    "Repositories" : {
+
+    },
+    "RTL" : {
+
+    },
+    "Search" : {
+
+    },
+    "Search for something..." : {
+
+    },
+    "Search locally..." : {
+
+    },
+    "Season 1" : {
+
+    },
+    "Secondary" : {
+
+    },
+    "Seems like your search didn't match anything. Please try a different search query." : {
+
+    },
+    "Sets the mode of the app to offline" : {
+
+    },
+    "Settings" : {
+
+    },
+    "Skip %@" : {
+
+    },
+    "Solo leveling" : {
+
+    },
+    "Subbed" : {
+
+    },
+    "System" : {
+
+    },
+    "Thanks to Mantton for the UI Idea" : {
+
+    },
+    "Theme" : {
+
+    },
+    "This will be the description of the Repo with long text" : {
+
+    },
+    "Toggle Downloaded Only" : {
+
+    },
+    "Toggle Incognito Mode" : {
+
+    },
+    "v%@" : {
+
+    },
+    "Version %@" : {
+
+    },
+    "Vertical" : {
+
+    },
+    "WARNING" : {
+
+    },
+    "Watched" : {
+
+    },
+    "頂点" : {
+
+    }
+  },
+  "version" : "1.0"
+}

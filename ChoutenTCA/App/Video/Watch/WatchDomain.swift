@@ -59,7 +59,7 @@ struct WatchDomain: ReducerProtocol {
             case .setVideoData(let newValue):
                 state.videoData = newValue
                 return .none
-            case .onAppear(let infoUrl):
+            case .onAppear(_):
                 state.htmlString = ""
                 let module = globalData.getModule()
                 
@@ -139,7 +139,7 @@ struct WatchDomain: ReducerProtocol {
                     }
                 }
                 return .none
-            case .onChange(let infoUrl):
+            case .onChange(_):
                 state.htmlString = ""
                 let module = globalData.getModule()
                 
@@ -230,7 +230,7 @@ struct WatchDomain: ReducerProtocol {
                     
                     let cleaned = modifiedString.replacingOccurrences(of: "'", with: "").replacingOccurrences(of: "\"", with: "'")
                     
-                    print("IMPORTS: \(state.returnData)")
+                    //print("IMPORTS: \(state.returnData)")
                     
                     if !state.returnData!.imports.isEmpty {
                         var scripts = ""

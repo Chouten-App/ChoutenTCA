@@ -56,81 +56,94 @@ extension ModuleManager {
     @Dependency(\.globalData)
     static var globalData
     
+    
     static let live = Self(
         importFromFile: { fileUrl in
             if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
                 let fileManager = FileManager.default
                 
-                let tempDirectory = documentsDirectory.appendingPathComponent("Modules").appendingPathComponent("TEMPORARY")
-                try FileManager.default.unzipItem(at: fileUrl, to: tempDirectory)
+                // Create cache directory if it doesnt exist
+                let cacheDirectory = documentsDirectory.appendingPathComponent("CACHE")
+                let modulesDirectory = documentsDirectory.appendingPathComponent("Modules")
                 
-                // check if id already exists in the apps directory
-                let tempData = internalClass.getMetadata(folderUrl: tempDirectory)
+                if !fileManager.fileExists(atPath: cacheDirectory.absoluteString) {
+                    do {
+                        try fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true, attributes: nil)
+                        print("Directory created at path: \(cacheDirectory)")
+                    } catch {
+                        print("Error creating directory: \(error)")
+                    }
+                } else {
+                    print("Directory already exists at path: \(cacheDirectory)")
+                }
                 
-                var setModule = false
+                var moduleCount = 0
+                do {
+                    // Get the contents of the directory
+                    let moduleArray = try internalClass.getModules()
+                    
+                    // Return the count of directories
+                    moduleCount = moduleArray.count
+                } catch {
+                    print("Error counting folders: \(error)")
+                    moduleCount = 0
+                }
                 
-                if let tempData = tempData {
-                    if moduleFolderNames.count > 0 {
-                        for moduleFolder in moduleFolderNames {
-                            let data = internalClass.getMetadata(folderUrl: documentsDirectory.appendingPathComponent("Modules").appendingPathComponent(moduleFolder))
-                            if let data = data {
-                                if tempData.id == data.id {
-                                    // module already exists, check versions
-                                    let ver = tempData.version.versionCompare(data.version)
+                let moduleName = "Module \(moduleCount)"
+                print("Module Name: \(moduleName)")
+                
+                do {
+                    try FileManager.default.unzipItem(at: fileUrl, to: cacheDirectory.appendingPathComponent(moduleName))
+                    print("Unzip successful.")
+                } catch {
+                    print(error.localizedDescription)
+                }
+                
+                let module = internalClass.getMetadata(folderUrl: cacheDirectory.appendingPathComponent(moduleName))
+                
+                if let module {
+                    print("Module metadata parsing successful.")
+                    
+                    moduleFolderNames = try internalClass.getModules()
+                    
+                    var moduleFound = false
+                    if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                        for trueModuleName in moduleFolderNames {
+                            let m = internalClass.getMetadata(folderUrl: documentsDirectory.appendingPathComponent("Modules").appendingPathComponent(trueModuleName))
+                            if let m = m {
+                                // check if module id == m id
+                                if module.id == m.id {
+                                    print("Module exists.")
+                                    moduleFound = true
+                                    // if id matches, check version number
+                                    let versionResult = module.version.versionCompare(m.version)
                                     
-                                    if ver == .orderedDescending {
-                                        try fileManager.removeItem(
-                                            at: documentsDirectory
-                                                .appendingPathComponent("Modules")
-                                                .appendingPathComponent(moduleFolder)
-                                        )
-                                        try fileManager.copyItem(
-                                            at: tempDirectory,
-                                            to: documentsDirectory
-                                                .appendingPathComponent("Modules")
-                                                .appendingPathComponent(moduleFolder)
-                                        )
+                                    switch versionResult {
+                                    case .orderedSame:
+                                        // versions are the same, do nothing to modules dir
+                                        break
+                                    case .orderedAscending:
+                                        // new module version is lower, do nothing to module dir
+                                        break
+                                    case .orderedDescending:
+                                        // new module version is higher, remove old module and add new one
+                                        
+                                        // remove old dir
+                                        try FileManager.default.removeItem(at: modulesDirectory.appendingPathComponent(trueModuleName))
+                                        
+                                        // copy cache module dir to modules dir
+                                        try fileManager.copyItem(at: cacheDirectory.appendingPathComponent(moduleName), to: modulesDirectory.appendingPathComponent(trueModuleName))
+                                        
+                                        break
                                     }
-                                    
-                                    setModule = true
                                 }
                             }
                         }
-                        
-                        if !setModule {
-                            try fileManager.copyItem(
-                                at: tempDirectory,
-                                to: documentsDirectory
-                                    .appendingPathComponent("Modules")
-                                    .appendingPathComponent(tempData.name)
-                            )
-                        }
-                    } else {
-                        try fileManager.copyItem(
-                            at: tempDirectory,
-                            to: documentsDirectory
-                                .appendingPathComponent("Modules")
-                                .appendingPathComponent(tempData.name)
-                        )
                     }
-                }
-                try fileManager.removeItem(at: tempDirectory)
-                
-                try FileManager.default.removeItem(at: fileUrl)
-                
-                // update globalData incase the app is already open
-                
-                moduleFolderNames = try internalClass.getModules()
-                moduleIds = []
-                globalData.setAvailableModules([])
-                
-                
-                for moduleFolder in moduleFolderNames {
-                    let data = internalClass.getMetadata(folderUrl: documentsDirectory.appendingPathComponent("Modules").appendingPathComponent(moduleFolder))
                     
-                    if let data {
-                        globalData.appendAvailableModules(data)
-                        moduleIds.append(data.id)
+                    if !moduleFound {
+                        let trueModuleName = module.name
+                        try fileManager.copyItem(at: cacheDirectory.appendingPathComponent(moduleName), to: modulesDirectory.appendingPathComponent(trueModuleName))
                     }
                 }
             }

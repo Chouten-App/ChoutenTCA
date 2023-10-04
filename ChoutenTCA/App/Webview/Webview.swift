@@ -9,6 +9,7 @@ import SwiftUI
 import WebKit
 import SwiftyJSON
 import ComposableArchitecture
+import OSLog
 
 func setCookiesInWebView(cookies: [Cookie], webView: WKWebView) {
     let httpCookies = convertToHTTPCookies(cookies: cookies)
@@ -53,6 +54,8 @@ struct Result: Codable {
 
 struct WebView: UIViewRepresentable {
     @ObservedObject var viewStore: ViewStore<WebviewDomain.State, WebviewDomain.Action>
+    
+    let logger = OSLog(subsystem: "com.inumakieu.chouten", category: "Webview")
     
     var payload: String = ""
     var action: String = "logic"
@@ -100,7 +103,6 @@ struct WebView: UIViewRepresentable {
             Native.sendHttpRequest = window.webkit.messageHandlers.Native.postMessage;
             
             window.onmessage = async function (event) {
-                console.log("test")
                 const data = JSON.parse(event.data);
                 let payload = {};
             
@@ -117,6 +119,7 @@ struct WebView: UIViewRepresentable {
                         }else if(payload.action === "video"){
                             await getSource(payload);
                         }else{
+                            console.log("Running Logic!")
                             await logic(payload);
                         }
                     }catch(err){
@@ -124,8 +127,6 @@ struct WebView: UIViewRepresentable {
                         sendSignal(1, err.toString());
                     }
                 }else{
-                    console.log("req id: " + data.reqId)
-                    console.log("response text: " + data.responseText)
                     try {
                         resolveFunctions[data.reqId](data.responseText);
                     } catch (error) {
@@ -198,9 +199,8 @@ struct WebView: UIViewRepresentable {
                 'action': '\(action)'
             }
         };
-        console.log("HM");
         try {
-        window.onmessage({data: JSON.stringify(data)});
+            window.onmessage({data: JSON.stringify(data)});
         } catch (error) {
             console.log(error)
         }
@@ -238,6 +238,7 @@ struct WebView: UIViewRepresentable {
         
         context.coordinator.webView = webView
         
+        print("Webview created.")
         return webView
     }
     
@@ -253,7 +254,8 @@ struct WebView: UIViewRepresentable {
                 send: WebviewDomain.Action.setNextUrl(newUrl:)
             ),
             viewStore: viewStore,
-            completionHandler: completionHandler
+            completionHandler: completionHandler,
+            logger: logger
         )
     }
     
@@ -264,29 +266,30 @@ struct WebView: UIViewRepresentable {
         let viewStore: ViewStoreOf<WebviewDomain>
         var webView: WKWebView? // Store the WKWebView reference here
         var completionHandler: ((String) -> Void)? // Add completionHandler
+        var logger: OSLog
         
         @Dependency(\.globalData) var globalData
         
-        init(javaScript: String, requestType: String, nextUrl: Binding<String>, viewStore: ViewStoreOf<WebviewDomain>, completionHandler: ((String) -> Void)?) {
+        init(javaScript: String, requestType: String, nextUrl: Binding<String>, viewStore: ViewStoreOf<WebviewDomain>, completionHandler: ((String) -> Void)?, logger: OSLog) {
             self.javaScript = javaScript
             self.requestType = requestType
             self._nextUrl = nextUrl
             self.viewStore = viewStore
             self.webView = nil
             self.completionHandler = completionHandler
+            self.logger = logger
         }
         
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             print("CALLED: \(message.name)")
             
             if message.name == "Native" {
-                print(message.body)
                 if let body = message.body as? String {
                     sendHttpRequest(data: body)
                 }
             }
             else if message.name == "logHandler" {
-                print("LOG: \(message.body)")
+                
                 if let message = message.body as? String {
                     let data = message.data(using: .utf8)
                     let decoder = JSONDecoder()
@@ -296,7 +299,7 @@ struct WebView: UIViewRepresentable {
                             let module = globalData.getModule()
                             consoleData.moduleName = module?.name ?? ""
                             consoleData.moduleIconPath = module?.icon ?? ""
-                            print(consoleData)
+                            print("LOG: \(consoleData.msg)")
                             viewStore.send(.appendGlobalLog(item: consoleData))
                         }
                     } catch {
@@ -311,20 +314,39 @@ struct WebView: UIViewRepresentable {
         }
         
         func sendHttpRequest(data: String) {
-            if let webView = webView {
-                // Your Swift function implementation here
-                // This function will be called when JavaScript calls Native.sendHttpRequest
-                // Implement your networking code or any other functionality you want to perform with the received data.
-                print("Received data from JavaScript:", data)
+            if webView != nil {
                 postMessage(message: data)
             } else {
                 print("WKWebView reference is nil")
             }
         }
         
-        func request(url: URL, headers: [String: String], method: String? = "GET", body: String? = nil, completionHandler: @escaping (String?, Error?) -> Void) {
+        func request(
+            url: URL,
+            headers: [String: String],
+            method: String? = "GET",
+            body: String? = nil,
+            completionHandler: @escaping (String?, Error?) -> Void
+        ) async throws {
+            URLSession.shared.configuration.httpCookieStorage = HTTPCookieStorage.shared
+            
             var request = URLRequest(url: url)
             request.httpMethod = method
+            
+            let webviewCookies = HTTPCookieStorage.shared.cookies(for: url)
+            
+            let cookieStorage = HTTPCookieStorage.shared
+            for cookie in webviewCookies ?? [] {
+                cookieStorage.setCookie(cookie)
+            }
+            
+            let cookieHeaders = HTTPCookie.requestHeaderFields(with: cookieStorage.cookies(for: url)!)
+            
+            request.allHTTPHeaderFields = cookieHeaders
+            
+            let userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS VERSION like Mac OS X) AppleWebKit/WEBKIT_VERSION (KHTML, like Gecko) Mobile/USER_AGENT_APP_NAME"
+            request.setValue(userAgent, forHTTPHeaderField: "user-agent")
+            
             for (key, value) in headers {
                 request.setValue(value, forHTTPHeaderField: key)
             }
@@ -333,20 +355,41 @@ struct WebView: UIViewRepresentable {
                 request.httpBody = body.data(using: .utf8)
             }
             
-            let task = URLSession.shared.dataTask(with: request) { data, response, error in
-                if let error = error {
-                    completionHandler(nil, error)
-                    return
-                }
-                
-                if let data = data, let responseString = String(data: data, encoding: .utf8) {
-                    completionHandler(responseString, nil)
-                } else {
-                    completionHandler(nil, NSError(domain: "", code: -1, userInfo: nil))
-                }
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            let responseData = response as! HTTPURLResponse
+            let status = responseData.statusCode
+            
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                request.log(response: httpResponse)
             }
             
-            task.resume()
+            if status == 403 {
+                // CF hit
+                print("cf")
+                self.globalData.setCfUrl(url.absoluteString)
+                self.globalData.setShowOverlay(true)
+                
+                /*
+                DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                    Task {
+                        do {
+                            try await self.request(url: url, headers: headers, method: "POST", body: body, completionHandler: completionHandler)
+                        } catch {
+                            print(error.localizedDescription)
+                        }
+                    }
+                }
+                */
+                completionHandler(nil, NSError(domain: "", code: -1, userInfo: nil))
+            }
+            
+            if let responseString = String(data: data, encoding: .utf8) {
+                completionHandler(responseString, nil)
+            } else {
+                completionHandler(nil, NSError(domain: "", code: -1, userInfo: nil))
+            }
         }
         
         func postMessage(message: String) {
@@ -355,42 +398,45 @@ struct WebView: UIViewRepresentable {
                     let req = try JSONDecoder().decode(RequestOption.self, from: jsonData)
                     
                     if(req.action == "HTTPRequest" && req.url != nil && req.headers != nil){
-                        request(url: URL(string: req.url!)!, headers: req.headers!, method: req.method, body: req.body) { responseString, error in
-                            if let error = error {
-                                print("Error:", error.localizedDescription)
-                            } else if let responseString = responseString {
-                                let resp = [
-                                    "reqId": req.reqId,
-                                    "responseText": responseString
-                                ]
-                                do {
-                                    let jsonData = try JSONSerialization.data(withJSONObject: resp, options: [])
-                                    
-                                    
-                                    if let jsonString = String(data: jsonData, encoding: .utf8) {
-                                        print(jsonString)
-                                        
-                                        if let webView = self.webView {
-                                            DispatchQueue.main.async {
-                                                webView.evaluateJavaScript(
+                        Task {
+                            do {
+                                try await request(url: URL(string: req.url!)!, headers: req.headers!, method: req.method, body: req.body) { responseString, error in
+                                    if let error = error {
+                                        print("Error:", error.localizedDescription)
+                                    } else if let responseString = responseString {
+                                        let resp = [
+                                            "reqId": req.reqId,
+                                            "responseText": responseString
+                                        ]
+                                        do {
+                                            let jsonData = try JSONSerialization.data(withJSONObject: resp, options: [])
+                                            
+                                            
+                                            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                                                if let webView = self.webView {
+                                                    DispatchQueue.main.async {
+                                                        webView.evaluateJavaScript(
                                                     """
                                                     window.onmessage({data: JSON.stringify(\(jsonString))});
                                                     """
-                                                )
+                                                        )
+                                                    }
+                                                    
+                                                }
+                                            } else {
+                                                print("Error converting JSON data to string")
                                             }
-                                            
+                                        } catch {
+                                            print("Error converting dictionary to JSON:", error)
                                         }
-                                    } else {
-                                        print("Error converting JSON data to string")
+                                        
                                     }
-                                } catch {
-                                    print("Error converting dictionary to JSON:", error)
                                 }
-                                
+                            } catch {
+                                print(error.localizedDescription)
                             }
                         }
                     }else if(req.action == "result" && req.result != nil){
-                        //print("RESULT: \(req.result)")
                         parseResult(body: req.result ?? "")
                         //this.callback(req.result)
                     }else if(req.action == "error"){
@@ -415,6 +461,7 @@ struct WebView: UIViewRepresentable {
                     let decoder = JSONDecoder()
                     let requestOption = try decoder.decode(RequestOption.self, from: jsonData)
                     
+                    //print(requestOption.result)
                     if let resultString = requestOption.result?.data(using: .utf8) {
                         do {
                             let decoder = JSONDecoder()

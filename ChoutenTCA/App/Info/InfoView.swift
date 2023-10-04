@@ -29,7 +29,7 @@ struct InfoView: View {
         WithViewStore(self.store) { viewStore in
             GeometryReader { proxy in
                 ScrollView {
-                    if let infoData = viewStore.infoData {
+                    if viewStore.infoData != nil {
                         VStack {
                             Header(viewStore: viewStore, proxy: proxy)
                             ExtraInfo(viewStore: viewStore)
@@ -293,7 +293,8 @@ struct InfoView: View {
                     GeometryReader {reader in
                         FillAspectImage(
                             url: URL(string: infoData.banner ?? infoData.poster),
-                            doesAnimateHorizontal: false
+                            doesAnimateHorizontal: false,
+                            color: .constant(nil)
                         )
                         .blur(radius: infoData.banner != nil ? 0.0 : 6.0)
                         .overlay {

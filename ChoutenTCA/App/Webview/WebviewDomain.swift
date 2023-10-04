@@ -70,7 +70,6 @@ struct WebviewDomain: ReducerProtocol {
             }
             return .none
         case .setGlobalNextUrl(let newUrl):
-            globalData.setNextUrl(newUrl)
             return .none
         case .appendGlobalLog(let item):
             globalData.appendLogs(item)

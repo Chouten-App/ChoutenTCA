@@ -32,7 +32,7 @@ struct MediaList: Codable, Equatable {
     var list: [MediaItem]
 }
 
-struct MediaItem: Codable, Equatable {
+struct MediaItem: Codable, Equatable, Hashable {
     let url: String
     let number: Double
     let title: String?

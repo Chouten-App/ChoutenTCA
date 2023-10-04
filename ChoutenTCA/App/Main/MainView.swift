@@ -66,6 +66,7 @@ struct MainView: View {
                             )
                         )
                         .tag(0)
+                        .id(0)
                         
                         if viewStore.iosStyle {
                             SearchViewiOS(
@@ -75,6 +76,7 @@ struct MainView: View {
                                 )
                             )
                             .tag(1)
+                            .id(1)
                         } else {
                             SearchView(
                                 store: self.store.scope(
@@ -83,10 +85,12 @@ struct MainView: View {
                                 )
                             )
                             .tag(1)
+                            .id(1)
                         }
                         
                         RepoView()
                             .tag(2)
+                            .id(2)
                         
                         if viewStore.iosStyle {
                             MoreViewiOS(
@@ -101,6 +105,7 @@ struct MainView: View {
                             }
                             .ignoresSafeArea()
                             .tag(3)
+                            .id(3)
                         } else {
                             MoreView(
                                 store: self.store.scope(
@@ -114,6 +119,7 @@ struct MainView: View {
                             }
                             .ignoresSafeArea()
                             .tag(3)
+                            .id(3)
                         }
                         
                     }
@@ -121,7 +127,6 @@ struct MainView: View {
                 }
                 .foregroundColor(Color(hex: Colors.onSurface.dark))
                 // module selector
-                
                 .overlay(alignment: .bottom) {
                     BottomSheet(
                         store: self.store.scope(
@@ -146,21 +151,6 @@ struct MainView: View {
                         )
                     )
                 }
-                 
-                /*
-                .overlay(alignment: .bottom) {
-                    
-                    CloudflareView(
-                        url: "https://aniwatch.to",
-                        isShowing: viewStore.binding(
-                            get: \.showOverlay,
-                            send: MainDomain.Action.setShowOverlay(newBool:)
-                        )
-                    )
-                    .padding(.bottom, 80)
-                     
-                }
-                 */
                 // Navbar
                 .overlay(alignment: viewStore.navbarState.screenWidth > 600 ? .leading : .bottom) {
                     if viewStore.iosStyle {
@@ -177,6 +167,18 @@ struct MainView: View {
                                 action: MainDomain.Action.setTab
                             )
                         )
+                    }
+                }
+                .overlay {
+                    if let cfUrl = viewStore.cfUrl?.baseUrl() {
+                        CloudflareView(
+                            url: cfUrl,
+                            isShowing: viewStore.binding(
+                                get: \.showOverlay,
+                                send: MainDomain.Action.setShowOverlay(newBool:)
+                            )
+                        )
+                        .transition(.move(edge: .bottom))
                     }
                 }
                 .popup(isPresented: viewStore.binding(
@@ -199,7 +201,6 @@ struct MainView: View {
                         .autohideIn(4.0)
                         .dragToDismiss(true)
                 }
-                .ignoresSafeArea()
                 .onAppear {
                     viewStore.send(.onAppear)
                 }

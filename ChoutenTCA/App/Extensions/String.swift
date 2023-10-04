@@ -32,6 +32,26 @@ extension String {
     }
 }
 
+extension String {
+    func baseUrl() -> String? {
+        if let url = URL(string: self) {
+            // Extract the scheme, host, and port (if any)
+            if let scheme = url.scheme, let host = url.host {
+                var baseUrl = scheme + "://" + host
+                
+                // Append the port if it exists
+                if let port = url.port {
+                    baseUrl += ":\(port)"
+                }
+                
+                return baseUrl
+            }
+        }
+        
+        return nil
+    }
+}
+
 extension String: LocalizedError {
     public var errorDescription: String? { return self }
 }

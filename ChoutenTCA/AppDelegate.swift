@@ -35,6 +35,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let documentsURL = try! fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
         let modulesURL = documentsURL.appendingPathComponent("Modules", isDirectory: true)
         let themesURL = documentsURL.appendingPathComponent("Themes", isDirectory: true)
+        let cacheURL = documentsURL.appendingPathComponent("CACHE", isDirectory: true)
 
         var isDirectory: ObjCBool = false
 
@@ -51,6 +52,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             do {
                 try fileManager.createDirectory(at: themesURL, withIntermediateDirectories: false, attributes: nil)
                 print("Created Themes folder")
+            } catch {
+                print("Error: \(error)")
+            }
+        }
+        
+        if fileManager.fileExists(atPath: cacheURL.path, isDirectory: &isDirectory) {
+            do {
+                try fileManager.removeItem(at: cacheURL)
+                print("Removed CACHE folder")
             } catch {
                 print("Error: \(error)")
             }

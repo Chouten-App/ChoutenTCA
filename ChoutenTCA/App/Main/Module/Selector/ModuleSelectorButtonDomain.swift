@@ -46,6 +46,7 @@ struct ModuleSelectorButtonDomain: ReducerProtocol {
         case setShouldAutoUpdate(newBool: Bool)
         case onChanged(value: DragGesture.Value)
         case onEnded(value: DragGesture.Value)
+        case resetData
     }
     
     @Dependency(\.moduleManager)
@@ -108,6 +109,15 @@ struct ModuleSelectorButtonDomain: ReducerProtocol {
                 state.isSwiped = false
                 state.offset = 0
             }
+            return .none
+        case .resetData:
+            
+            globalData.setHomeData([])
+            globalData.setInfoData(nil)
+            globalData.setSearchResults([])
+            globalData.setVideoData(nil)
+            globalData.setServers([])
+            
             return .none
         }
     }

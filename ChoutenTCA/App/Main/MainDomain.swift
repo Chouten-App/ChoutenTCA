@@ -17,6 +17,7 @@ struct MainDomain: ReducerProtocol {
         var isDownloadedOnly: Bool = false
         var iosStyle: Bool = true
         
+        var cfUrl: String? = nil
         var cookies: ModuleCookies? = nil
         var showOverlay: Bool = false
         
@@ -46,11 +47,15 @@ struct MainDomain: ReducerProtocol {
         case setIncognito(newValue: Bool)
         case setDownloadedOnly(newValue: Bool)
         case setCookies(newValue: ModuleCookies?)
+        case setCfUrl(newValue: String?)
         case setShowOverlay(newBool: Bool)
+        case setAvailableModules(TaskResult<[Module]>)
     }
     
     @Dependency(\.globalData)
     var globalData
+    @Dependency(\.moduleManager)
+    var moduleManager
     
     var body: some ReducerProtocol<State, Action> {
         Scope(state: \.navbarState, action: /Action.setTab) {
@@ -130,6 +135,9 @@ struct MainDomain: ReducerProtocol {
             case .setShowOverlay(let newBool):
                 state.showOverlay = newBool
                 return .none
+            case .setCfUrl(let newValue):
+                state.cfUrl = newValue
+                return .none
             case .onAppear:
                 state.isIncognito = globalData.getIncognito()
                 state.isDownloadedOnly = globalData.getIncognito()
@@ -139,6 +147,12 @@ struct MainDomain: ReducerProtocol {
                         let incognitoStream = globalData.observeIncognito()
                         for await value in incognitoStream {
                             await send(.setIncognito(newValue: value), animation: .easeOut(duration: 0.2))
+                        }
+                    },
+                    .run { send in
+                        let cfStream = globalData.observeCfUrl()
+                        for await value in cfStream {
+                            await send(.setCfUrl(newValue: value))
                         }
                     },
                     .run { send in
@@ -158,8 +172,27 @@ struct MainDomain: ReducerProtocol {
                         for await value in showOverlay {
                             await send(.setShowOverlay(newBool: value), animation: .easeOut(duration: 0.2))
                         }
+                    },
+                    .task {
+                        await .setAvailableModules(
+                            TaskResult {
+                                let modules = try moduleManager.getModules()
+                                let _ = try moduleManager.validateModules()
+                                return modules
+                            }
+                        )
                     }
                 )
+            case .setAvailableModules(.success(let modules)):
+                globalData.setAvailableModules(modules)
+                return .none
+            case .setAvailableModules(.failure(let error)):
+                print(error)
+                let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
+                NotificationCenter.default
+                    .post(name:           NSNotification.Name("floaty"),
+                          object: nil, userInfo: data)
+                return .none
             }
         }
     }

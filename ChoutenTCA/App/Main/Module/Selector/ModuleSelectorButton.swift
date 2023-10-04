@@ -12,9 +12,12 @@ import Kingfisher
 struct ModuleSelectorButton: View {
     let store: StoreOf<ModuleSelectorButtonDomain>
     @StateObject var Colors = DynamicColors.shared
+    @Dependency(\.globalData) var globalData
     
     @FetchRequest(sortDescriptors: []) var userInfo: FetchedResults<UserInfo>
     @Environment(\.managedObjectContext) var moc
+    
+    @State var showPopover = false
     
     var body: some View {
         WithViewStore(self.store) { viewStore in
@@ -40,6 +43,7 @@ struct ModuleSelectorButton: View {
                 
                 Button {
                     viewStore.send(.loadModule)
+                    viewStore.send(.resetData)
                     if userInfo.count > 0 {
                         userInfo[0].selectedModuleId = viewStore.module.id
                         try! moc.save()
@@ -51,125 +55,130 @@ struct ModuleSelectorButton: View {
                         print("saved2")
                     }
                 } label: {
-                    VStack(alignment: .leading) {
-                        HStack(alignment: .center) {
-                            if viewStore.module.icon != nil {
-                                KFImage(URL(string: viewStore.module.icon!))
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(
-                                        minWidth: viewStore.showDetails ? 52 : 40,
-                                        maxWidth: viewStore.showDetails ? 52 : 40,
-                                        minHeight: viewStore.showDetails ? 52 : 40,
-                                        maxHeight: viewStore.showDetails ? 52 : 40
-                                    )
-                                    .cornerRadius(12)
-                                    .overlay {
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color(hex: Colors.Outline.dark), lineWidth: 1)
-                                    }
-                            } else {
-                                ZStack {
-                                    Color(.white).opacity(0.6)
-                                        .blur(radius: 6)
-                                    
-                                    Image(systemName: "questionmark")
-                                        .padding(.vertical, 12)
-                                        .padding(.horizontal, 14)
-                                        .foregroundColor(Color(hex: Colors.Primary.dark))
-                                }
-                                .fixedSize()
-                                .cornerRadius(40)
-                            }
-                            
-                            VStack(alignment: .leading) {
-                                Text(viewStore.module.name)
-                                    .foregroundColor(
-                                        Color(hex: viewStore.module.general.fgColor)
-                                    )
-                                    .font(.system(size: viewStore.showDetails ? 20 : 16, weight: .bold))
-                                    .lineLimit(1)
-                                
-                                HStack {
-                                    Text(viewStore.module.general.author ?? "Unknown")
-                                        .foregroundColor(Color(hex: viewStore.module.general.fgColor).opacity(0.7))
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .lineLimit(1)
-                                    Text("v\(viewStore.module.version)")
-                                            .foregroundColor(Color(hex: viewStore.module.general.fgColor).opacity(0.7))
-                                            .font(.system(size: 12, weight: .semibold))
-                                }
-                            }
-                            .padding(.top, viewStore.showDetails ? 6 : 0)
-                            .frame(minHeight: 52, alignment: viewStore.showDetails ? .top : .center)
-                            
-                            Spacer()
-                            
-                            Button {
-                                viewStore.send(.toggleShowDetails)
-                            } label: {
-                                Image(systemName: viewStore.showDetails ? "xmark" : "info")
-                                    .foregroundColor(
-                                        Color(hex: Colors.onPrimary.dark)
-                                    )
-                                    .padding(10)
-                                    .background {
-                                        Circle()
-                                            .fill(
-                                                Color(hex: Colors.Primary.dark)
-                                            )
-                                    }
-                            }
-                        }
-                        Text(viewStore.module.general.description)
-                            .fontWeight(.semibold)
-                            .foregroundColor(Color(hex: viewStore.module.general.fgColor).opacity(0.7))
-                        
-                        HStack {
-                            Text("Auto update Module")
-                                .font(.subheadline)
-                                .foregroundColor(
-                                    Color(hex: viewStore.module.general.fgColor)
+                    HStack(alignment: .center) {
+                        if viewStore.module.icon != nil {
+                            KFImage(URL(string: viewStore.module.icon!))
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(
+                                    minWidth: viewStore.showDetails ? 52 : 40,
+                                    maxWidth: viewStore.showDetails ? 52 : 40,
+                                    minHeight: viewStore.showDetails ? 52 : 40,
+                                    maxHeight: viewStore.showDetails ? 52 : 40
                                 )
-                            
-                            Spacer()
-                            
-                            Toggle(isOn: viewStore.binding(
-                                get: \.shouldAutoUpdate,
-                                send: ModuleSelectorButtonDomain.Action.setShouldAutoUpdate(newBool:)
-                            ), label: {})
-                                .toggleStyle(M3ToggleStyle())
+                                .cornerRadius(12)
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color(hex:
+                                                        Colors.getColor(
+                                                            for: "Outline",
+                                                            colorScheme: globalData.getColorScheme()
+                                                        )
+                                                     ), lineWidth: 1)
+                                }
+                        } else {
+                            ZStack {
+                                Color(.white).opacity(0.6)
+                                    .blur(radius: 6)
+                                
+                                Image(systemName: "questionmark")
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 14)
+                                    .foregroundColor(
+                                        Color(hex:
+                                                Colors.getColor(
+                                                    for: "Primary",
+                                                    colorScheme: globalData.getColorScheme()
+                                                )
+                                             )
+                                    )
+                            }
+                            .fixedSize()
+                            .cornerRadius(40)
                         }
                         
+                        VStack(alignment: .leading) {
+                            Text(viewStore.module.name)
+                                .font(.system(size: viewStore.showDetails ? 20 : 16, weight: .bold))
+                                .lineLimit(1)
+                            
+                            HStack {
+                                Text(viewStore.module.general.author)
+                                    .opacity(0.7)
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .lineLimit(1)
+                                Text("v\(viewStore.module.version)")
+                                        .opacity(0.7)
+                                        .font(.system(size: 12, weight: .semibold))
+                            }
+                        }
+                        .padding(.top, viewStore.showDetails ? 6 : 0)
+                        .frame(minHeight: 64, alignment: viewStore.showDetails ? .top : .center)
+                        
+                        Spacer()
+                        
+                        Button {
+                            // open popup
+                            showPopover = true
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .padding(12)
+                                .foregroundColor(
+                                    Color(hex:
+                                            Colors.getColor(
+                                                for: "onPrimary",
+                                                colorScheme: globalData.getColorScheme()
+                                            )
+                                         )
+                                )
+                                .background {
+                                    Circle()
+                                        .fill(
+                                            Color(hex:
+                                                    Colors.getColor(
+                                                        for: "Primary",
+                                                        colorScheme: globalData.getColorScheme()
+                                                    )
+                                                 )
+                                        )
+                                }
+                        }
+
                     }
-                    .padding(.top, viewStore.showDetails ? 20 : 0)
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 12)
                     .frame(
                         minWidth: 0,
                         maxWidth: .infinity,
-                        minHeight: viewStore.showDetails ? 180 : 52,
-                        maxHeight: viewStore.showDetails ? 180 : 52,
-                        alignment: .topLeading
+                        minHeight: 64,
+                        maxHeight: 64,
+                        alignment: .leading
                     )
                 }
                 .frame(
                     minWidth: 0,
                     maxWidth: .infinity,
-                    minHeight: viewStore.showDetails ? 180 : 52,
-                    maxHeight: viewStore.showDetails ? 180 : 52,
+                    minHeight: 64,
+                    maxHeight: 64,
                     alignment: .topLeading
                 )
                 .buttonStyle(PlainButtonStyle())
-                .background(Color(hex: viewStore.module.general.bgColor))
+                .foregroundColor(
+                    Color(hex:
+                            Colors.getColor(
+                                for: "onSurface",
+                                colorScheme: globalData.getColorScheme()
+                            )
+                         )
+                )
+                .background(
+                    Color(hex:
+                            Colors.getColor(
+                                for: "SurfaceContainer",
+                                colorScheme: globalData.getColorScheme()
+                            )
+                         )
+                )
                 .cornerRadius(viewStore.cornerRadius)
-                .overlay {
-                    RoundedRectangle(cornerRadius: viewStore.cornerRadius)
-                        .stroke(
-                            Color(.black),
-                            lineWidth: viewStore.isSelected ? 2 : 0
-                        )
-                        .hueRotation(.degrees(30))
-                }
                 .offset(x: viewStore.offset)
                 .gesture(
                     DragGesture()
@@ -184,10 +193,13 @@ struct ModuleSelectorButton: View {
             .frame(
                 minWidth: 0,
                 maxWidth: .infinity,
-                minHeight: viewStore.showDetails ? 180 : 52,
-                maxHeight: viewStore.showDetails ? 180 : 52,
+                minHeight: 64,
+                maxHeight: 64,
                 alignment: .topLeading
             )
+        }
+        .popover(isPresented: $showPopover) {
+            Text("CONFIG")
         }
     }
 }

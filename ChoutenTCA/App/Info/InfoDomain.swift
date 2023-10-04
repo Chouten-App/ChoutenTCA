@@ -18,19 +18,27 @@ struct InfoDomain: ReducerProtocol {
         var nextUrl: String? = nil
         var selectedSeason: Int = 0
         
+        var mediaIncrease: Bool = true
+        
+        var currentPage = 1 // Current page
+        
         var showHeader: Bool = false
         var showRealHeader: Bool = false
+        var showSeasonSelector: Bool = false
+        var descriptionExpanded: Bool = false
         
         var infoData: InfoData? = nil
         
         var webviewState = WebviewDomain.State()
         var watchState = WatchDomain.State()
+        var readerState = ReaderDomain.State()
     }
     
     enum Action: Equatable {
         case setToggle(newValue: Bool)
         case webview(WebviewDomain.Action)
         case watch(WatchDomain.Action)
+        case reader(ReaderDomain.Action)
         case onAppear(url: String)
         case onChange(url: String)
         case onDisappear
@@ -48,6 +56,11 @@ struct InfoDomain: ReducerProtocol {
         case parseResult(data: String)
         case parseMediaResult(data: String)
         case setMediaList(data: [MediaList])
+        
+        case setCurrentPage(page: Int)
+        case setMediaIncrease(bool: Bool)
+        case setSeasonSelectorState(bool: Bool)
+        case toggleDescriptionExpanded
     }
     
     @Dependency(\.globalData)
@@ -65,6 +78,10 @@ struct InfoDomain: ReducerProtocol {
             WatchDomain()
         }
         
+        Scope(state: \.readerState, action: /Action.reader) {
+            ReaderDomain()
+        }
+        
         Reduce { state, action in
             switch action {
             case .setToggle(let newValue):
@@ -74,7 +91,9 @@ struct InfoDomain: ReducerProtocol {
                 return .none
             case .watch:
                 return .none
-            case .onAppear(let _):
+            case .reader:
+                return .none
+            case .onAppear(_):
                 state.htmlString = ""
                 let module = globalData.getModule()
                 
@@ -161,7 +180,7 @@ struct InfoDomain: ReducerProtocol {
                     }
                 }
                 return .none
-            case .onChange(let infoUrl):
+            case .onChange(_):
                 state.htmlString = ""
                 let module = globalData.getModule()
                 
@@ -325,6 +344,18 @@ struct InfoDomain: ReducerProtocol {
                     state.infoData!.mediaList = data
                     return .send(.setGlobalInfoData(newValue: state.infoData))
                 }
+                return .none
+            case .setCurrentPage(let page):
+                state.currentPage = page
+                return .none
+            case .setMediaIncrease(let bool):
+                state.mediaIncrease = bool
+                return .none
+            case .setSeasonSelectorState(let bool):
+                state.showSeasonSelector = bool
+                return .none
+            case .toggleDescriptionExpanded:
+                state.descriptionExpanded.toggle()
                 return .none
             }
         }

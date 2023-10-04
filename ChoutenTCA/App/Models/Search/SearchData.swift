@@ -14,6 +14,22 @@ struct SearchData: Codable, Hashable, Equatable {
     let indicatorText: String?
     let currentCount: Int?
     let totalCount: Int?
+    
+    var currentCountString: String {
+        if let currentCount {
+            return "\(currentCount)"
+        } else {
+            return "⁓"
+        }
+    }
+    
+    var totalCountString: String {
+        if let totalCount {
+            return "\(totalCount)"
+        } else {
+            return "⁓"
+        }
+    }
 }
 
 /*

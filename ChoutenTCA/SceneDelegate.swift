@@ -17,6 +17,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     let dataController = DataController()
     
     @Dependency(\.moduleManager) var moduleManager
+    @Dependency(\.globalData) var globalData
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         NotificationCenter.default.addObserver(self, selector: #selector(handleSharedJson(_:)), name: .sharedJson, object: nil)
@@ -52,6 +53,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
         
         if url.pathExtension == "module" {
+            
+            print("importing.")
+            
             // Handle the file here
             // For example, you could use FileManager to copy the file to your app's documents directory:
             let fileManager = FileManager.default
@@ -59,9 +63,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 let documentsURL = try fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
                 let destinationURL = documentsURL.appendingPathComponent("Modules").appendingPathComponent(url.lastPathComponent)
                 try fileManager.copyItem(at: url, to: destinationURL)
-                // handle unzip of module
                 
                 try moduleManager.importFromFile(destinationURL)
+                // Update globalData.availableModules here
+                do {
+                    let modules = try moduleManager.getModules()
+                    globalData.setAvailableModules(modules)
+                } catch {
+                    print("Error: \(error)")
+                }
                 
             } catch {
                 print("Error: \(error)")
@@ -90,6 +100,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard notification.userInfo?["url"] is URL else { return }
         if let shouldOpenApp = notification.userInfo?["openApp"] as? Bool, shouldOpenApp {
             // Open the app
+            do {
+                let modules = try moduleManager.getModules()
+                let _ = try moduleManager.validateModules()
+                globalData.setAvailableModules(modules)
+            } catch {
+                print(error.localizedDescription)
+            }
+            
             if let window = self.window {
                 let hostingController = HostingController(
                     wrappedView:

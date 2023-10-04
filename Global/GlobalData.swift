@@ -18,7 +18,7 @@ enum CustomColorScheme {
 private enum GlobalDataKey: DependencyKey {
     static let liveValue: GlobalData = {
         var module: CurrentValueSubject<Module?, Never> = .init(nil)
-        var availableModules: [Module] = []
+        var availableModules: CurrentValueSubject<[Module], Never> = .init([])
         var downloadedOnly: CurrentValueSubject<Bool, Never> = .init(false)
         let incognito: CurrentValueSubject<Bool, Never> = .init(false)
         var searchResults: CurrentValueSubject<[SearchData], Never> = .init([])
@@ -26,11 +26,12 @@ private enum GlobalDataKey: DependencyKey {
         var homeData: CurrentValueSubject<[HomeComponent], Never> = .init([])
         var servers: CurrentValueSubject<[ServerData], Never> = .init([])
         var videoData: CurrentValueSubject<VideoData?, Never> = .init(nil)
-        var nextUrl: CurrentValueSubject<String?, Never> = .init(nil)
+        var cfUrl: CurrentValueSubject<String?, Never> = .init(nil)
         var logs: CurrentValueSubject<[ConsoleData], Never> = .init([])
         var cookies: CurrentValueSubject<ModuleCookies?, Never> = .init(nil)
         let showOverlay: CurrentValueSubject<Bool, Never> = .init(false)
         let colorScheme: CurrentValueSubject<CustomColorScheme, Never> = .init(.dark)
+        let amoledMode: CurrentValueSubject<Bool, Never> = .init(false)
         
         return GlobalData(
             setModule: { newModule in
@@ -43,13 +44,16 @@ private enum GlobalDataKey: DependencyKey {
                 module.values.eraseToStream()
             },
             setAvailableModules: { newList in
-                availableModules = newList
+                availableModules.value = newList
             },
             getAvailableModules: {
-                return availableModules
+                return availableModules.value
+            },
+            observeAvailableModules: {
+                availableModules.values.eraseToStream()
             },
             appendAvailableModules: { data in
-                availableModules.append(data)
+                availableModules.value.append(data)
             },
             setIncognito: { newValue in
                 incognito.value = newValue
@@ -92,14 +96,14 @@ private enum GlobalDataKey: DependencyKey {
             observeInfoData: {
                 infoData.values.eraseToStream()
             },
-            setNextUrl: { next in
-                nextUrl.value = next
+            setCfUrl: { next in
+                cfUrl.value = next
             },
-            getNextUrl: {
-                return nextUrl.value
+            getCfUrl: {
+                return cfUrl.value
             },
-            observeNextUrl: {
-                nextUrl.values.eraseToStream()
+            observeCfUrl: {
+                cfUrl.values.eraseToStream()
             },
             setHomeData: { data in
                 homeData.value = data
@@ -169,6 +173,15 @@ private enum GlobalDataKey: DependencyKey {
             },
             observeColorScheme: {
                 colorScheme.values.eraseToStream()
+            },
+            setAmoledMode: { newValue in
+                amoledMode.value = newValue
+            },
+            getAmoledMode: {
+                return amoledMode.value
+            },
+            observeAmoledMode: {
+                amoledMode.values.eraseToStream()
             }
         )
     }()
@@ -187,6 +200,7 @@ struct GlobalData {
     
     var setAvailableModules: (_ newList: [Module]) -> Void
     var getAvailableModules: () -> [Module]
+    var observeAvailableModules: () -> AsyncStream<[Module]>
     var appendAvailableModules: (_ addData: Module) -> Void
     
     var setIncognito: (_ newValue: Bool) -> Void
@@ -206,9 +220,9 @@ struct GlobalData {
     var getInfoData: () -> InfoData?
     var observeInfoData: () -> AsyncStream<InfoData?>
     
-    var setNextUrl: (_ results: String?) -> Void
-    var getNextUrl: () -> String?
-    var observeNextUrl: () -> AsyncStream<String?>
+    var setCfUrl: (_ results: String?) -> Void
+    var getCfUrl: () -> String?
+    var observeCfUrl: () -> AsyncStream<String?>
     
     var setHomeData: (_ results: [HomeComponent]) -> Void
     var appendHomeData: (_ results: [HomeComponent]) -> Void
@@ -239,4 +253,8 @@ struct GlobalData {
     var setColorScheme: (_ newValue: CustomColorScheme) -> Void
     var getColorScheme: () -> CustomColorScheme
     var observeColorScheme: () -> AsyncStream<CustomColorScheme>
+    
+    var setAmoledMode: (_ newValue: Bool) -> Void
+    var getAmoledMode: () -> Bool
+    var observeAmoledMode: () -> AsyncStream<Bool>
 }

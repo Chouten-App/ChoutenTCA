@@ -42,7 +42,7 @@ class HostingController: UIHostingController<AnyView> {
     override var shouldAutorotate: Bool { true }
 
     init<V: View>(wrappedView: V) {
-        let box = Box()
+        let box = HostingBox()
 
         super.init(
             rootView:
@@ -65,7 +65,7 @@ class HostingController: UIHostingController<AnyView> {
     }
 }
 
-private class Box {
+private class HostingBox {
     weak var delegate: HostingController?
 
 }

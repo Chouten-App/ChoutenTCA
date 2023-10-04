@@ -34,19 +34,44 @@ struct VideoControlsView: View {
         }
     }
     
+    // TEMP
+    @State var portrait: Bool = true
+    
     var body: some View {
         GeometryReader { proxy in
             VStack(alignment: .leading) {
-                TopBar()
-                    .offset(y: showUI ? 0 : -80)
-                
-                MiddleBar()
-                
-                BottomBar()
-                    .offset(y: showUI ? 0 : 80)
+                if portrait {
+                    HStack {
+                        Spacer()
+                        
+                        Image(systemName: "gear")
+                            .resizable()
+                            .frame(width: 18, height: 18)
+                            .contentShape(Rectangle())
+                    }
+                    
+                    Spacer()
+                    
+                    if playerVM.duration != nil {
+                        Seekbar(percentage: $playerVM.currentTime, buffered: $playerVM.buffered, isDragging: $playerVM.isEditingCurrentTime, total: playerVM.duration!, isMacos: .constant(false))
+                            .frame(maxHeight: 20)
+                    } else {
+                        Seekbar(percentage: .constant(0.0), buffered: .constant(0.0), isDragging: .constant(false), total: 1.0, isMacos: .constant(false))
+                            .frame(maxHeight: 20)
+                    }
+                } else {
+                    TopBar()
+                        .offset(y: showUI ? 0 : -80)
+                    
+                    MiddleBar()
+                    
+                    BottomBar()
+                        .offset(y: showUI ? 0 : 80)
+                }
             }
-            .padding(.horizontal, 60)
+            .padding(.horizontal, portrait ? 20 : 60)
             .padding(.vertical, 20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .foregroundColor(Color(hex: Colors.onSurface.dark))
             .background {
                 PlayPause()
@@ -71,7 +96,7 @@ struct VideoControlsView: View {
                     }
             }
             .animation(.spring(response: 0.3), value: showUI)
-            .ignoresSafeArea()
+            //.ignoresSafeArea()
         }
     }
     
@@ -104,13 +129,13 @@ struct VideoControlsView: View {
     func ServerList(proxy: GeometryProxy) -> some View {
         ScrollView {
             VStack(alignment: .leading) {
-                ForEach(0..<tempList.count) {index in
+                ForEach(0..<tempList.count, id: \.self) {index in
                     Text(tempList[index].title)
                         .font(.title2)
                         .fontWeight(.bold)
                     
                     VStack(spacing: 12) {
-                        ForEach(0..<tempList[index].list.count) { listIndex in
+                        ForEach(0..<tempList[index].list.count, id: \.self) { listIndex in
                             ServerCard(title: tempList[index].list[listIndex].name, selected: selectedServer == index && selectedServer == listIndex)
                                 .onTapGesture {
                                     //selectedServerData = index
@@ -175,9 +200,9 @@ struct VideoControlsView: View {
                 )
             }
         }
-        .padding(.horizontal, 80)
-        .font(Font.custom("Trebuchet MS", size: 18))
-        .padding(.bottom, showUI ? 80 : 32)
+        .padding(.horizontal, portrait ? 24 : 80)
+        .font(Font.custom("Trebuchet MS", size: portrait ? 12 : 18))
+        .padding(.bottom, showUI ? (portrait ? 40 : 80) : (portrait ? 12 : 32))
         .animation(.spring(response: 0.3), value: showUI)
         .foregroundColor(.white)
         .frame(
@@ -324,11 +349,12 @@ struct VideoControlsView: View {
     
     @ViewBuilder
     func PlayPause() -> some View {
-        HStack(spacing: 90) {
+        HStack(spacing: portrait ? 50 : 90) {
             SkipButton(forward: false)
+                .scaleEffect(portrait ? 0.8 : 1.0)
             
             Image(systemName: playerVM.isPlaying ? "pause.fill" : "play.fill")
-                .font(.system(size: 52))
+                .font(.system(size: portrait ? 42 : 52))
                 .onTapGesture {
                     if playerVM.isPlaying {
                         playerVM.player.pause()
@@ -338,6 +364,7 @@ struct VideoControlsView: View {
                 }
             
             SkipButton()
+                .scaleEffect(portrait ? 0.8 : 1.0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
@@ -533,16 +560,24 @@ struct VideoControlsView: View {
     }
 }
 
+struct VideoControlsBridge: View {
+    @StateObject var Colors = DynamicColors.shared
+    
+    var body: some View {
+        GeometryReader { proxy in
+            VStack {
+                VideoControlsView(videoData: .constant(nil), servers: .constant([]), index: 0, playerVM: PlayerViewModel())
+                    .frame(width: proxy.size.width, height: proxy.size.width / 16 * 9)
+                
+                Spacer()
+            }
+            .background(Color(hex: Colors.Surface.dark))
+        }
+    }
+}
+
 struct VideoControlsView_Previews: PreviewProvider {
     static var previews: some View {
-        ZStack {
-            Color(.black)
-            
-            VideoControlsView(videoData: .constant(nil), servers: .constant([]), index: 0, playerVM: PlayerViewModel())
-        }
-        .prefersHomeIndicatorAutoHidden(true)
-        .supportedOrientation(.landscape)
-        .previewInterfaceOrientation(.landscapeRight)
-        .ignoresSafeArea()
+        VideoControlsBridge()
     }
 }

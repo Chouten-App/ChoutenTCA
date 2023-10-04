@@ -47,12 +47,9 @@ struct CustomPlayerWithControls: View {
             ZStack {
                 Color(.black)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .edgesIgnoringSafeArea(.all)
-                    .ignoresSafeArea(.all)
                 
                 CustomVideoPlayer(playerVM: playerVM, showUI: showUI, scaledVideo: $scaledVideo)
                     .frame(maxWidth: proxy.size.width, maxHeight: proxy.size.height, alignment: .center)
-                    .ignoresSafeArea()
                     .overlay {
                         VideoControlsView(videoData: $streamData, servers: $servers, index: index, playerVM: playerVM)
                     }
@@ -70,8 +67,6 @@ struct CustomPlayerWithControls: View {
                     )
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            .edgesIgnoringSafeArea(.all)
-            .ignoresSafeArea(.all)
             .prefersHomeIndicatorAutoHidden(true)
             .onDisappear {
                 print("bye")

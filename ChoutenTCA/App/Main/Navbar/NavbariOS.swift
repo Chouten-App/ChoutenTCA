@@ -60,7 +60,6 @@ struct NavbariOS: View {
                             }
                     }
                     .padding(.horizontal, 8)
-                    .padding(.bottom, 24)
                     .background(.ultraThinMaterial)
                     .overlay(alignment: .top) {
                         Rectangle()
@@ -177,6 +176,12 @@ struct NavbariOS_Previews: PreviewProvider {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .background {
+            Color(
+                hex: DynamicColors().Surface.dark
+            )
+        }
+        .ignoresSafeArea()
         .overlay(alignment: .bottom) {
             NavbariOS(
                 store: Store(
@@ -186,12 +191,6 @@ struct NavbariOS_Previews: PreviewProvider {
             )
             .frame(maxWidth: .infinity)
         }
-        .background {
-            Color(
-                hex: DynamicColors().Surface.dark
-            )
-        }
-        .ignoresSafeArea()
         .preferredColorScheme(.dark)
     }
 }

@@ -17,31 +17,20 @@ struct InfoViewiOS: View {
     @FetchRequest(sortDescriptors: []) var mediaProgress: FetchedResults<MediaProgress>
     @Environment(\.managedObjectContext) var moc
     
+    let mediaPerPage = 50
+    
+    // TEMP
+    @State var averageColor: UIColor? = nil
+    
     var body: some View {
         WithViewStore(self.store) { viewStore in
             GeometryReader { proxy in
                 ScrollView {
-                    if let infoData = viewStore.infoData {
+                    if viewStore.infoData != nil {
                         VStack {
                             Header(viewStore: viewStore, proxy: proxy)
                             ExtraInfo(viewStore: viewStore)
-                            EpisodeList(viewStore: viewStore)
-                        }
-                        .background(GeometryReader {
-                            Color.clear.preference(key: ViewOffsetKey.self,
-                                                   value: -$0.frame(in: .named("infoscroll")).origin.y)
-                        })
-                        .onPreferenceChange(ViewOffsetKey.self) {
-                            if($0 >= 110 && $0 < 230) {
-                                viewStore.send(.setHeader(newBool: true))
-                                viewStore.send(.setRealHeader(newBool: false))
-                            } else if($0 >= 230) {
-                                viewStore.send(.setHeader(newBool: true))
-                                viewStore.send(.setRealHeader(newBool: true))
-                            } else {
-                                viewStore.send(.setHeader(newBool: false))
-                                viewStore.send(.setRealHeader(newBool: false))
-                            }
+                            EpisodeList(viewStore: viewStore, proxy: proxy)
                         }
                     } else {
                         VStack {
@@ -54,11 +43,15 @@ struct InfoViewiOS: View {
                 .coordinateSpace(name: "infoscroll")
                 .foregroundColor(Color(hex: Colors.onSurface.dark))
                 .background {
-                    Color(hex: Colors.Surface.dark)
+                    if let averageColor {
+                        Color(uiColor: averageColor)
+                    } else {
+                        Color(hex: Colors.Surface.dark)
+                    }
                 }
                 .background {
                     if !viewStore.webviewState.htmlString.isEmpty && !viewStore.webviewState.javaScript.isEmpty {
-                        if viewStore.infoData != nil {
+                        if viewStore.infoData != nil && !viewStore.infoData!.epListURLs[0].isEmpty {
                             WebView(
                                 viewStore: ViewStore(
                                     self.store.scope(
@@ -69,7 +62,7 @@ struct InfoViewiOS: View {
                                 payload: viewStore.infoData!.epListURLs[0],
                                 action: "eplist"
                             ) { result in
-                                print(result)
+                                //print(result)
                                 //viewStore.send(.parseResult(data: result))
                                 viewStore.send(.parseMediaResult(data: result))
                             }
@@ -85,7 +78,7 @@ struct InfoViewiOS: View {
                                 ),
                                 payload: self.url
                             ) { result in
-                                print(result)
+                                //print(result)
                                 if viewStore.infoData == nil {
                                     viewStore.send(.parseResult(data: result))
                                     viewStore.send(.resetWebviewChange(url: self.url))
@@ -99,6 +92,51 @@ struct InfoViewiOS: View {
                 .overlay(alignment: .top) {
                     Sticky(viewStore: viewStore, proxy: proxy)
                 }
+                .overlay {
+                    if let infoData = viewStore.infoData {
+                        if infoData.mediaList.count > 0 {
+                            VStack(spacing: 20) {
+                                ForEach(0..<infoData.mediaList.count, id: \.self) { index in
+                                    let delay = 0.1 + ( 0.1 * Double(index) )
+                                    
+                                    Text(infoData.mediaList[index].title)
+                                        .font(index == viewStore.selectedSeason ? .title : .title3)
+                                        .fontWeight(index == viewStore.selectedSeason ? .bold : .semibold)
+                                        .opacity(index == viewStore.selectedSeason ? 1.0 : 0.7)
+                                        .offset(y: viewStore.showSeasonSelector ? 0 : 60)
+                                        .opacity(viewStore.showSeasonSelector ? 1 : 0)
+                                        .animation(.spring(response: 0.3).delay(delay), value: viewStore.showSeasonSelector)
+                                        .contentShape(Rectangle())
+                                        .onTapGesture {
+                                            viewStore.send(.setSelectedSeason(newValue: index), animation: .spring(response: 0.3))
+                                        }
+                                }
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(.ultraThinMaterial)
+                            .overlay(alignment: .bottom) {
+                                Image(systemName: "xmark")
+                                    .font(.title2)
+                                    .padding(12)
+                                    .foregroundColor(.black)
+                                    .background {
+                                        Circle()
+                                            .fill(.white)
+                                    }
+                                    .padding(.bottom, 80)
+                                    .onTapGesture {
+                                        viewStore.send(.setSeasonSelectorState(bool: false))
+                                    }
+                                    .offset(y: viewStore.showSeasonSelector ? 0 : 130)
+                                    .animation(.spring(response: 0.3).delay(0.2), value: viewStore.showSeasonSelector)
+                            }
+                            .ignoresSafeArea()
+                            .opacity(viewStore.showSeasonSelector ? 1.0 : 0.0)
+                            .animation(.spring(response: 0.3), value: viewStore.showSeasonSelector)
+                        }
+                    }
+                }
                 .ignoresSafeArea()
             }
             .navigationBarBackButtonHidden()
@@ -106,6 +144,9 @@ struct InfoViewiOS: View {
                 if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" {
                     viewStore.send(.resetWebview(url: url))
                 }
+            }
+            .onDisappear {
+                averageColor = nil
             }
         }
     }
@@ -240,16 +281,6 @@ struct InfoViewiOS: View {
             }
             .padding(.leading, 12)
             
-            if let infoData = viewStore.infoData {
-                Text(infoData.titles.primary)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(Color(hex: Colors.onPrimaryContainer.dark))
-                    .lineLimit(1)
-                    .opacity(viewStore.showRealHeader ? 1.0 : 0.0)
-                    .animation(nil, value: viewStore.showRealHeader)
-            }
-            
             Spacer()
         }
         .padding(12)
@@ -261,98 +292,101 @@ struct InfoViewiOS: View {
         }
     }
     
+    
     @ViewBuilder
     func Header(viewStore: ViewStoreOf<InfoDomain>, proxy: GeometryProxy) -> some View {
-        HStack(alignment: .bottom, spacing: 0) {
+        if let infoData = viewStore.infoData {
             ZStack(alignment: .bottomLeading) {
-                Color(hex: Colors.SurfaceContainer.dark)
-                
-                if let infoData = viewStore.infoData {
-                    Text(infoData.titles.primary)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .lineLimit(1)
-                        .multilineTextAlignment(.leading)
-                        .padding(12)
-                        .padding(.leading, 50)
-                }
-            }
-            .foregroundColor(Color(hex: Colors.onPrimaryContainer.dark))
-            .frame(minWidth: proxy.size.width, maxWidth: proxy.size.width, maxHeight: 110, alignment: .bottomLeading)
-            .padding(.bottom, -60)
-            
-            if let infoData = viewStore.infoData {
-                ZStack(alignment: .bottomLeading) {
-                    // Background image
-                    GeometryReader {reader in
-                        FillAspectImage(
-                            url: URL(string: infoData.banner ?? infoData.poster),
-                            doesAnimateHorizontal: false
-                        )
-                        .blur(radius: infoData.banner != nil ? 0.0 : 6.0)
-                        .overlay {
-                            LinearGradient(stops: [
-                                Gradient.Stop(color: Color(hex: Colors.Surface.dark).opacity(0.9), location: 0.0),
-                                Gradient.Stop(color: Color(hex: Colors.Surface.dark).opacity(0.4), location: 1.0),
-                            ], startPoint: .bottom, endPoint: .top)
-                        }
-                        .frame(
-                            width: reader.size.width,
-                            height: reader.size.height + (reader.frame(in: .global).minY > 0 ? reader.frame(in: .global).minY : 0),
-                            alignment: .top
-                        )
-                        .contentShape(Rectangle())
-                        .clipped()
-                        .offset(y: reader.frame(in: .global).minY <= 0 ? 0 : -reader.frame(in: .global).minY)
-                        
+                // Background image
+                GeometryReader {reader in
+                    FillAspectImage(
+                        url: URL(string: infoData.banner ?? infoData.poster),
+                        doesAnimateHorizontal: false,
+                        color: $averageColor
+                    )
+                    .blur(radius: infoData.banner != nil ? 0.0 : 6.0)
+                    .overlay {
+                        LinearGradient(stops: [
+                            Gradient.Stop(
+                                color: averageColor != nil ? Color(uiColor: averageColor!).opacity(0.9) : Color(hex: Colors.Surface.dark).opacity(0.9),
+                                location: 0.0),
+                            Gradient.Stop(color: averageColor != nil ? Color(uiColor: averageColor!).opacity(0.4) : Color(hex: Colors.Surface.dark).opacity(0.4), location: 1.0),
+                        ], startPoint: .bottom, endPoint: .top)
                     }
-                    .frame(height: 280)
-                    .frame(minWidth: proxy.size.width, maxWidth: proxy.size.width)
+                    .frame(
+                        width: reader.size.width,
+                        height: reader.size.height + (reader.frame(in: .global).minY > 0 ? reader.frame(in: .global).minY : 0),
+                        alignment: .top
+                    )
+                    .contentShape(Rectangle())
+                    .clipped()
+                    .offset(y: reader.frame(in: .global).minY <= 0 ? 0 : -reader.frame(in: .global).minY)
                     
-                    // Info
-                    HStack(alignment: .bottom) {
-                        KFImage(URL(string: infoData.poster))
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(maxWidth: 120, maxHeight: 180)
-                            .cornerRadius(12)
-                        
-                        VStack(alignment: .leading) {
-                            Text(infoData.titles.secondary ?? "")
-                                .font(.caption)
-                                .fontWeight(.heavy)
-                                .lineLimit(2)
-                                .opacity(0.7)
-                            Text(infoData.titles.primary)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .lineLimit(2)
-                            
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(infoData.status ?? "")
-                                    .foregroundColor(Color(hex:Colors.Primary.dark))
-                                    .fontWeight(.bold)
-                                
-                                Text("\(infoData.totalMediaCount ?? 0) \(infoData.mediaType)")
-                                    .font(.subheadline)
-                                    .fontWeight(.bold)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.bottom, 8)
-                            .padding(.top, 4)
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, -60)
-                    .frame(minWidth: proxy.size.width, maxWidth: proxy.size.width)
                 }
+                .frame(height: 360)
+                .frame(minWidth: proxy.size.width, maxWidth: proxy.size.width)
+                
+                // Info
+                HStack(alignment: .bottom) {
+                    KFImage(URL(string: infoData.poster))
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(maxWidth: 120, maxHeight: 180)
+                        .cornerRadius(12)
+                    
+                    VStack(alignment: .leading) {
+                        Text(infoData.titles.secondary ?? "")
+                            .font(.caption)
+                            .fontWeight(.heavy)
+                            .lineLimit(2)
+                            .opacity(0.7)
+                        Text(infoData.titles.primary)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .lineLimit(2)
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(infoData.status ?? "")
+                                .foregroundColor(Color(hex:Colors.Primary.dark))
+                                .fontWeight(.bold)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.bottom, 8)
+                        .padding(.top, 4)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, -36)
                 .frame(minWidth: proxy.size.width, maxWidth: proxy.size.width)
             }
+            .frame(minWidth: proxy.size.width, maxWidth: proxy.size.width)
         }
-        .frame(minWidth: proxy.size.width, maxWidth: proxy.size.width, alignment: .bottom)
-        .offset(x: viewStore.showHeader ? proxy.size.width/2 : -proxy.size.width/2)
-        .animation(.spring(response: 0.3), value: viewStore.showHeader)
+    }
+    
+    // Calculate the total number of pages
+    func pageCount(infoData: InfoData) -> Int {
+        if infoData.mediaList.count == 0 {
+            return 0
+        }
+        return (infoData.mediaList[0].list.count + mediaPerPage - 1) / mediaPerPage
+    }
+    
+    // Calculate the episode range for a given page
+    func episodeRange(forPage page: Int, infoData: InfoData, mediaIncrease: Bool = true) -> String {
+        if infoData.mediaList.count == 0 {
+            return ""
+        }
+        
+        if mediaIncrease {
+            let startIndex = (page - 1) * mediaPerPage
+            let endIndex = min(page * mediaPerPage, infoData.mediaList[0].list.count)
+            return "\(startIndex + 1) - \(endIndex)"
+        } else {
+            let startIndex = infoData.mediaList[0].list.count - (page - 1) * mediaPerPage
+            let endIndex = max(infoData.mediaList[0].list.count - (page) * mediaPerPage, 1)
+            return "\(startIndex == infoData.mediaList[0].list.count ? startIndex : startIndex - 1) - \(endIndex)"
+        }
     }
     
     @ViewBuilder
@@ -363,77 +397,260 @@ struct InfoViewiOS: View {
             })
             
             VStack(alignment: .leading) {
+                // continue watching
+                if infoData.mediaList.count > 0 {
+                    let progress = mediaProgress.filter { progress in
+                        progress.url == infoData.mediaList[0].list[viewStore.selectedSeason].url && progress.number == infoData.mediaList[0].list[viewStore.selectedSeason].number
+                    }.first
+                    
+                    if let progress {
+                        VStack {
+                            KFImage(URL(string: infoData.mediaList[0].list[viewStore.selectedSeason].image ?? infoData.poster))
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(maxWidth: .infinity, maxHeight: 80)
+                                .clipped()
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color(hex: Colors.SurfaceContainer.dark).opacity(0.4))
+                                }
+                                .overlay {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text("Episode \(forTrailingZero(temp: infoData.mediaList[0].list[viewStore.selectedSeason].number)): \(infoData.mediaList[0].list[viewStore.selectedSeason].title ?? "")")
+                                                .fontWeight(.bold)
+                                            
+                                            if progress.progress / progress.duration < 0.8 {
+                                                Text(secondsToMinute(sec: progress.duration - progress.progress))
+                                                    .font(.caption2)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.white)
+                                                    .blendMode(.difference)
+                                            }
+                                        }
+                                        
+                                        Spacer()
+                                        
+                                        ZStack {
+                                            Image(systemName: "chevron.right")
+                                                .offset(x: -8)
+                                                .opacity(0.7)
+                                            
+                                            Image(systemName: "chevron.right")
+                                                .font(.system(size: 26, weight: .medium))
+                                        }
+                                    }
+                                    .padding(12)
+                                }
+                                .overlay(alignment: .bottom) {
+                                    if progress.progress / progress.duration < 0.8 {
+                                        VStack(alignment: .trailing, spacing: 6) {
+                                            ZStack {
+                                                Capsule()
+                                                    .fill(.white.opacity(0.4))
+                                                    .frame(height: 4)
+                                                Capsule()
+                                                    .fill(Color(hex: Colors.Primary.dark))
+                                                    .frame(height: 4)
+                                                    .offset(
+                                                        x: -134
+                                                        + (
+                                                            134 * (
+                                                                (progress.progress / progress.duration)
+                                                            )
+                                                        )
+                                                    )
+                                            }
+                                            .frame(height: 4)
+                                            .cornerRadius(4)
+                                            .clipped()
+                                        }
+                                        .padding(12)
+                                    }
+                                }
+                            
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                }
+                
                 Text(infoData.description)
                     .font(.subheadline)
-                    .lineLimit(9)
+                    .lineLimit(viewStore.descriptionExpanded ? nil : 9)
+                    .animation(.spring(response: 0.3), value: viewStore.descriptionExpanded)
                     .opacity(0.7)
-                
-                HStack {
-                    Toggle("",
-                           isOn: viewStore.binding(
-                            get: \.isToggleOn,
-                            send: InfoDomain.Action.setToggle(newValue:)
-                           )
-                    )
-                    .tint(Color(hex: Colors.Primary.dark))
-                    .fixedSize()
-                    .padding(.leading, -8)
-                    .padding(.trailing, 8)
-                    
-                    Text("Subbed")
-                        .fontWeight(.semibold)
-                    
-                    Spacer()
-                }
-                //.toggleStyle(M3ToggleStyle())
-                
-                if seasons.count > 1 {
-                    Dropdown(
-                        options: seasons,
-                        selectedOption: viewStore.binding(
-                            get: \.selectedSeason,
-                            send: InfoDomain.Action.setSelectedSeason(newValue:)
-                        )
-                    )
-                    .zIndex(100)
-                }
-                
-                
-                Text(infoData.mediaType)
-                    .font(.title3)
-                    .fontWeight(.bold)
                     .padding(.vertical, 6)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        viewStore.send(.toggleDescriptionExpanded)
+                    }
+                
+                if seasons.count > 0 {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text("\(seasons[viewStore.selectedSeason])")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .padding(6)
+                                .background {
+                                    Circle()
+                                        .fill(Color(hex: Colors.SurfaceContainer.dark))
+                                }
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            viewStore.send(.setSeasonSelectorState(bool: true))
+                        }
+                        
+                        HStack {
+                            Text("\(infoData.totalMediaCount ?? 0) \(infoData.mediaType)")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .opacity(0.7)
+                            
+                            Spacer()
+                            
+                            Image("arrow.down.filter")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 16, height: 16)
+                                .foregroundColor(.white)
+                                .opacity(viewStore.mediaIncrease ? 1.0 : 0.7)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    viewStore.send(.setMediaIncrease(bool: true))
+                                    viewStore.send(.setCurrentPage(page: 1))
+                                }
+                            
+                            Image("arrow.down.filter")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 16, height: 16)
+                                .scaleEffect(CGSize(width: 1.0, height: -1.0))
+                                .foregroundColor(.white)
+                                .opacity(viewStore.mediaIncrease ? 0.7 : 1.0)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    viewStore.send(.setMediaIncrease(bool: false))
+                                    viewStore.send(.setCurrentPage(page: 1))
+                                }
+                        }
+                    }
+                    .padding(.vertical, 6)
+                }
+                
+                // pagination
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack {
+                        ForEach(1 ..< pageCount(infoData: infoData) + 1, id: \.self) { page in
+                            Button(action: {
+                                viewStore.send(.setCurrentPage(page: page))
+                            }) {
+                                Text("\(episodeRange(forPage: page, infoData: infoData, mediaIncrease: viewStore.mediaIncrease))")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .padding(.vertical, 6)
+                                    .padding(.horizontal, 12)
+                                    .foregroundColor(Color(hex: viewStore.currentPage == page ? Colors.onPrimary.dark : Colors.onSurface.dark))
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(Color(hex: viewStore.currentPage == page ? Colors.Primary.dark : Colors.SurfaceContainer.dark))
+                                    )
+                            }
+                        }
+                    }
+                }
+                .padding(.bottom, 6)
+                .padding(.top, 8)
             }
-            .padding(.top, 60)
+            .padding(.top, 44)
             .padding(.horizontal, 20)
+            .animation(.spring(response: 0.3), value: viewStore.descriptionExpanded)
         }
     }
     
+    @Dependency(\.globalData) var globalData
+    
     @ViewBuilder
-    func EpisodeList(viewStore: ViewStoreOf<InfoDomain>) -> some View {
+    func EpisodeList(viewStore: ViewStoreOf<InfoDomain>, proxy: GeometryProxy) -> some View {
         if viewStore.infoData != nil && viewStore.infoData!.mediaList.count > viewStore.selectedSeason {
-            ScrollView {
-                VStack {
-                    ForEach(0..<viewStore.infoData!.mediaList[viewStore.selectedSeason].list.count, id:\.self) { index in
-                        NavigationLink(
-                            destination: WatchView(
-                                url: viewStore.infoData!.mediaList[viewStore.selectedSeason].list[index].url,
-                                index: index,
-                                store: self.store.scope(
-                                    state: \.watchState,
-                                    action: InfoDomain.Action.watch
+            
+            let startIndex = viewStore.mediaIncrease ?
+                (viewStore.currentPage - 1) * mediaPerPage
+            : viewStore.infoData!.mediaList[viewStore.selectedSeason].list.count - (viewStore.currentPage - 1) * mediaPerPage - (viewStore.currentPage == 1 ? 0 : 1)
+            
+            let endIndex = viewStore.mediaIncrease ?
+                min(viewStore.currentPage * mediaPerPage, viewStore.infoData!.mediaList[viewStore.selectedSeason].list.count)
+            : max(viewStore.infoData!.mediaList[viewStore.selectedSeason].list.count - viewStore.currentPage * mediaPerPage - 1, 0)
+            let episodeList = viewStore.mediaIncrease ? Array(viewStore.infoData!.mediaList[viewStore.selectedSeason].list[startIndex..<endIndex]) : Array(viewStore.infoData!.mediaList[viewStore.selectedSeason].list[endIndex..<startIndex])
+            
+            
+            ScrollView(.horizontal) {
+                HStack {
+                    if viewStore.mediaIncrease {
+                        ForEach(episodeList, id: \.self) { episode in
+                            NavigationLink(
+                                destination: globalData.getModule()?.type == "Book" ? AnyView(
+                                    ReaderView(
+                                        store: self.store.scope(
+                                            state: \.readerState,
+                                            action: InfoDomain.Action.reader
+                                        ),
+                                        url: episode.url
+                                    )
+                                ) : AnyView(
+                                    WatchView(
+                                        url: episode.url,
+                                        index: Int(episode.number - 1),
+                                        store: self.store.scope(
+                                            state: \.watchState,
+                                            action: InfoDomain.Action.watch
+                                        )
+                                    )
                                 )
-                            )
-                        ) {
-                            EpisodeCard(item: viewStore.infoData!.mediaList[viewStore.selectedSeason].list[index], poster: viewStore.infoData!.poster)
+                            ) {
+                                EpisodeCard(item: episode, poster: viewStore.infoData!.poster, proxy: proxy)
+                                    .frame(maxWidth: proxy.size.width - 140)
+                            }
+                        }
+                    } else {
+                        ForEach(episodeList.reversed(), id: \.self) { episode in
+                            NavigationLink(
+                                destination: globalData.getModule()?.type == "Book" ? AnyView(
+                                    ReaderView(
+                                        store: self.store.scope(
+                                            state: \.readerState,
+                                            action: InfoDomain.Action.reader
+                                        ),
+                                        url: episode.url
+                                    )
+                                ) : AnyView(
+                                    WatchView(
+                                        url: episode.url,
+                                        index: Int(episode.number - 1),
+                                        store: self.store.scope(
+                                            state: \.watchState,
+                                            action: InfoDomain.Action.watch
+                                        )
+                                    )
+                                )
+                            ) {
+                                EpisodeCard(item: episode, poster: viewStore.infoData!.poster, proxy: proxy)
+                                    .frame(maxWidth: proxy.size.width - 140)
+                            }
                         }
                     }
                 }
                 .padding(.horizontal, 20)
             }
-            .frame(maxHeight: 700)
+            .padding(.bottom, 40)
         }
     }
+
     
     func forTrailingZero(temp: Double) -> String {
         return String(format: "%g", temp)
@@ -447,131 +664,121 @@ struct InfoViewiOS: View {
     }
     
     @ViewBuilder
-    func EpisodeCard(item: MediaItem, poster: String) -> some View {
+    func EpisodeCard(item: MediaItem, poster: String, proxy: GeometryProxy) -> some View {
         let progress = mediaProgress.filter { progress in
             progress.url == item.url && progress.number == item.number
         }.first
         
-        ZStack {
+        VStack {
             KFImage(URL(string: item.image ?? poster))
                 .resizable()
                 .aspectRatio(contentMode: .fill)
-                .frame(maxWidth: UIScreen.main.bounds.width - 40, maxHeight:  (UIScreen.main.bounds.width - 40) / 16 * 9)
+                .frame(minWidth: proxy.size.width - 140, maxWidth: proxy.size.width - 140, minHeight: (proxy.size.width - 140) / 16 * 9, maxHeight: (proxy.size.width - 140) / 16 * 9)
                 .cornerRadius(12)
+                .overlay(alignment: .topTrailing) {
+                    HStack {
+                        if let prog = progress {
+                            if prog.progress / prog.duration > 0.8 {
+                                Text("Watched")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        
+                        
+                        Text("\(forTrailingZero(temp: item.number))")
+                            .fontWeight(.bold)
+                            .padding(.vertical, 4)
+                            .padding(.horizontal, 12)
+                            .foregroundColor(Color(hex: Colors.onPrimary.dark))
+                            .background {
+                                Capsule()
+                                    .fill(Color(hex: Colors.Primary.dark))
+                            }
+                            .padding(12)
+                    }
+                }
+                .overlay(alignment: .bottom) {
+                    if let prog = progress {
+                        if prog.progress / prog.duration < 0.8 {
+                            VStack(alignment: .trailing, spacing: 6) {
+                                Text(secondsToMinute(sec: prog.duration - prog.progress))
+                                    .font(.caption2)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+                                
+                                ZStack {
+                                    Capsule()
+                                        .fill(.white.opacity(0.4))
+                                        .frame(height: 4)
+                                    Capsule()
+                                        .fill(Color(hex: Colors.Primary.dark))
+                                        .frame(height: 4)
+                                        .offset(
+                                            x: -134
+                                            + (
+                                                134 * (
+                                                    (prog.progress / prog.duration)
+                                                )
+                                            )
+                                        )
+                                }
+                                .frame(height: 4)
+                                .cornerRadius(4)
+                                .clipped()
+                            }
+                            .padding(12)
+                            //.frame(maxHeight: 24)
+                        }
+                    }
+                }
             
-            LinearGradient(
-                stops: [
-                    Gradient.Stop(color: .clear, location: 0.0),
-                    Gradient.Stop(color: Color(hex: Colors.SurfaceContainer.dark), location: 1.0)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .aspectRatio(16 / 9, contentMode: .fill)
-            .frame(maxWidth: .infinity)
-            .cornerRadius(12)
-            
-            VStack(spacing: 0) {
-                Spacer()
-                
+            VStack(spacing: 4) {
                 Text(item.title ?? "Episode \(forTrailingZero(temp: item.number))")
-                    .font(.title3)
                     .fontWeight(.semibold)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
+                /*
                 Text("Filler")
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundColor(Color(hex: Colors.Primary.dark))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 4)
-                
-                if item.description != nil {
-                    Text(item.description!)
+                */
+                if let description = item.description {
+                    Text(description)
                         .font(.caption)
-                        .lineLimit(4)
+                        .lineLimit(3)
+                        .multilineTextAlignment(.leading)
                         .opacity(0.7)
+                        .frame(height: 50)
                 }
-                
-                if let prog = progress {
-                    if prog.progress / prog.duration < 0.8 {
-                        VStack(alignment: .trailing, spacing: 6) {
-                            Text(secondsToMinute(sec: prog.duration - prog.progress))
-                                .font(.caption2)
-                                .fontWeight(.bold)
-                            
-                            ZStack {
-                                Capsule()
-                                    .fill(.white.opacity(0.4))
-                                    .frame(height: 4)
-                                Capsule()
-                                    .fill(Color(hex: Colors.Primary.dark))
-                                    .frame(height: 4)
-                                    .offset(
-                                        x: -134
-                                        + (
-                                            134 * (
-                                                (prog.progress / prog.duration)
-                                            )
-                                        )
-                                    )
-                            }
-                            .frame(height: 4)
-                            .cornerRadius(4)
-                            .clipped()
-                        }
-                        //.frame(maxHeight: 24)
-                    }
-                }
-                
-                /*
-                 HStack {
-                 Text("Filler")
-                 .font(.system(size: 14))
-                 .fontWeight(.medium)
-                 .padding(.horizontal, 12)
-                 .padding(.vertical, 6)
-                 .foregroundColor(Color(hex: Colors.onSurfaceVariant.dark))
-                 .overlay {
-                 RoundedRectangle(cornerRadius: 8)
-                 .stroke(Color(hex: Colors.Outline.dark), lineWidth: 1.5)
-                 }
-                 
-                 Spacer()
-                 }
-                 .padding(12)
-                 .padding(.top, -12)
-                 */
             }
-            .padding()
-            .overlay(alignment: .topTrailing) {
-                HStack {
-                    if let prog = progress {
-                        if prog.progress / prog.duration > 0.8 {
-                            Text("Watched")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundColor(Color(hex: Colors.onTertiary.dark))
-                        }
-                    }
-                    Text("\(forTrailingZero(temp: item.number))")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                }
-                .padding(10)
-            }
-        }
-        .background {
-            Color(hex: Colors.SurfaceContainer.dark)
-                .cornerRadius(12)
+            .padding(.horizontal, 12)
         }
     }
 }
 
-struct InfoViewiOS_Previews: PreviewProvider {
-    static var previews: some View {
+struct InfoViewiOS_Bridge: View {
+    let list: [MediaItem]
+    init() {
+        let nums = Array(1...60)
+        list = nums.map {index in
+            MediaItem(
+                url: "",
+                number: Double(index),
+                title: "Media Title",
+                description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc eget sem tellus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Sed maximus justo neque, vitae faucibus mauris facilisis non.",
+                image: nil
+            )
+        }
+    }
+    
+    var body: some View {
         InfoViewiOS(
             url: "",
             store: Store(
@@ -590,16 +797,20 @@ struct InfoViewiOS_Previews: PreviewProvider {
                         seasons: [],
                         mediaList: [
                             MediaList(
-                                title: "Title",
-                                list: [
-                                    MediaItem(
-                                        url: "",
-                                        number: 1,
-                                        title: "Media Title",
-                                        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc eget sem tellus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Sed maximus justo neque, vitae faucibus mauris facilisis non.",
-                                        image: nil
-                                    )
-                                ]
+                                title: "Season 1",
+                                list: list
+                            ),
+                            MediaList(
+                                title: "Season 2",
+                                list: list
+                            ),
+                            MediaList(
+                                title: "Season 3",
+                                list: list
+                            ),
+                            MediaList(
+                                title: "Season 4",
+                                list: list
                             )
                         ]
                     )
@@ -607,5 +818,11 @@ struct InfoViewiOS_Previews: PreviewProvider {
                 reducer: InfoDomain()
             )
         )
+    }
+}
+
+struct InfoViewiOS_Previews: PreviewProvider {
+    static var previews: some View {
+        InfoViewiOS_Bridge()
     }
 }

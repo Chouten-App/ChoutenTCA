@@ -9,39 +9,15 @@ import SwiftUI
 import CoreHaptics
 import ComposableArchitecture
 
-struct iOSCheckboxToggleStyle: ToggleStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        // 1
-        Button(action: {
-            
-            // 2
-            configuration.isOn.toggle()
-            
-        }, label: {
-            Image(systemName: configuration.isOn ? "checkmark" : "")
-                .font(.caption2)
-                .frame(width: 12, height: 12)
-                .padding(6)
-                .foregroundColor(Color(hex: DynamicColors().onPrimary.dark))
-                .background {
-                    configuration.isOn ?
-                    AnyView(Circle()
-                        .fill(Color(hex: DynamicColors().Primary.dark)))
-                    : AnyView(Circle()
-                        .stroke(Color(hex: DynamicColors().onSurface.dark)))
-                }
-        })
-    }
-}
-
 struct AppearanceViewiOS: View {
     @StateObject var Colors = DynamicColors.shared
     @Environment(\.presentationMode) var presentationMode
     @Dependency(\.globalData) var globalData
-    @State var colorScheme: ColorScheme = .dark
+    @State var colorScheme: CustomColorScheme = .dark
     
     @State var darkTheme: Bool = true
     @State var iosStyle: Bool = true
+    @State var amoledMode: Bool = false
     @State private var engine: CHHapticEngine?
     
     func prepareHaptics() {
@@ -53,6 +29,10 @@ struct AppearanceViewiOS: View {
         } catch {
             print("There was an error creating the engine: \(error.localizedDescription)")
         }
+    }
+    
+    init() {
+        amoledMode = globalData.getAmoledMode()
     }
     
     func complexSuccess() {
@@ -77,20 +57,10 @@ struct AppearanceViewiOS: View {
     }
     
     var body: some View {
-        GeometryReader { proxy in
-            VStack(spacing: 12) {
-                VStack(alignment: .leading) {
+        SettingsPage(title: "Appearance") {
+            VStack(alignment: .leading) {
+                SettingsGroup(title: "Appearance", icon: "circle.bottomhalf.filled") {
                     HStack {
-                        Image(systemName: "circle.bottomhalf.filled")
-                            .foregroundColor(Color(hex: Colors.Primary.dark))
-                        
-                        Text("Appearance")
-                            .fontWeight(.bold)
-                    }
-                    .padding(.bottom, 12)
-                    
-                    HStack {
-                        
                         Spacer()
                         
                         VStack {
@@ -99,8 +69,46 @@ struct AppearanceViewiOS: View {
                             
                             Text("Light")
                             
-                            Toggle(isOn: .constant(false), label: {})
-                                .toggleStyle(iOSCheckboxToggleStyle())
+                            Image(systemName: colorScheme == .light ? "checkmark" : "")
+                                .font(.caption2)
+                                .frame(width: 12, height: 12)
+                                .padding(6)
+                                .contentShape(Rectangle())
+                                .foregroundColor(
+                                    Color(hex:
+                                            Colors.getColor(
+                                                for: "onPrimary",
+                                                colorScheme: globalData.getColorScheme()
+                                            )
+                                         )
+                                )
+                                .background {
+                                    colorScheme == .light ?
+                                    AnyView(Circle()
+                                        .fill(
+                                            Color(hex:
+                                                    Colors.getColor(
+                                                        for: "Primary",
+                                                        colorScheme: globalData.getColorScheme()
+                                                    )
+                                                 )
+                                        )
+                                    )
+                                    : AnyView(Circle()
+                                        .stroke(
+                                            Color(hex:
+                                                    Colors.getColor(
+                                                        for: "onSurface",
+                                                        colorScheme: globalData.getColorScheme()
+                                                    )
+                                                 )
+                                        )
+                                    )
+                                }
+                                .onTapGesture {
+                                    colorScheme = .light
+                                    globalData.setColorScheme(.light)
+                                }
                         }
                         
                         Spacer()
@@ -111,8 +119,46 @@ struct AppearanceViewiOS: View {
                             
                             Text("Dark")
                             
-                            Toggle(isOn: .constant(true), label: {})
-                                .toggleStyle(iOSCheckboxToggleStyle())
+                            Image(systemName: colorScheme == .dark ? "checkmark" : "")
+                                .font(.caption2)
+                                .frame(width: 12, height: 12)
+                                .padding(6)
+                                .contentShape(Rectangle())
+                                .foregroundColor(
+                                    Color(hex:
+                                            Colors.getColor(
+                                                for: "onPrimary",
+                                                colorScheme: globalData.getColorScheme()
+                                            )
+                                         )
+                                )
+                                .background {
+                                    colorScheme == .dark ?
+                                    AnyView(Circle()
+                                        .fill(
+                                            Color(hex:
+                                                    Colors.getColor(
+                                                        for: "Primary",
+                                                        colorScheme: globalData.getColorScheme()
+                                                    )
+                                                 )
+                                        )
+                                    )
+                                    : AnyView(Circle()
+                                        .stroke(
+                                            Color(hex:
+                                                    Colors.getColor(
+                                                        for: "onSurface",
+                                                        colorScheme: globalData.getColorScheme()
+                                                    )
+                                                 )
+                                        )
+                                    )
+                                }
+                                .onTapGesture {
+                                    colorScheme = .dark
+                                    globalData.setColorScheme(.dark)
+                                }
                         }
                         
                         Spacer()
@@ -123,33 +169,53 @@ struct AppearanceViewiOS: View {
                             
                             Text("System")
                             
-                            Toggle(isOn: .constant(false), label: {})
-                                .toggleStyle(iOSCheckboxToggleStyle())
+                            Image(systemName: colorScheme == .system ? "checkmark" : "")
+                                .font(.caption2)
+                                .frame(width: 12, height: 12)
+                                .padding(6)
+                                .contentShape(Rectangle())
+                                .foregroundColor(
+                                    Color(hex:
+                                            Colors.getColor(
+                                                for: "onPrimary",
+                                                colorScheme: globalData.getColorScheme()
+                                            )
+                                         )
+                                )
+                                .background {
+                                    colorScheme == .system ?
+                                    AnyView(Circle()
+                                        .fill(
+                                            Color(hex:
+                                                    Colors.getColor(
+                                                        for: "Primary",
+                                                        colorScheme: globalData.getColorScheme()
+                                                    )
+                                                 )
+                                        )
+                                    )
+                                    : AnyView(Circle()
+                                        .stroke(
+                                            Color(hex:
+                                                    Colors.getColor(
+                                                        for: "onSurface",
+                                                        colorScheme: globalData.getColorScheme()
+                                                    )
+                                                 )
+                                        )
+                                    )
+                                }
+                                .onTapGesture {
+                                    colorScheme = .system
+                                    globalData.setColorScheme(.system)
+                                }
                         }
                         
                         Spacer()
                     }
-                    
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(12)
-                .background {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(
-                            Color(hex: Colors.SurfaceContainer.dark)
-                        )
                 }
                 
-                VStack(alignment: .leading) {
-                    HStack {
-                        Image(systemName: "sun.max.fill")
-                            .foregroundColor(Color(hex: Colors.Primary.dark))
-                        
-                        Text("Theme")
-                            .fontWeight(.bold)
-                    }
-                    .padding(.bottom, 12)
-                    
+                SettingsGroup(title: "Theme", icon: "sun.max.fill") {
                     VStack(spacing: 20) {
                         HStack {
                             Text("Export Theme to JSON")
@@ -193,6 +259,7 @@ struct AppearanceViewiOS: View {
                         HStack {
                             Text("iOS Style")
                                 .fontWeight(.semibold)
+                                .opacity(0.7)
                             
                             Spacer()
                             
@@ -200,9 +267,50 @@ struct AppearanceViewiOS: View {
                                 isOn: $iosStyle,
                                 label: {}
                             )
-                            .tint(Color(hex: Colors.Primary.dark))
+                            .tint(
+                                Color(hex:
+                                        Colors.getColor(
+                                            for: "Primary",
+                                            colorScheme: globalData.getColorScheme()
+                                        )
+                                     )
+                            )
                             .onChange(of: iosStyle) { value in
                                 complexSuccess()
+                            }
+                        }
+                        .disabled(true)
+                        
+                        if colorScheme == .dark {
+                            HStack {
+                                Text("AMOLED Mode")
+                                    .fontWeight(.semibold)
+                                
+                                Spacer()
+                                
+                                Toggle(
+                                    isOn: $amoledMode,
+                                    label: {}
+                                )
+                                .tint(
+                                    Color(hex:
+                                            Colors.getColor(
+                                                for: "Primary",
+                                                colorScheme: globalData.getColorScheme()
+                                            )
+                                         )
+                                )
+                                .onChange(of: amoledMode) { value in
+                                    globalData.setAmoledMode(value)
+                                    if value {
+                                        Colors.SurfaceTEMP.dark = Colors.Surface.dark
+                                        Colors.Surface.dark = "#000000"
+                                    } else {
+                                        Colors.Surface.dark = Colors.SurfaceTEMP.dark
+                                    }
+                                    
+                                    complexSuccess()
+                                }
                             }
                         }
                         
@@ -219,86 +327,10 @@ struct AppearanceViewiOS: View {
                         }
                     }
                 }
-                .padding(12)
-                .background {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(
-                            Color(hex: Colors.SurfaceContainer.dark)
-                        )
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 120)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .foregroundColor(
-                Color(hex:
-                        Colors.getColor(
-                            for: "onSurface",
-                            colorScheme: globalData.getColorScheme()
-                        )
-                     )
-            )
-            .background {
-                Color(hex:
-                        Colors.getColor(
-                            for: "Surface",
-                            colorScheme: globalData.getColorScheme()
-                        )
-                )
-            }
-            .overlay(alignment: .top) {
-                HStack {
-                    Image(systemName: "chevron.left")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 16, height: 16)
-                        .offset(x: -1)
-                        .padding(4)
-                        .contentShape(Rectangle())
-                        .foregroundColor(Color(hex: Colors.onPrimary.dark))
-                        .background {
-                            Circle()
-                                .fill(
-                                    Color(hex: Colors.Primary.dark)
-                                )
-                        }
-                        .onTapGesture {
-                            self.presentationMode.wrappedValue.dismiss()
-                        }
-                    
-                    Spacer()
-                    
-                    Text("Appearance")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Spacer()
-                    
-                    Spacer()
-                        .frame(maxWidth: 20)
-                }
-                .padding(.horizontal, 12)
-                .padding(.top, proxy.safeAreaInsets.top)
-                .padding(.vertical, 8)
-                .frame(maxWidth: proxy.size.width, alignment: .leading)
-                .foregroundColor(
-                    Color(hex:
-                            Colors.getColor(
-                                for: "onSurface",
-                                colorScheme: globalData.getColorScheme()
-                            )
-                         )
-                )
-                .background {
-                    //Color(hex: Colors.SurfaceContainer.dark)
-                }
-            }
-            .ignoresSafeArea()
-            .navigationBarBackButtonHidden(true)
-            .onAppear {
-                prepareHaptics()
             }
         }
+        .animation(.spring(response: 0.3), value: colorScheme)
+        .animation(.spring(response: 0.3), value: amoledMode)
     }
 }
 

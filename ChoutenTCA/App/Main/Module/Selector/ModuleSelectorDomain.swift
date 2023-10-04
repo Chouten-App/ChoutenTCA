@@ -29,8 +29,10 @@ struct ModuleSelectorDomain: ReducerProtocol {
         case setImportedPressed(newValue: Bool)
         
         case setAvailableModules
+        case setModules(modules: [Module])
         
         case selectorDomain(ModuleSelectorButtonDomain.Action)
+        case onAppear
     }
     
     @Dependency(\.globalData)
@@ -60,6 +62,17 @@ struct ModuleSelectorDomain: ReducerProtocol {
                 return .none
             case .selectorDomain:
                 return .none
+            case .setModules(let modules):
+                print(modules)
+                state.availableModules = modules
+                return .none
+            case .onAppear:
+                return .run { send in
+                    let availableModules = globalData.observeAvailableModules()
+                    for await values in availableModules {
+                        await send(.setModules(modules: values))
+                    }
+                }
             }
         }
     }
