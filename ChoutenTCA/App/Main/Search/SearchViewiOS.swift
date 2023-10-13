@@ -8,8 +8,8 @@
 import SwiftUI
 import ComposableArchitecture
 import Kingfisher
-import NavigationTransitions
 import ActivityIndicatorView
+import SwiftUISnackbar
 
 struct ScrollOffsetPreferenceKey: PreferenceKey {
     static var defaultValue: CGPoint = .zero
@@ -22,13 +22,28 @@ struct SearchViewiOS: View {
     let store: StoreOf<SearchDomain>
     @StateObject var Colors = DynamicColors.shared
     
+    @Dependency(\.DownloadManager) var downloadManager
+    
     // TEMP
     @State private var scrollPosition: CGPoint = .zero
+    @State var blink = false
+    @State private var shouldRunCodeRandomly = false
     
     func searchTitleOpacity() -> CGFloat {
         if scrollPosition.y < -60 { return 0 }
         
         return 1.0 - (scrollPosition.y / CGFloat(-60))
+    }
+    
+    // Function to load UIImage from a local file URL
+    func loadImageFromURL(_ urlString: String) -> UIImage {
+        guard let imageUrl = URL(string: urlString),
+              let imageData = try? Data(contentsOf: imageUrl),
+              let uiImage = UIImage(data: imageData) else {
+            // Return a placeholder image or handle the error as needed
+            return UIImage(systemName: "photo") ?? UIImage()
+        }
+        return uiImage
     }
     
     var body: some View {
@@ -104,7 +119,7 @@ struct SearchViewiOS: View {
                                                                 .frame(width: 110, height: 160)
                                                                 .cornerRadius(12)
                                                         } else {
-                                                            Image(viewStore.searchResult[index].img)
+                                                            KFImage(URL(fileURLWithPath: viewStore.searchResult[index].img))
                                                                 .resizable()
                                                                 .aspectRatio(contentMode: .fill)
                                                                 .frame(width: 110, height: 160)
@@ -151,13 +166,13 @@ struct SearchViewiOS: View {
                                             )
                                         }
                                     }
-                                    .padding(.top, 190)
+                                    .padding(.top, viewStore.isDownloadedOnly ? 130 : 190)
                                     .padding(.bottom, 120)
                                     .padding(.horizontal, 20)
                                     .background(
                                         GeometryReader { geometry in
-                                        Color.clear
-                                            .preference(key: ScrollOffsetPreferenceKey.self, value: geometry.frame(in: .named("scroll")).origin)
+                                            Color.clear
+                                                .preference(key: ScrollOffsetPreferenceKey.self, value: geometry.frame(in: .named("scroll")).origin)
                                         }
                                     )
                                     .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
@@ -167,12 +182,61 @@ struct SearchViewiOS: View {
                                 }
                                 .coordinateSpace(name: "scroll")
                             }
+                        } else if viewStore.loadingStatus == .error {
+                            AsciimoteView(
+                                "(×﹏×)",
+                                description: viewStore.isDownloadedOnly ? "Nothing found in your Library" : "Nothing was found with that query. Please try a different search term."
+                            )
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                         } else {
                             AsciimoteView(
-                                "(・・ ) ?",
+                                "(         ) ?",
                                 description: "Why not try to search for something?"
                             )
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .overlay {
+                                HStack(spacing: 28) {
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(Color(hex: Colors.onSurface.dark))
+                                        .frame(width: 6, height: blink ? 3 : 6)
+                                    
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(Color(hex: Colors.onSurface.dark))
+                                        .frame(width: 6, height: blink ? 3 : 6)
+                                }
+                                .offset(x: -17, y: -20)
+                                .onAppear {
+                                    // Start a Timer that fires every second
+                                    Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+                                        // Generate a random number between 0 and 1
+                                        let randomValue = Double.random(in: 0...1)
+                                        
+                                        // Set a threshold for randomness (e.g., 0.5 for 50% chance)
+                                        let randomnessThreshold: Double = 0.5
+                                        
+                                        // Check if the random number is less than the threshold
+                                        if randomValue < randomnessThreshold {
+                                            // Set the flag to indicate that code should run randomly
+                                            shouldRunCodeRandomly = true
+                                        }
+                                        
+                                        // Check if the flag is true, and if so, execute your code
+                                        if shouldRunCodeRandomly {
+                                            withAnimation {
+                                                blink = true
+                                            }
+                                            
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                                withAnimation {
+                                                    blink = false
+                                                }
+                                                
+                                                shouldRunCodeRandomly = false
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -206,11 +270,11 @@ struct SearchViewiOS: View {
                             Spacer()
                             
                             /*
-                            KFImage(URL(string: ""))
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 32, height: 32)
-                                .cornerRadius(64)
+                             KFImage(URL(string: ""))
+                             .resizable()
+                             .aspectRatio(contentMode: .fit)
+                             .frame(width: 32, height: 32)
+                             .cornerRadius(64)
                              */
                         }
                         .foregroundColor(Color(hex: Colors.onSurface.dark))
@@ -237,7 +301,9 @@ struct SearchViewiOS: View {
                                     .disableAutocorrection(true)
                                     .onSubmit {
                                         if viewStore.isDownloadedOnly {
+                                            let results = downloadManager.searchLocally(viewStore.query)
                                             
+                                            viewStore.send(.setSearchResult(results: results))
                                         } else {
                                             viewStore.send(.resetWebview)
                                         }
@@ -259,7 +325,7 @@ struct SearchViewiOS: View {
                                     Text("Cancel")
                                         .foregroundColor(Color(hex: Colors.onSurface.dark))
                                 }
-
+                                
                                 
                             }
                         }
@@ -287,7 +353,7 @@ struct SearchViewiOS_Previews: PreviewProvider {
     static var previews: some View {
         SearchViewiOS(
             store: Store(initialState: SearchDomain.State(
-                loadingStatus: .success,
+                loadingStatus: .notStarted,
                 searchResult: [
                     SearchData(url: "", img: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg", title: "Title", indicatorText: "18+", currentCount: 12, totalCount: 12),
                     SearchData(url: "", img: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg", title: "Title", indicatorText: "18+", currentCount: 12, totalCount: 12),

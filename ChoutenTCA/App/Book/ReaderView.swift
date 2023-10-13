@@ -126,6 +126,7 @@ struct ReaderView: View {
                         
                         Spacer()
                             .background(Color.clear)
+                            .contentShape(Rectangle())
                         
                         Button {
                             showSettings = true

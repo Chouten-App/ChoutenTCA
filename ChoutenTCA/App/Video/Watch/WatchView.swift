@@ -19,17 +19,22 @@ struct WatchView: View {
     @FetchRequest(sortDescriptors: []) var mediaProgress: FetchedResults<MediaProgress>
     @Environment(\.managedObjectContext) var moc
     
+    @State var subtitleDelegate: InterceptingAssetResourceLoaderDelegate? = nil
+    @State var isFullscreen: Bool = false
+    
     var body: some View {
         WithViewStore(self.store) { viewStore in
             GeometryReader { proxy in
                 VStack {
                     ZStack {
+                        /*
                         CustomVideoPlayer(playerVM: playerVM, showUI: false, scaledVideo: .constant(false))
                             .frame(maxWidth: proxy.size.width, maxHeight: proxy.size.width / 16 * 9)
                             .clipped()
                             .blur(radius: 12)
                             .scaleEffect(1.2)
                             .opacity(0.3)
+                        */
                         
                         CustomPlayerWithControls(
                             streamData: viewStore.binding(
@@ -41,96 +46,104 @@ struct WatchView: View {
                                 send: WatchDomain.Action.setServers(newValue:)
                             ),
                             index: index,
-                            playerVM: playerVM
+                            playerVM: playerVM,
+                            isFullscreen: $isFullscreen
                         )
-                        .frame(maxWidth: proxy.size.width, maxHeight: proxy.size.width / 16 * 9)
+                        .frame(
+                            maxWidth: .infinity,
+                            maxHeight: isFullscreen ?
+                                .infinity :
+                                proxy.size.width / 16 * 9
+                        )
                         .clipped()
                     }
                     
-                    ScrollView {
-                        if let infoData = viewStore.infoData {
-                            VStack(alignment: .leading, spacing: 12) {
-                                // Info
-                                VStack(alignment: .leading) {
-                                    Text(infoData.titles.primary)
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                        .lineLimit(2)
-                                    if let secondary = infoData.titles.secondary {
-                                        Text(secondary)
-                                            .font(.caption)
-                                            .fontWeight(.heavy)
-                                            .lineLimit(2)
-                                            .opacity(0.7)
-                                    }
-                                }
-                                .padding(.horizontal, 20)
-                                .padding(.top, 6)
-                                
-                                Text(infoData.description)
-                                    .font(.subheadline)
-                                    .lineLimit(9)
-                                    .opacity(0.7)
-                                    .padding(.vertical, 6)
-                                    .contentShape(Rectangle())
-                                    .padding(.horizontal, 20)
-                                
-                                VStack(alignment: .leading, spacing: 6) {
-                                    HStack {
-                                        Text("Season 1")
-                                            .font(.title3)
+                    if !isFullscreen {
+                        ScrollView {
+                            if let infoData = viewStore.infoData {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    // Info
+                                    VStack(alignment: .leading) {
+                                        Text(infoData.titles.primary)
+                                            .font(.title2)
                                             .fontWeight(.bold)
-                                        
-                                        Spacer()
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .padding(6)
-                                            .background {
-                                                Circle()
-                                                    .fill(Color(hex: Colors.SurfaceContainer.dark))
-                                            }
+                                            .lineLimit(2)
+                                        if let secondary = infoData.titles.secondary {
+                                            Text(secondary)
+                                                .font(.caption)
+                                                .fontWeight(.heavy)
+                                                .lineLimit(2)
+                                                .opacity(0.7)
+                                        }
                                     }
-                                    .contentShape(Rectangle())
+                                    .padding(.horizontal, 20)
+                                    .padding(.top, 6)
                                     
-                                    HStack {
-                                        Text("\(infoData.totalMediaCount ?? 0) \(infoData.mediaType)")
-                                            .font(.subheadline)
-                                            .fontWeight(.semibold)
-                                            .opacity(0.7)
+                                    Text(infoData.description)
+                                        .font(.subheadline)
+                                        .lineLimit(9)
+                                        .opacity(0.7)
+                                        .padding(.vertical, 6)
+                                        .contentShape(Rectangle())
+                                        .padding(.horizontal, 20)
+                                    
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        HStack {
+                                            Text("Season 1")
+                                                .font(.title3)
+                                                .fontWeight(.bold)
+                                            
+                                            Spacer()
+                                            
+                                            Image(systemName: "chevron.right")
+                                                .padding(6)
+                                                .background {
+                                                    Circle()
+                                                        .fill(Color(hex: Colors.SurfaceContainer.dark))
+                                                }
+                                        }
+                                        .contentShape(Rectangle())
                                         
-                                        Spacer()
-                                        
-                                        Image("arrow.down.filter")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 16, height: 16)
-                                            .foregroundColor(.white)
-                                            .opacity(0.7)
-                                            .contentShape(Rectangle())
-                                        
-                                        Image("arrow.down.filter")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 16, height: 16)
-                                            .scaleEffect(CGSize(width: 1.0, height: -1.0))
-                                            .foregroundColor(.white)
-                                            .opacity(1.0)
-                                            .contentShape(Rectangle())
+                                        HStack {
+                                            Text("\(infoData.totalMediaCount ?? 0) \(infoData.mediaType)")
+                                                .font(.subheadline)
+                                                .fontWeight(.semibold)
+                                                .opacity(0.7)
+                                            
+                                            Spacer()
+                                            
+                                            Image("arrow.down.filter")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 16, height: 16)
+                                                .foregroundColor(.white)
+                                                .opacity(0.7)
+                                                .contentShape(Rectangle())
+                                            
+                                            Image("arrow.down.filter")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 16, height: 16)
+                                                .scaleEffect(CGSize(width: 1.0, height: -1.0))
+                                                .foregroundColor(.white)
+                                                .opacity(1.0)
+                                                .contentShape(Rectangle())
+                                        }
                                     }
+                                    .padding(.vertical, 6)
+                                    .padding(.horizontal, 20)
+                                    
+                                    // Episode List
                                 }
-                                .padding(.vertical, 6)
-                                .padding(.horizontal, 20)
-                                
-                                // Episode List
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                             }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                         }
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: isFullscreen ? .center : .top)
                 .background(Color(hex: Colors.Surface.dark))
                 .foregroundColor(Color(hex: Colors.onSurface.dark))
-                .edgesIgnoringSafeArea(.bottom)
+                .edgesIgnoringSafeArea(isFullscreen ? .all : .bottom)
             }
             .navigationBarBackButtonHidden(true)
             .contentShape(Rectangle())
@@ -183,72 +196,48 @@ struct WatchView: View {
                 viewStore.send(.resetWatchpage)
             }
             .onChange(of: viewStore.videoData) { data in
-                if data != nil {
+                if let data {
+                    let auto = data.sources.first(where: { $0.quality == "auto" })
                     
-                    let asset = AVURLAsset(
-                        url: URL(
-                            string: data!.sources[0].file
-                        )!
-                        /*options: [
-                            "AVURLAssetHTTPHeaderFieldsKey": data!.headers ?? []
-                        ]*/
+                    let newUrl = URL(
+                        string: InterceptingAssetResourceLoaderDelegate.videoUrlPrefix + (auto?.file ?? "")
                     )
                     
-                    
-                    playerVM.setCurrentItem(
-                        AVPlayerItem(
-                            asset: asset
+                    if let newUrl {
+                        let videoAsset = AVURLAsset(
+                            url: newUrl,
+                            options: [ "AVURLAssetHTTPHeaderFieldsKey": data.headers ?? [:] ]
                         )
-                    )
-                    if(data!.subtitles.count > 0) {
-                        var content: String
-                        var index = 0
                         
-                        for sub in 0..<data!.subtitles.count {
-                            if(data!.subtitles[sub].language == "English") {
-                                index = sub
+                        let delegate = InterceptingAssetResourceLoaderDelegate(data.subtitles)
+                        
+                        subtitleDelegate = delegate
+                        
+                        videoAsset.resourceLoader.setDelegate(delegate, queue: .main)
+                        
+                        let item = AVPlayerItem(
+                            asset: videoAsset
+                        )
+                        
+                        print(videoAsset)
+
+                        playerVM.setCurrentItem(item)
+                        /*
+                        if let mediaData: MediaItem = viewStore.infoData?.mediaList.first?.list[index] {
+                            let prog = mediaProgress.filter { progress in
+                                progress.url == self.url && progress.number == mediaData.number
+                            }.first
+                            
+                            if prog != nil {
+                                playerVM.isEditingCurrentTime = true
+                                playerVM.currentTime = prog!.progress
+                                playerVM.isEditingCurrentTime = false
                             }
                         }
+                         */
                         
-                        playerVM.selectedSubtitleIndex = index
-                        
-                        if let url = URL(string: data!.subtitles[index].url) {
-                            do {
-                                content = try String(contentsOf: url)
-                            } catch {
-                                // contents could not be loaded
-                                content = ""
-                            }
-                        } else {
-                            // the URL was bad!
-                            content = ""
-                        }
-                        
-                        let parser = WebVTTParser(
-                            string: content
-                                .replacingOccurrences(of: "<i>", with: "_")
-                                .replacingOccurrences(of: "</i>", with: "_")
-                                .replacingOccurrences(of: "<b>", with: "*")
-                                .replacingOccurrences(of: "</b>", with: "*")
-                        )
-                        let webVTT = try? parser.parse()
-                        
-                        playerVM.webVTT = webVTT
+                        playerVM.player.play()
                     }
-                    
-                    if let mediaData: MediaItem = viewStore.infoData?.mediaList.first?.list[index] {
-                        let prog = mediaProgress.filter { progress in
-                            progress.url == self.url && progress.number == mediaData.number
-                        }.first
-                        
-                        if prog != nil {
-                            playerVM.isEditingCurrentTime = true
-                            playerVM.currentTime = prog!.progress
-                            playerVM.isEditingCurrentTime = false
-                        }
-                    }
-                    
-                    playerVM.player.play()
                 }
             }
             .onChange(of: playerVM.currentTime) { newValue in
@@ -286,6 +275,7 @@ struct WatchView_Previews: PreviewProvider {
                 reducer: WatchDomain()
             )
         )
+        .previewInterfaceOrientation(.landscapeRight)
         .prefersHomeIndicatorAutoHidden(true)
     }
 }

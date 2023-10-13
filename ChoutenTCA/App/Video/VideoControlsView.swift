@@ -13,6 +13,7 @@ struct VideoControlsView: View {
     @Binding var videoData: VideoData?
     @Binding var servers: [ServerData]
     let index: Int
+    @Binding var isFullscreen: Bool
     @StateObject var playerVM: PlayerViewModel
     @StateObject var Colors = DynamicColors.shared
     
@@ -40,7 +41,7 @@ struct VideoControlsView: View {
     var body: some View {
         GeometryReader { proxy in
             VStack(alignment: .leading) {
-                if portrait {
+                if !isFullscreen {
                     HStack {
                         Spacer()
                         
@@ -69,7 +70,7 @@ struct VideoControlsView: View {
                         .offset(y: showUI ? 0 : 80)
                 }
             }
-            .padding(.horizontal, portrait ? 20 : 60)
+            .padding(.horizontal, !isFullscreen ? 20 : 60)
             .padding(.vertical, 20)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .foregroundColor(Color(hex: Colors.onSurface.dark))
@@ -78,9 +79,6 @@ struct VideoControlsView: View {
                     .foregroundColor(Color(hex: Colors.onSurface.dark))
             }
             .opacity(showUI ? 1.0 : 0.0)
-            .background {
-                Subtitles()
-            }
             .overlay(alignment: .bottomTrailing) {
                 if videoData != nil && videoData!.skips.count > 0 {
                     SkipTimeButton(skip: videoData!.skips[0])
@@ -185,32 +183,6 @@ struct VideoControlsView: View {
                 .shadow(color: .black, radius: 0.1, x: 0, y: -1)
                 .shadow(color: .black, radius: 0.1, x: 0, y: 1)
         }
-    }
-    
-    @ViewBuilder
-    func Subtitles() -> some View {
-        VStack {
-            Spacer()
-            
-            ForEach(0..<playerVM.currentSubs.count, id:\.self) {index in
-                StylisedSubtitle(
-                    text: playerVM.currentSubs[index].text
-                        .replacingOccurrences(of: "*", with: "**")
-                        .replacingOccurrences(of: "_", with: "*")
-                )
-            }
-        }
-        .padding(.horizontal, portrait ? 24 : 80)
-        .font(Font.custom("Trebuchet MS", size: portrait ? 12 : 18))
-        .padding(.bottom, showUI ? (portrait ? 40 : 80) : (portrait ? 12 : 32))
-        .animation(.spring(response: 0.3), value: showUI)
-        .foregroundColor(.white)
-        .frame(
-            maxWidth: .infinity,
-            maxHeight: .infinity,
-            alignment: .bottom
-        )
-        .ignoresSafeArea()
     }
     
     func getSkipPercentage(currentTime: Double, startTime: Double, endTime: Double) -> Double {
@@ -324,9 +296,10 @@ struct VideoControlsView: View {
         HStack {
             Spacer()
             
+            /*
             VStack(spacing: 12) {
-                VolumeSlider(percentage: $playerVM.player.volume, isDragging: $isDragging, total: 1.0)
-                    .frame(maxWidth: 20, maxHeight: 140)
+                //VolumeSlider(percentage: $playerVM.player.volume, isDragging: $isDragging, total: 1.0)
+                    //.frame(maxWidth: 20, maxHeight: 140)
                 
                 Image(
                     systemName: playerVM.player.volume == 0.0
@@ -343,6 +316,7 @@ struct VideoControlsView: View {
                 )
             }
             .offset(x: showUI ? 0 : 80)
+             */
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -566,7 +540,7 @@ struct VideoControlsBridge: View {
     var body: some View {
         GeometryReader { proxy in
             VStack {
-                VideoControlsView(videoData: .constant(nil), servers: .constant([]), index: 0, playerVM: PlayerViewModel())
+                VideoControlsView(videoData: .constant(nil), servers: .constant([]), index: 0, isFullscreen: .constant(false), playerVM: PlayerViewModel())
                     .frame(width: proxy.size.width, height: proxy.size.width / 16 * 9)
                 
                 Spacer()

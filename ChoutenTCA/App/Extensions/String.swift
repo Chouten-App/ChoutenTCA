@@ -52,6 +52,31 @@ extension String {
     }
 }
 
+extension String {
+    func fuzzyMatch(query: String) -> Bool {
+        let normalizedSelf = self.lowercased()
+        let normalizedQuery = query.lowercased()
+        
+        var selfIndex = normalizedSelf.startIndex
+        var queryIndex = normalizedQuery.startIndex
+        
+        while selfIndex != normalizedSelf.endIndex && queryIndex != normalizedQuery.endIndex {
+            if normalizedSelf[selfIndex] == normalizedQuery[queryIndex] {
+                queryIndex = normalizedQuery.index(after: queryIndex)
+            }
+            selfIndex = normalizedSelf.index(after: selfIndex)
+        }
+        
+        return queryIndex == normalizedQuery.endIndex
+    }
+}
+
+extension String {
+    func safeFileName() -> String? {
+        return self.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
+    }
+}
+
 extension String: LocalizedError {
     public var errorDescription: String? { return self }
 }

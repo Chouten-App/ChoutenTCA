@@ -22,6 +22,7 @@ struct ModuleSelectorButton: View {
     var body: some View {
         WithViewStore(self.store) { viewStore in
             ZStack {
+                /*
                 Color(hex: Colors.Error.dark)
                     .cornerRadius(viewStore.cornerRadius)
                             
@@ -40,7 +41,7 @@ struct ModuleSelectorButton: View {
                             .frame(width: 90, height: 50)
                     }
                 }
-                
+                */
                 Button {
                     viewStore.send(.loadModule)
                     viewStore.send(.resetData)
@@ -67,15 +68,6 @@ struct ModuleSelectorButton: View {
                                     maxHeight: viewStore.showDetails ? 52 : 40
                                 )
                                 .cornerRadius(12)
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color(hex:
-                                                        Colors.getColor(
-                                                            for: "Outline",
-                                                            colorScheme: globalData.getColorScheme()
-                                                        )
-                                                     ), lineWidth: 1)
-                                }
                         } else {
                             ZStack {
                                 Color(.white).opacity(0.6)
@@ -112,8 +104,6 @@ struct ModuleSelectorButton: View {
                                         .font(.system(size: 12, weight: .semibold))
                             }
                         }
-                        .padding(.top, viewStore.showDetails ? 6 : 0)
-                        .frame(minHeight: 64, alignment: viewStore.showDetails ? .top : .center)
                         
                         Spacer()
                         
@@ -145,20 +135,14 @@ struct ModuleSelectorButton: View {
                         }
 
                     }
-                    .padding(.horizontal, 12)
+                    .padding(12)
                     .frame(
-                        minWidth: 0,
                         maxWidth: .infinity,
-                        minHeight: 64,
-                        maxHeight: 64,
                         alignment: .leading
                     )
                 }
                 .frame(
-                    minWidth: 0,
                     maxWidth: .infinity,
-                    minHeight: 64,
-                    maxHeight: 64,
                     alignment: .topLeading
                 )
                 .buttonStyle(PlainButtonStyle())
@@ -170,14 +154,18 @@ struct ModuleSelectorButton: View {
                             )
                          )
                 )
+                /*
                 .background(
+                    /*
                     Color(hex:
                             Colors.getColor(
                                 for: "SurfaceContainer",
                                 colorScheme: globalData.getColorScheme()
                             )
                          )
+                     */
                 )
+                 */
                 .cornerRadius(viewStore.cornerRadius)
                 .offset(x: viewStore.offset)
                 .gesture(
@@ -191,10 +179,7 @@ struct ModuleSelectorButton: View {
                 )
             }
             .frame(
-                minWidth: 0,
                 maxWidth: .infinity,
-                minHeight: 64,
-                maxHeight: 64,
                 alignment: .topLeading
             )
         }

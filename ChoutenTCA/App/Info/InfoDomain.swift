@@ -69,6 +69,9 @@ struct InfoDomain: ReducerProtocol {
     @Dependency(\.moduleManager)
     var moduleManager
     
+    @Dependency(\.DownloadManager)
+    var downloadManager
+    
     var body: some ReducerProtocol<State, Action> {
         Scope(state: \.webviewState, action: /Action.webview) {
             WebviewDomain()
@@ -93,7 +96,17 @@ struct InfoDomain: ReducerProtocol {
                 return .none
             case .reader:
                 return .none
-            case .onAppear(_):
+            case .onAppear(let url):
+                // check if app is Download only
+                let downloadOnly = globalData.getDownloadedOnly()
+                if downloadOnly {
+                    // treat url as folder name
+                    let info = downloadManager.getInfo(url)
+                    return .send(
+                        .setInfoData(newValue: info)
+                    )
+                }
+                
                 state.htmlString = ""
                 let module = globalData.getModule()
                 
@@ -132,49 +145,6 @@ struct InfoDomain: ReducerProtocol {
                                 </body>
                                 </html>
                                 """
-                                
-                                
-                                /*
-                                let url = URL(
-                                    string: url
-                                )!
-                                var request = URLRequest(url: url)
-
-                                let c_cookies = globalData.getCookies()
-                                
-                                if c_cookies != nil {
-                                    let cookies = convertToHTTPCookies(cookies: c_cookies!.cookies)
-                                    let headerFields = HTTPCookie.requestHeaderFields(with: cookies)
-                                    for (field, value) in headerFields {
-                                        request.addValue(value, forHTTPHeaderField: field)
-                                    }
-                                }
-                                
-                                let userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1"
-                                request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
-                                
-                                print(request.allHTTPHeaderFields)
-                                
-                                let (data, response) = try await URLSession.shared.data(for: request)
-                                
-                                if let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                                    var html: String = ""
-                                    print(statusCode)
-                                    switch statusCode {
-                                    case 200:
-                                        html = String(data: data, encoding: .utf8) ?? ""
-                                        break
-                                    case 403:
-                                        // Cloudflare detected, open website in visible webview
-                                        throw "CF"
-                                    case _:
-                                        throw "Failed to load data from \(url)"
-                                    }
-                                    return html
-                                }
-                                
-                                throw "UNKNOWN ERROR"
-                                 */
                             }
                         )
                     }

@@ -274,6 +274,7 @@ struct WatchDomain: ReducerProtocol {
             case .resetWebview(let url):
                 globalData.setVideoData(nil)
                 globalData.setServers([])
+                state.infoData = globalData.getInfoData()
                 
                 return .merge(
                     .send(.webview(.setGlobalNextUrl(url: nil))),

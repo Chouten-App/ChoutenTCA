@@ -9,49 +9,54 @@ import SwiftUI
 import ComposableArchitecture
 import PopupView
 import Kingfisher
+import SwiftUISnackbar
 
 struct MainView: View {
     let store: StoreOf<MainDomain>
     @StateObject var Colors = DynamicColors.shared
+    @StateObject var snackStore = SnackbarStore()
     
     var body: some View {
         WithViewStore(self.store) { viewStore in
             GeometryReader { proxy in
                 VStack(spacing: 0) {
                     // incognito banner
-                    ZStack(alignment: .bottom) {
-                        Color(hex: Colors.Tertiary.dark)
+                    VStack(spacing: 0) {
+                        ZStack(alignment: .bottom) {
+                            Color(hex: Colors.Tertiary.dark)
+                            
+                            Text("Downloaded Only")
+                                .font(.callout)
+                                .fontWeight(.semibold)
+                                .foregroundColor(
+                                    Color(hex: Colors.onTertiary.dark)
+                                )
+                                .padding(.vertical, !viewStore.isDownloadedOnly ? 0 : 8)
+                                .padding(.top, !viewStore.isDownloadedOnly ? 0 : proxy.safeAreaInsets.top)
+                        }
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxHeight: viewStore.isDownloadedOnly ? nil : 0.0)
+                        .animation(.spring(response: 0.3), value: viewStore.isDownloadedOnly)
+                        .zIndex(10)
                         
-                        Text("Downloaded Only")
-                            .font(.callout)
-                            .fontWeight(.semibold)
-                            .foregroundColor(
-                                Color(hex: Colors.onTertiary.dark)
-                            )
-                            .padding(.vertical, 8)
-                            .padding(.top, proxy.safeAreaInsets.top)
+                        // incognito banner
+                        ZStack(alignment: .bottom) {
+                            Color(hex: Colors.Primary.dark)
+                            
+                            Text("Incognito")
+                                .font(.callout)
+                                .fontWeight(.semibold)
+                                .foregroundColor(
+                                    Color(hex: Colors.onPrimary.dark)
+                                )
+                                .padding(.vertical, viewStore.isIncognito ? 8 : 0)
+                                .padding(.top, viewStore.isDownloadedOnly ? 0 : proxy.safeAreaInsets.top)
+                        }
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxHeight: viewStore.isIncognito ? nil : 0.0)
+                        .animation(.spring(response: 0.3), value: viewStore.isIncognito)
                     }
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxHeight: viewStore.isDownloadedOnly ? nil : 0.0)
-                    .animation(.spring(response: 0.3), value: viewStore.isDownloadedOnly)
-                    .zIndex(viewStore.isDownloadedOnly && !viewStore.isIncognito ? 10 : 0)
-                    
-                    // incognito banner
-                    ZStack(alignment: .bottom) {
-                        Color(hex: Colors.Primary.dark)
-                        
-                        Text("Incognito")
-                            .font(.callout)
-                            .fontWeight(.semibold)
-                            .foregroundColor(
-                                Color(hex: Colors.onPrimary.dark)
-                            )
-                            .padding(.vertical, viewStore.isIncognito ? 8 : 0)
-                            .padding(.top, viewStore.isDownloadedOnly ? 0 : proxy.safeAreaInsets.top)
-                    }
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxHeight: viewStore.isIncognito ? nil : 0.0)
-                    .animation(.spring(response: 0.3), value: viewStore.isIncognito)
+                    .ignoresSafeArea()
                     
                     TabView(
                         selection: viewStore.binding(
@@ -124,6 +129,7 @@ struct MainView: View {
                         
                     }
                     .padding(.leading, UIScreen.main.bounds.width > 600 ? 80 : 0)
+                    .padding(.top, viewStore.isDownloadedOnly || viewStore.isIncognito ? -proxy.safeAreaInsets.top : 0.0)
                 }
                 .foregroundColor(Color(hex: Colors.onSurface.dark))
                 // module selector
@@ -181,29 +187,20 @@ struct MainView: View {
                         .transition(.move(edge: .bottom))
                     }
                 }
-                .popup(isPresented: viewStore.binding(
-                    get: \.floatyState.showFloaty,
-                    send: { MainDomain.Action.floaty(.setFloatyBool(newValue: $0)) }
-                )) {
-                    FloatyDisplay(
-                        store: self.store.scope(
-                            state: \.floatyState,
-                            action: MainDomain.Action.floaty
-                        )
-                    )
-                } customize: {
-                    $0
-                        .type(.floater())
-                        .position(.bottom)
-                        .animation(.spring())
-                        .closeOnTapOutside(false)
-                        .closeOnTap(false)
-                        .autohideIn(4.0)
-                        .dragToDismiss(true)
-                }
                 .onAppear {
                     viewStore.send(.onAppear)
                 }
+                .ignoresSafeArea(.keyboard)
+                /*
+                .snackbar(
+                    isShowing: .constant(true),
+                    title: "Title",
+                    text: "description",
+                    style: .default,
+                    dismissOnTap: true,
+                    dismissAfter: 4.0
+                )
+                 */
             }
             
         }

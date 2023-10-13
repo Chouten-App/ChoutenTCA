@@ -10,6 +10,8 @@ import ComposableArchitecture
 
 struct ModuleSelectorDomain: ReducerProtocol {
     struct State: Equatable {
+        var loadingStatus: DataLoadingStatus = .notStarted
+        
         var buttonHeight: Double = 52
         var importPressed: Bool = false
         var isModule: Bool = true
@@ -58,7 +60,9 @@ struct ModuleSelectorDomain: ReducerProtocol {
                 state.importPressed = newValue
                 return .none
             case .setAvailableModules:
-                state.availableModules = globalData.getAvailableModules()
+                if state.loadingStatus != .success {
+                    state.availableModules = globalData.getAvailableModules()
+                }
                 return .none
             case .selectorDomain:
                 return .none

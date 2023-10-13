@@ -34,6 +34,11 @@ struct RootDomain: ReducerProtocol {
             state.navigate = newValue
             return .none
         case .onAppear:
+            if let jsURL = Bundle.main.url(forResource: "commonCode", withExtension: "js"),
+               let commonCode = try? String(contentsOf: jsURL) {
+                AppConstants.commonCode = commonCode
+            }
+            
             return .task {
                 await .setAvailableModules(
                     TaskResult {

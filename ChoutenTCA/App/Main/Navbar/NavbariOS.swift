@@ -38,7 +38,7 @@ struct NavbariOS: View {
                     }
                     .padding(.vertical, 8)
                     .frame(maxWidth: 80, maxHeight: .infinity)
-                    .background(.ultraThinMaterial)
+                    .background(.regularMaterial)
                 }
                 else {
                     HStack(alignment: .top, spacing: 8) {
@@ -60,11 +60,11 @@ struct NavbariOS: View {
                             }
                     }
                     .padding(.horizontal, 8)
-                    .background(.ultraThinMaterial)
+                    .background(.regularMaterial)
+                    .background(.regularMaterial)
                     .overlay(alignment: .top) {
                         Rectangle()
                             .fill(Color(hex: Colors.onSurface.dark))
-                            .padding(.horizontal, 12)
                             .frame(maxWidth: .infinity, maxHeight: 1)
                             .opacity(0.4)
                     }
@@ -80,6 +80,8 @@ struct NavbarItemiOS: View {
     let selected: Bool
     let hasNotification: Bool
     let animation: Namespace.ID
+    
+    @State var animate: Bool = false
     
     @StateObject var Colors = DynamicColors.shared
     @Dependency(\.globalData) var globalData
@@ -136,6 +138,7 @@ struct NavbarItemiOS: View {
                         .opacity(hasNotification ? 1.0 : 0.0)
                 }
                 .frame(width: 24, height: 24)
+                .offset(y: animate ? -6 : 0)
                 
                 Text(label)
                     .font(.caption)
@@ -143,8 +146,9 @@ struct NavbarItemiOS: View {
             }
             .background {
                 Circle()
-                    .frame(minWidth: 200)
-                    .blur(radius: 8)
+                    .frame(width: 200)
+                    .scaleEffect(1.5)
+                    .blur(radius: 20)
                     .opacity(selected ? 0.2 : 0.0)
             }
         }
@@ -157,6 +161,19 @@ struct NavbarItemiOS: View {
             )
         )
         .frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.width > 600 ? 56 : 64, alignment: .top)
+        .onChange(of: selected) { newValue in
+            if newValue {
+                withAnimation(.spring(response: 0.2)) {
+                    animate = true
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    withAnimation(.spring(response: 0.2)) {
+                        animate = false
+                    }
+                }
+            }
+        }
     }
 }
 

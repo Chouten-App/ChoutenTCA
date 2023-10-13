@@ -10,6 +10,7 @@ import WebKit
 import SwiftyJSON
 import ComposableArchitecture
 import OSLog
+import SwiftUISnackbar
 
 func setCookiesInWebView(cookies: [Cookie], webView: WKWebView) {
     let httpCookies = convertToHTTPCookies(cookies: cookies)
@@ -55,140 +56,18 @@ struct Result: Codable {
 struct WebView: UIViewRepresentable {
     @ObservedObject var viewStore: ViewStore<WebviewDomain.State, WebviewDomain.Action>
     
-    let logger = OSLog(subsystem: "com.inumakieu.chouten", category: "Webview")
-    
     var payload: String = ""
     var action: String = "logic"
     var completionHandler: ((String) -> Void)? // Add completionHandler
     
     @Dependency(\.globalData) var globalData
+    @StateObject var store = SnackbarStore()
     
     func makeUIView(context: Context) -> WKWebView {
         // inject JS to capture console.log output and send to iOS
-        let source = """
-        function captureLog(msg) {
-            const date = new Date();
-            window.webkit.messageHandlers.logHandler.postMessage(
-                JSON.stringify({
-                    time: `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
-                    msg: msg,
-                    type: "log",
-                    moduleName: "Zoro",
-                    moduleIconPath: "",
-                })
-            );
-        }
-        window.console.log = captureLog;
-        function captureError(msg) {
-            const date = new Date();
-            window.webkit.messageHandlers.logHandler.postMessage(
-                JSON.stringify({
-                    time: `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
-                    msg: msg.split("-----")[0],
-                    type: "error",
-                    moduleName: "Zoro",
-                    moduleIconPath: "",
-                    lines: msg.split("-----")[1]
-                })
-            );
-        }
-        window.console.error = captureError;
-        """
+        let source = AppConstants.jsLogCode
         
-        let commonCode = """
-            let reqId = 0;
-            let resolveFunctions = {};
-            
-            const Native = {};
-            Native.sendHttpRequest = window.webkit.messageHandlers.Native.postMessage;
-            
-            window.onmessage = async function (event) {
-                const data = JSON.parse(event.data);
-                let payload = {};
-            
-                try{
-                    payload = JSON.parse(data.payload);
-                }catch(err){
-                    payload = data.payload;
-                }
-            
-                if (data.action === "logic"){
-                    try{
-                        if(payload.action === "eplist"){
-                            await getEpList(payload);
-                        }else if(payload.action === "video"){
-                            await getSource(payload);
-                        }else{
-                            console.log("Running Logic!")
-                            await logic(payload);
-                        }
-                    }catch(err){
-                        console.error(err);
-                        sendSignal(1, err.toString());
-                    }
-                }else{
-                    try {
-                        resolveFunctions[data.reqId](data.responseText);
-                    } catch (error) {
-                        console.log(error)
-                    }
-                }
-            }
-            
-            function sendRequest(url, headers, method, body) {
-                return new Promise((resolve, reject) => {
-                    const currentReqId = (++reqId).toString();
-
-                    resolveFunctions[currentReqId] = resolve;
-
-                    // @ts-ignore
-                    window.webkit.messageHandlers.Native.postMessage(JSON.stringify({
-                        reqId: currentReqId,
-                        action: "HTTPRequest",
-                        url,
-                        headers,
-                        method: method,
-                        body: body
-                    }));
-                });
-            }
-            
-            function sendResult(result, last = false) {
-                const currentReqId = (++reqId).toString();
-            
-                // @ts-ignore
-                window.webkit.messageHandlers.Native.postMessage(JSON.stringify({
-                    reqId: currentReqId,
-                    action: "result",
-                    shouldExit: last,
-                    result: JSON.stringify({action: result.action, result: JSON.stringify(result.result)})
-                }));
-            }
-            
-            function sendSignal(signal, message = ""){
-                const currentReqId = (++reqId).toString();
-            
-                // @ts-ignore
-                                    window.webkit.messageHandlers.Native.postMessage(JSON.stringify({
-                    reqId: currentReqId,
-                    action: signal === 0 ? "exit" : "error",
-                    result: message
-                }));
-            }
-            
-            function loadScript(url){
-                return new Promise((resolve, reject) => {
-                    const script = document.createElement('script');
-                    
-                    script.src = url;
-                    script.onload = resolve;
-                    script.onerror = reject;
-            
-                    document.head.appendChild(script);
-                });
-            }
-            
-            """
+        let commonCode = AppConstants.commonCode
         
         let caller = """
         var data = {
@@ -236,6 +115,8 @@ struct WebView: UIViewRepresentable {
         
         webView.loadHTMLString("<script>" + commonCode + viewStore.javaScript + "</script>", baseURL: URL(string: "http://localhost/")!)
         
+        webView.loadHTMLString("<script>" + commonCode + viewStore.javaScript + "</script>", baseURL: URL(string: "http://localhost/")!)
+        
         context.coordinator.webView = webView
         
         print("Webview created.")
@@ -254,8 +135,7 @@ struct WebView: UIViewRepresentable {
                 send: WebviewDomain.Action.setNextUrl(newUrl:)
             ),
             viewStore: viewStore,
-            completionHandler: completionHandler,
-            logger: logger
+            completionHandler: completionHandler
         )
     }
     
@@ -266,18 +146,16 @@ struct WebView: UIViewRepresentable {
         let viewStore: ViewStoreOf<WebviewDomain>
         var webView: WKWebView? // Store the WKWebView reference here
         var completionHandler: ((String) -> Void)? // Add completionHandler
-        var logger: OSLog
         
         @Dependency(\.globalData) var globalData
         
-        init(javaScript: String, requestType: String, nextUrl: Binding<String>, viewStore: ViewStoreOf<WebviewDomain>, completionHandler: ((String) -> Void)?, logger: OSLog) {
+        init(javaScript: String, requestType: String, nextUrl: Binding<String>, viewStore: ViewStoreOf<WebviewDomain>, completionHandler: ((String) -> Void)?) {
             self.javaScript = javaScript
             self.requestType = requestType
             self._nextUrl = nextUrl
             self.viewStore = viewStore
             self.webView = nil
             self.completionHandler = completionHandler
-            self.logger = logger
         }
         
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -303,7 +181,7 @@ struct WebView: UIViewRepresentable {
                             viewStore.send(.appendGlobalLog(item: consoleData))
                         }
                     } catch {
-                        print(error.localizedDescription)
+                        error.log(logger: OSLog.webview)
                         let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
                         NotificationCenter.default
                             .post(name:           NSNotification.Name("floaty"),
@@ -317,7 +195,7 @@ struct WebView: UIViewRepresentable {
             if webView != nil {
                 postMessage(message: data)
             } else {
-                print("WKWebView reference is nil")
+                os_log("%{public}@", log: OSLog.webview, type: .error, "WKWebView reference is nil")
             }
         }
         
@@ -402,7 +280,7 @@ struct WebView: UIViewRepresentable {
                             do {
                                 try await request(url: URL(string: req.url!)!, headers: req.headers!, method: req.method, body: req.body) { responseString, error in
                                     if let error = error {
-                                        print("Error:", error.localizedDescription)
+                                        error.log(logger: OSLog.webview)
                                     } else if let responseString = responseString {
                                         let resp = [
                                             "reqId": req.reqId,
@@ -424,10 +302,10 @@ struct WebView: UIViewRepresentable {
                                                     
                                                 }
                                             } else {
-                                                print("Error converting JSON data to string")
+                                                os_log("%{public}@", log: OSLog.webview, type: .error, "Error converting JSON data to string")
                                             }
                                         } catch {
-                                            print("Error converting dictionary to JSON:", error)
+                                            os_log("%{public}@", log: OSLog.webview, type: .error, "Error converting dictionary to JSON: \(error)")
                                         }
                                         
                                     }
@@ -449,7 +327,7 @@ struct WebView: UIViewRepresentable {
                         //throw Exception("Action not found.");
                     }
                 } catch {
-                    print("Error decoding JSON:", error)
+                    os_log("%{public}@", log: OSLog.webview, type: .error, "Error decoding JSON: \(error)")
                 }
             }
         }

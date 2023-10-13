@@ -71,8 +71,11 @@ public struct FillAspectImage: View {
                 .onSuccess { image in
                     finishedLoading = true
                     print(image.image.averageColor)
-                    color = image.image.averageColor
-                    
+                    DispatchQueue.main.async {
+                        withAnimation {
+                            color = image.image.averageColor
+                        }
+                    }
                     /*
                     let pixels = image.image.pixelData()
                     if let pixels {

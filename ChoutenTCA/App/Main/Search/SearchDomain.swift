@@ -165,7 +165,7 @@ struct SearchDomain: ReducerProtocol {
                 
                 let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
                 NotificationCenter.default
-                    .post(name:           NSNotification.Name("floaty"),
+                    .post(name: NSNotification.Name("floaty"),
                           object: nil, userInfo: data)
                 return .send(.setLoadingStatus(status: .error))
             case .setDownloadedOnly(let newValue):
@@ -198,7 +198,7 @@ struct SearchDomain: ReducerProtocol {
                 return .merge(
                     .send(.webview(.setHtmlString(newString: ""))),
                     .send(.webview(.setJsString(newString: ""))),
-                    .send(.setLoadingStatus(status: .notStarted))
+                    .send(.setLoadingStatus(status: .error))
                 )
             case .webview:
                 return .none

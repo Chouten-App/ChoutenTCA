@@ -20,8 +20,6 @@ final class PlayerViewModel: ObservableObject {
     @Published var buffered: Double = .zero
     @Published var duration: Double?
     @Published var selectedSubtitleIndex: Int = 0
-    @Published var webVTT: WebVTT?
-    @Published var currentSubs: [WebVTT.Cue] = []
     @Published var isLoading: Bool = true
     @Published var hasError: Bool = false
     @Published var id: String = ""
@@ -111,9 +109,6 @@ final class PlayerViewModel: ObservableObject {
             if self.isEditingCurrentTime == false {
                 self.currentTime = time.seconds
                 
-                
-                self.getSubtitleText()
-                
                 if(self.player.status == AVPlayer.Status.readyToPlay) {
                     self.isLoading = false} else {self.isLoading = true}
                 
@@ -137,14 +132,6 @@ final class PlayerViewModel: ObservableObject {
                 }
             }
             .store(in: &errorsubscriptions)
-    }
-    
-    func getSubtitleText() {
-        let new = webVTT?.cues.filter {
-            $0.timeStart <= currentTime && $0.timeEnd >= currentTime
-        }
-        
-        currentSubs = new ?? []
     }
     
     func getCurrentItem() -> AVPlayerItem? {

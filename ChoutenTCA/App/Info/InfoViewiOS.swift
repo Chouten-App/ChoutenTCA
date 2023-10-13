@@ -17,6 +17,8 @@ struct InfoViewiOS: View {
     @FetchRequest(sortDescriptors: []) var mediaProgress: FetchedResults<MediaProgress>
     @Environment(\.managedObjectContext) var moc
     
+    @Dependency(\.DownloadManager) var downloadManager
+    
     let mediaPerPage = 50
     
     // TEMP
@@ -144,9 +146,6 @@ struct InfoViewiOS: View {
                 if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" {
                     viewStore.send(.resetWebview(url: url))
                 }
-            }
-            .onDisappear {
-                averageColor = nil
             }
         }
     }
@@ -613,7 +612,7 @@ struct InfoViewiOS: View {
                                     )
                                 )
                             ) {
-                                EpisodeCard(item: episode, poster: viewStore.infoData!.poster, proxy: proxy)
+                                EpisodeCard(item: episode, poster: viewStore.infoData!.poster, proxy: proxy, infoData: viewStore.infoData!)
                                     .frame(maxWidth: proxy.size.width - 140)
                             }
                         }
@@ -639,7 +638,7 @@ struct InfoViewiOS: View {
                                     )
                                 )
                             ) {
-                                EpisodeCard(item: episode, poster: viewStore.infoData!.poster, proxy: proxy)
+                                EpisodeCard(item: episode, poster: viewStore.infoData!.poster, proxy: proxy, infoData: viewStore.infoData!)
                                     .frame(maxWidth: proxy.size.width - 140)
                             }
                         }
@@ -664,10 +663,13 @@ struct InfoViewiOS: View {
     }
     
     @ViewBuilder
-    func EpisodeCard(item: MediaItem, poster: String, proxy: GeometryProxy) -> some View {
+    func EpisodeCard(item: MediaItem, poster: String, proxy: GeometryProxy, infoData: InfoData) -> some View {
         let progress = mediaProgress.filter { progress in
             progress.url == item.url && progress.number == item.number
         }.first
+        
+        let downloadProgress: CGFloat = 1
+        let downloaded: Bool = downloadProgress == 1.0
         
         VStack {
             KFImage(URL(string: item.image ?? poster))
@@ -677,6 +679,7 @@ struct InfoViewiOS: View {
                 .cornerRadius(12)
                 .overlay(alignment: .topTrailing) {
                     HStack {
+                        /*
                         if let prog = progress {
                             if prog.progress / prog.duration > 0.8 {
                                 Text("Watched")
@@ -685,6 +688,37 @@ struct InfoViewiOS: View {
                                     .foregroundColor(.white)
                             }
                         }
+                        */
+                        
+                        Button {
+                            // Download button pressed
+                            // store infodata as json
+                            downloadManager.storeInfo(infoData, self.url)
+                        } label: {
+                            Image(systemName: downloaded ? "checkmark" : "square.and.arrow.down")
+                                .font(.caption)
+                                .padding(10)
+                                .foregroundColor(Color(hex: Colors.onSurface.dark))
+                                .background {
+                                    Circle()
+                                        .fill(
+                                            Color(hex: Colors.SurfaceContainer.dark)
+                                        )
+                                }
+                                .overlay {
+                                    Circle()
+                                        .trim(from: 0.0, to: downloadProgress)
+                                        .stroke(
+                                            Color(hex: Colors.Primary.dark),
+                                            style: StrokeStyle(
+                                                lineWidth: 2,
+                                                lineCap: .round
+                                            )
+                                        )
+                                        .rotationEffect(Angle(degrees: -90))
+                                }
+                        }
+                        Spacer()
                         
                         
                         Text("\(forTrailingZero(temp: item.number))")
@@ -696,8 +730,8 @@ struct InfoViewiOS: View {
                                 Capsule()
                                     .fill(Color(hex: Colors.Primary.dark))
                             }
-                            .padding(12)
                     }
+                    .padding(12)
                 }
                 .overlay(alignment: .bottom) {
                     if let prog = progress {

@@ -13,4 +13,8 @@ extension OSLog {
 
     /// Creates a custom log category for URLRequest logging.
     static let urlRequest = OSLog(subsystem: subsystem, category: "URLRequest")
+    
+    static let webview = OSLog(subsystem: subsystem, category: "Webview")
+    
+    static let downloadManager = OSLog(subsystem: subsystem, category: "DownloadManager")
 }

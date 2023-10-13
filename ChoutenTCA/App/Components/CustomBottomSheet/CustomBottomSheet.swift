@@ -19,7 +19,7 @@ struct BottomSheet: View {
     @State var offset: CGFloat = 0
     @State var lastOffset: CGFloat = 0
     @GestureState var gestureOffset: CGFloat = 0
-    let minimum: CGFloat = 150
+    let minimum: CGFloat = 50
     
     var body: some View {
         WithViewStore(self.store) { viewStore in
@@ -79,8 +79,10 @@ struct BottomSheet: View {
                         )
                 )
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            .frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height - 64, alignment: .bottom)
+            .clipped()
             .ignoresSafeArea(.all, edges: .bottom)
+            .padding(.bottom, 64)
         }
     }
     
@@ -100,7 +102,29 @@ struct CustomBottomSheetPreviewBridge: View {
     )
     
     let selectorStore: StoreOf<ModuleSelectorDomain> = Store(
-        initialState: ModuleSelectorDomain.State(),
+        initialState: ModuleSelectorDomain.State(
+            loadingStatus: .success,
+            availableModules: [
+                Module(
+                    id: "whatever",
+                    type: "Video",
+                    subtypes: ["video"],
+                    icon: "https://i.pinimg.com/564x/e4/53/43/e4534382eccd75bed2c298065cbb2d46.jpg",
+                    name: "Module Name",
+                    version: "1.0.0",
+                    formatVersion: 2,
+                    updateUrl: "",
+                    general: GeneralMetadata(
+                        author: "Inumaki",
+                        description: "This is a description of the Module",
+                        lang: ["en"],
+                        baseURL: "",
+                        bgColor: "",
+                        fgColor: ""
+                    )
+                )
+            ]
+        ),
         reducer: ModuleSelectorDomain()
     )
     
