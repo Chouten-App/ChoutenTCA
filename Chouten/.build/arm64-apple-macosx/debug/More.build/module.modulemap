@@ -1,4 +1,0 @@
-module More {
-    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/More.build/More-Swift.h"
-    requires objc
-}

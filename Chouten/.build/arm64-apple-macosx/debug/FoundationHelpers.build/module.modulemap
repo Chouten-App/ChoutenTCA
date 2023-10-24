@@ -1,4 +1,0 @@
-module FoundationHelpers {
-    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/FoundationHelpers.build/FoundationHelpers-Swift.h"
-    requires objc
-}

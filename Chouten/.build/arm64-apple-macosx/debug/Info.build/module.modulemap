@@ -1,4 +1,0 @@
-module Info {
-    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/Info.build/Info-Swift.h"
-    requires objc
-}

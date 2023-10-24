@@ -1,4 +1,0 @@
-module XCTestDynamicOverlay {
-    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/XCTestDynamicOverlay.build/XCTestDynamicOverlay-Swift.h"
-    requires objc
-}

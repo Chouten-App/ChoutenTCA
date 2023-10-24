@@ -1,4 +1,0 @@
-module ComposableArchitecture {
-    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/ComposableArchitecture.build/ComposableArchitecture-Swift.h"
-    requires objc
-}

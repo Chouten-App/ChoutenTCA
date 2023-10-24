@@ -1,4 +1,0 @@
-module SharedModels {
-    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/SharedModels.build/SharedModels-Swift.h"
-    requires objc
-}

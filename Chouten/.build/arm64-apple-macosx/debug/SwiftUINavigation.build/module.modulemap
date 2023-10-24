@@ -1,4 +1,0 @@
-module SwiftUINavigation {
-    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/SwiftUINavigation.build/SwiftUINavigation-Swift.h"
-    requires objc
-}

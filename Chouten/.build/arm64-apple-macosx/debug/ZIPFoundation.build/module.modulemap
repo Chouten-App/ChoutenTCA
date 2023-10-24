@@ -1,4 +1,0 @@
-module ZIPFoundation {
-    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/ZIPFoundation.build/ZIPFoundation-Swift.h"
-    requires objc
-}

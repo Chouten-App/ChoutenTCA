@@ -1,4 +1,0 @@
-module Shimmer {
-    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/Shimmer.build/Shimmer-Swift.h"
-    requires objc
-}

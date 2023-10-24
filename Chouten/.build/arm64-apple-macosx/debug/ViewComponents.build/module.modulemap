@@ -1,4 +1,0 @@
-module ViewComponents {
-    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/ViewComponents.build/ViewComponents-Swift.h"
-    requires objc
-}

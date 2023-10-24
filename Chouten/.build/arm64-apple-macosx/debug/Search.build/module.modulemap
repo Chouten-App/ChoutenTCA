@@ -1,4 +1,0 @@
-module Search {
-    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/Search.build/Search-Swift.h"
-    requires objc
-}
