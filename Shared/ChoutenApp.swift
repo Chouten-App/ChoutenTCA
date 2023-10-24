@@ -9,7 +9,7 @@ import SwiftUI
 import App
 import Player
 
-@main
+
 struct ChoutenAppApp: App {
     var body: some Scene {
         WindowGroup {

@@ -7,20 +7,30 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E90421442AE859AF009704C5 /* App in Frameworks */ = {isa = PBXBuildFile; productRef = E90421432AE859AF009704C5 /* App */; };
+		E93ADD2F2AE3E41D00C27989 /* commonCode.js in Resources */ = {isa = PBXBuildFile; fileRef = E93ADD2E2AE3E41D00C27989 /* commonCode.js */; };
+		E9824AEC2ADEFC1F001B9D2E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9824AEB2ADEFC1F001B9D2E /* AppDelegate.swift */; };
+		E9824AEE2ADEFC30001B9D2E /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9824AED2ADEFC30001B9D2E /* SceneDelegate.swift */; };
+		E9824AF02ADEFC5A001B9D2E /* HostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9824AEF2ADEFC5A001B9D2E /* HostingController.swift */; };
+		E9824AF22ADEFC72001B9D2E /* DataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9824AF12ADEFC72001B9D2E /* DataController.swift */; };
 		E9A92B692AD69DCB00822867 /* ChoutenApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A92B682AD69DCB00822867 /* ChoutenApp.swift */; };
 		E9A92B6D2AD69DCD00822867 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E9A92B6C2AD69DCD00822867 /* Assets.xcassets */; };
 		E9A92B712AD69DCD00822867 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E9A92B702AD69DCD00822867 /* Preview Assets.xcassets */; };
-		E9DFEAD52AD6A13C00554646 /* App in Frameworks */ = {isa = PBXBuildFile; productRef = E9DFEAD42AD6A13C00554646 /* App */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		E9824AEA2ADDF153001B9D2E /* ChoutenApp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "ChoutenApp-Info.plist"; sourceTree = "<group>"; };
+		E90421422AE85987009704C5 /* Chouten */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Chouten; sourceTree = "<group>"; };
+		E93ADD2E2AE3E41D00C27989 /* commonCode.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = commonCode.js; path = ../../Chouten/Sources/Resources/commonCode.js; sourceTree = "<group>"; };
+		E9824AEA2ADDF153001B9D2E /* ChoutenApp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ChoutenApp-Info.plist"; sourceTree = "<group>"; };
+		E9824AEB2ADEFC1F001B9D2E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		E9824AED2ADEFC30001B9D2E /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		E9824AEF2ADEFC5A001B9D2E /* HostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostingController.swift; sourceTree = "<group>"; };
+		E9824AF12ADEFC72001B9D2E /* DataController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataController.swift; sourceTree = "<group>"; };
 		E9A92B652AD69DCB00822867 /* ChoutenApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChoutenApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9A92B682AD69DCB00822867 /* ChoutenApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoutenApp.swift; sourceTree = "<group>"; };
 		E9A92B6C2AD69DCD00822867 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E9A92B6E2AD69DCD00822867 /* ChoutenApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChoutenApp.entitlements; sourceTree = "<group>"; };
 		E9A92B702AD69DCD00822867 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		E9DFEAD32AD6A10E00554646 /* Chouten */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Chouten; path = ../Chouten; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -28,7 +38,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E9DFEAD52AD6A13C00554646 /* App in Frameworks */,
+				E90421442AE859AF009704C5 /* App in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -38,8 +48,7 @@
 		E9A92B5C2AD69DCB00822867 = {
 			isa = PBXGroup;
 			children = (
-				E9824AEA2ADDF153001B9D2E /* ChoutenApp-Info.plist */,
-				E9DFEAD32AD6A10E00554646 /* Chouten */,
+				E90421422AE85987009704C5 /* Chouten */,
 				E9A92B792AD69DFE00822867 /* iOS */,
 				E9A92B782AD69DF800822867 /* Shared */,
 				E9A92B662AD69DCB00822867 /* Products */,
@@ -66,6 +75,8 @@
 		E9A92B782AD69DF800822867 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				E93ADD2E2AE3E41D00C27989 /* commonCode.js */,
+				E9824AEA2ADDF153001B9D2E /* ChoutenApp-Info.plist */,
 				E9A92B682AD69DCB00822867 /* ChoutenApp.swift */,
 				E9A92B6C2AD69DCD00822867 /* Assets.xcassets */,
 				E9A92B6E2AD69DCD00822867 /* ChoutenApp.entitlements */,
@@ -77,6 +88,10 @@
 		E9A92B792AD69DFE00822867 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
+				E9824AEB2ADEFC1F001B9D2E /* AppDelegate.swift */,
+				E9824AED2ADEFC30001B9D2E /* SceneDelegate.swift */,
+				E9824AEF2ADEFC5A001B9D2E /* HostingController.swift */,
+				E9824AF12ADEFC72001B9D2E /* DataController.swift */,
 			);
 			path = iOS;
 			sourceTree = "<group>";
@@ -105,7 +120,7 @@
 			);
 			name = ChoutenApp;
 			packageProductDependencies = (
-				E9DFEAD42AD6A13C00554646 /* App */,
+				E90421432AE859AF009704C5 /* App */,
 			);
 			productName = ChoutenApp;
 			productReference = E9A92B652AD69DCB00822867 /* ChoutenApp.app */;
@@ -151,6 +166,7 @@
 			files = (
 				E9A92B712AD69DCD00822867 /* Preview Assets.xcassets in Resources */,
 				E9A92B6D2AD69DCD00822867 /* Assets.xcassets in Resources */,
+				E93ADD2F2AE3E41D00C27989 /* commonCode.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -161,7 +177,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E9824AF22ADEFC72001B9D2E /* DataController.swift in Sources */,
+				E9824AEC2ADEFC1F001B9D2E /* AppDelegate.swift in Sources */,
 				E9A92B692AD69DCB00822867 /* ChoutenApp.swift in Sources */,
+				E9824AF02ADEFC5A001B9D2E /* HostingController.swift in Sources */,
+				E9824AEE2ADEFC30001B9D2E /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -295,7 +315,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "ChoutenApp-Info.plist";
+				INFOPLIST_FILE = "Shared/ChoutenApp-Info.plist";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -306,6 +326,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
@@ -334,7 +355,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "ChoutenApp-Info.plist";
+				INFOPLIST_FILE = "Shared/ChoutenApp-Info.plist";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -345,6 +366,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
@@ -384,7 +406,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E9DFEAD42AD6A13C00554646 /* App */ = {
+		E90421432AE859AF009704C5 /* App */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = App;
 		};
