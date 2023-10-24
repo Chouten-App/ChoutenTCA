@@ -1,0 +1,4 @@
+module Discover {
+    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/Discover.build/Discover-Swift.h"
+    requires objc
+}

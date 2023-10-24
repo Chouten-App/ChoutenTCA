@@ -1,0 +1,4 @@
+module ModuleClient {
+    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/ModuleClient.build/ModuleClient-Swift.h"
+    requires objc
+}

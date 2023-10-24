@@ -1,0 +1,4 @@
+module Dependencies {
+    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/Dependencies.build/Dependencies-Swift.h"
+    requires objc
+}

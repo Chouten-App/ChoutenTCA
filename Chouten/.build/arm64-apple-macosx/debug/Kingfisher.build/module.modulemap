@@ -1,0 +1,4 @@
+module Kingfisher {
+    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/Kingfisher.build/Kingfisher-Swift.h"
+    requires objc
+}

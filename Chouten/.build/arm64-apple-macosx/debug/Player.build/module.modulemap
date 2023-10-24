@@ -1,0 +1,4 @@
+module Player {
+    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/Player.build/Player-Swift.h"
+    requires objc
+}

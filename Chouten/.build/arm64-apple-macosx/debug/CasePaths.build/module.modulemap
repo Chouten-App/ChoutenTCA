@@ -1,0 +1,4 @@
+module CasePaths {
+    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/CasePaths.build/CasePaths-Swift.h"
+    requires objc
+}

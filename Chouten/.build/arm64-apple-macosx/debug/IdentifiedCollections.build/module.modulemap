@@ -1,0 +1,4 @@
+module IdentifiedCollections {
+    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/IdentifiedCollections.build/IdentifiedCollections-Swift.h"
+    requires objc
+}

@@ -1,0 +1,4 @@
+module CombineSchedulers {
+    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/CombineSchedulers.build/CombineSchedulers-Swift.h"
+    requires objc
+}

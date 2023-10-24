@@ -1,0 +1,4 @@
+module ConcurrencyExtras {
+    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/ConcurrencyExtras.build/ConcurrencyExtras-Swift.h"
+    requires objc
+}

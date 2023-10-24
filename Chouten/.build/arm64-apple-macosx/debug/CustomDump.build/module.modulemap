@@ -1,0 +1,4 @@
+module CustomDump {
+    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/CustomDump.build/CustomDump-Swift.h"
+    requires objc
+}

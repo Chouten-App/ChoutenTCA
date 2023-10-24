@@ -1,0 +1,4 @@
+module ModuleSheet {
+    header "/Users/inumaki/development/ChoutenDevelopment/ChoutenApp/Chouten/.build/arm64-apple-macosx/debug/ModuleSheet.build/ModuleSheet-Swift.h"
+    requires objc
+}
