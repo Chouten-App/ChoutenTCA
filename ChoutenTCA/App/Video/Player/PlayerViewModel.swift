@@ -76,7 +76,27 @@ final class PlayerViewModel: ObservableObject {
 
                     // Store the seeked time in the seekedTime variable
                     self.seekedTime = CMTime(seconds: self.currentTime, preferredTimescale: 1)
-
+                    
+                    // Assuming you have an AVPlayerItem named playerItem
+                    if let playerItem = self.player.currentItem {
+                        let externalMetadata = playerItem.externalMetadata
+                        for metadataItem in externalMetadata {
+                            if let commonKey = metadataItem.commonKey {
+                                if commonKey == AVMetadataKey.commonKeyTitle {
+                                    // Check for the title metadata item
+                                    if let title = metadataItem.stringValue {
+                                        print("Title: \(title)")
+                                    }
+                                } else if commonKey == AVMetadataKey.commonKeyDescription {
+                                    // Check for the description metadata item
+                                    if let description = metadataItem.stringValue {
+                                        print("Description: \(description)")
+                                    }
+                                }
+                                // You can add more conditions to filter for specific subtitle metadata keys.
+                            }
+                        }
+                    }
                     // Start playing the video
                     self.player.play()
                 }

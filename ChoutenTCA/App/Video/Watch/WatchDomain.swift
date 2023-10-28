@@ -275,6 +275,7 @@ struct WatchDomain: ReducerProtocol {
                 globalData.setVideoData(nil)
                 globalData.setServers([])
                 state.infoData = globalData.getInfoData()
+                state.videoData = nil
                 
                 return .merge(
                     .send(.webview(.setGlobalNextUrl(url: nil))),

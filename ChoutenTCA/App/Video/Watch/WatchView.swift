@@ -199,48 +199,45 @@ struct WatchView: View {
                 if let data {
                     let auto = data.sources.first(where: { $0.quality == "auto" })
                     
-                    let newUrl = URL(
-                        string: InterceptingAssetResourceLoaderDelegate.videoUrlPrefix + (auto?.file ?? "")
+                    var subs: [VideoCompositionItem.SubtitleINTERNAL] = []
+                    
+                    if !data.subtitles.isEmpty {
+                        subs.append(VideoCompositionItem.SubtitleINTERNAL(
+                            name: data.subtitles.filter({ $0.language.contains("English") })[0].language,
+                            default: true,
+                            autoselect: true,
+                            link: URL(string: data.subtitles.filter({ $0.language.contains("English") })[0].url)!
+                        ))
+                    }
+                    
+                    let item = PlayerItem(
+                        VideoCompositionItem(
+                            link: URL(string: auto?.file ?? "")!,
+                            headers: data.headers ?? [:],
+                            subtitles: subs
+                        )
                     )
                     
-                    if let newUrl {
-                        let videoAsset = AVURLAsset(
-                            url: newUrl,
-                            options: [ "AVURLAssetHTTPHeaderFieldsKey": data.headers ?? [:] ]
-                        )
+                    playerVM.setCurrentItem(item)
+                    /*
+                    if let mediaData: MediaItem = viewStore.infoData?.mediaList.first?.list[index] {
+                        let prog = mediaProgress.filter { progress in
+                            progress.url == self.url && progress.number == mediaData.number
+                        }.first
                         
-                        let delegate = InterceptingAssetResourceLoaderDelegate(data.subtitles)
-                        
-                        subtitleDelegate = delegate
-                        
-                        videoAsset.resourceLoader.setDelegate(delegate, queue: .main)
-                        
-                        let item = AVPlayerItem(
-                            asset: videoAsset
-                        )
-                        
-                        print(videoAsset)
-
-                        playerVM.setCurrentItem(item)
-                        /*
-                        if let mediaData: MediaItem = viewStore.infoData?.mediaList.first?.list[index] {
-                            let prog = mediaProgress.filter { progress in
-                                progress.url == self.url && progress.number == mediaData.number
-                            }.first
-                            
-                            if prog != nil {
-                                playerVM.isEditingCurrentTime = true
-                                playerVM.currentTime = prog!.progress
-                                playerVM.isEditingCurrentTime = false
-                            }
+                        if prog != nil {
+                            playerVM.isEditingCurrentTime = true
+                            playerVM.currentTime = prog!.progress
+                            playerVM.isEditingCurrentTime = false
                         }
-                         */
-                        
-                        playerVM.player.play()
                     }
+                     */
+                    
+                    playerVM.player.play()
                 }
             }
             .onChange(of: playerVM.currentTime) { newValue in
+                /*
                 if let mediaData: MediaItem = viewStore.infoData?.mediaList.first?.list[index] {
                     let progress = mediaProgress.filter { progress in
                         progress.url == self.url && progress.number == mediaData.number
@@ -260,6 +257,7 @@ struct WatchView: View {
                         try? moc.save()
                     }
                 }
+                 */
             }
         }
     }

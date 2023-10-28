@@ -6,6 +6,7 @@
 //
 
 import AVKit
+import OrderedCollections
 
 class InterceptingAssetResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelegate {
     private class SubtitleBundle {
@@ -13,168 +14,167 @@ class InterceptingAssetResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDe
             self.subtitleDTO = subtitleDTO
             self.playlist = playlist
         }
-
+        
         let subtitleDTO: SubtitleDTO
         var playlist: String?
     }
-
+    
     private struct SubtitleDTO {
         let language: String
         let title: String
         let url: String
     }
-
+    
     static let videoUrlPrefix = "INTERCEPTEDVIDEO"
     static let subtitleUrlPrefix = "INTERCEPTEDSUBTITLE"
     static let subtitleUrlSuffix = "m3u8"
+    static let hlsSubtitleGroupID = "SUBTITLES"
     private let session: URLSession
     private let subtitleBundles: [SubtitleBundle]
-
+    
     init(_ subtitles: [Subtitle]) {
         self.session = URLSession(configuration: .default)
         self.subtitleBundles = subtitles.map({
-            SubtitleBundle(subtitleDTO: SubtitleDTO(language: $0.language, title: "HMM", url: $0.url))
+            SubtitleBundle(subtitleDTO: SubtitleDTO(language: $0.language, title: $0.language, url: $0.url))
         })
     }
-
+    
+    deinit {
+        print("unloaded")
+    }
+    
     func resourceLoader(
         _ resourceLoader: AVAssetResourceLoader,
         shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest
     ) -> Bool {
-        guard let url = loadingRequest.request.url,
-              let dataRequest = loadingRequest.dataRequest else { return true }
-        if url.absoluteString.starts(with: Self.subtitleUrlPrefix) {
-            /*
-            guard let targetLanguage = url.host?.split(separator: ".").first,
-                  let targetSubtitle = self.subtitleBundles.first(where: { $0.subtitleDTO.language == targetLanguage }),
-                  let subtitleUrl = URL(string: targetSubtitle.subtitleDTO.url) else {
-                loadingRequest.finishLoading(with: AVError(.unknown))
-                return true
+        let task = URLSession.shared.dataTask(with: .init(url: URL(string: self.subtitleBundles[0].subtitleDTO.url)!)) { data, _, error in
+            guard error == nil else {
+                return loadingRequest.finishLoading(with: error)
             }
-             */
-            let targetLanguage = "English"
-            guard let targetSubtitle = self.subtitleBundles.first(where: { $0.subtitleDTO.language == targetLanguage }),
-                  let subtitleUrl = URL(string: targetSubtitle.subtitleDTO.url) else {
-                loadingRequest.finishLoading(with: AVError(.unknown))
-                return true
+            
+            guard let vttString = String(data: data ?? .init(), encoding: .utf8) else {
+                return loadingRequest.finishLoading(with: nil)
             }
-
-            let subtitlePlaylistTask = self.session.dataTask(with: subtitleUrl) { [weak self] data, _, error in
-                if let error {
-                    print("error hit")
-                    loadingRequest.finishLoading(with: error)
-                    return
-                }
-                guard let data, !data.isEmpty, let dataString = String(data: data, encoding: .utf8) else {
-                    loadingRequest.finishLoading(with: AVError(.unknown))
-                    return
-                }
-
-                self?.makePlaylistAndFragments(bundle: targetSubtitle, subtitle: dataString)
-
-                guard let playlistData = targetSubtitle.playlist?.data(using: .utf8) else {
-                    loadingRequest.finishLoading(with: AVError(.unknown))
-                    return
-                }
-                dataRequest.respond(with: playlistData)
-                loadingRequest.finishLoading()
-            }
-
-            subtitlePlaylistTask.resume()
-            return true
-        }
-
-        guard let newUrl = URL(string: url.absoluteString.replacingOccurrences(of: Self.videoUrlPrefix, with: "")) else { return true }
-
-        if !(
-                url.absoluteString.lowercased().hasSuffix(".ism/manifest(format=m3u8-aapl)") ||
-                url.absoluteString.lowercased().hasSuffix(".m3u8")
-            ) || (
-            dataRequest.requestedOffset == 0 && dataRequest.requestedLength == 2 && dataRequest.currentOffset == 0
-        ) {
-            let newRequest = URLRequest(url: newUrl)
-            loadingRequest.redirect = newRequest
-            let fakeResponse = HTTPURLResponse(url: newUrl, statusCode: 302, httpVersion: nil, headerFields: nil)
-            loadingRequest.response = fakeResponse
-            loadingRequest.finishLoading()
-            return true
-        }
-
-        var correctedRequest = URLRequest(url: newUrl)
-        for header in loadingRequest.request.allHTTPHeaderFields ?? [:] {
-            correctedRequest.addValue(header.value, forHTTPHeaderField: header.key)
-        }
-
-        let masterPlaylistTask = self.session.dataTask(with: correctedRequest) { [weak self] data, _, error in
-            if let error {
-                loadingRequest.finishLoading(with: error)
-                return
-            }
-
-            guard let data,
-                  let dataString = String(data: data, encoding: .utf8),
-                  let withSubs = self?.addSubs(to: dataString),
-                  let withSubsData = withSubs.data(using: .utf8) else {
-                loadingRequest.finishLoading(with: AVError(.unknown))
-                return
-            }
-            dataRequest.respond(with: withSubsData)
+            
+            let lastTimeStampString = (
+                try? NSRegularExpression(pattern: "(?:(\\d+):)?(\\d+):([\\d\\.]+)")
+                    .matches(
+                        in: vttString,
+                        range: .init(location: 0, length: vttString.utf16.count)
+                    )
+                    .last
+                    .flatMap { Range($0.range, in: vttString) }
+                    .flatMap { String(vttString[$0]) }
+            ) ?? "0.000"
+            
+            let duration = lastTimeStampString.components(separatedBy: ":").reversed()
+                .compactMap { Double($0) }
+                .enumerated()
+                .map { pow(60.0, Double($0.offset)) * $0.element }
+                .reduce(0, +)
+            
+            let m3u8Subtitle = """
+            #EXTM3U
+            #EXT-X-VERSION:3
+            #EXT-X-MEDIA-SEQUENCE:1
+            #EXT-X-PLAYLIST-TYPE:VOD
+            #EXT-X-ALLOW-CACHE:NO
+            #EXT-X-TARGETDURATION:\(Int(duration))
+            #EXTINF:\(String(format: "%.3f", duration)), no desc
+            \(self.subtitleBundles[0].subtitleDTO.url)
+            #EXT-X-ENDLIST
+            """
+            
+            let m3u8Data = m3u8Subtitle.data(using: .utf8) ?? .init()
+            
+            loadingRequest.dataRequest?.respond(with: m3u8Data)
+            
+            loadingRequest.contentInformationRequest?.contentType = "public.m3u-playlist"
+            loadingRequest.contentInformationRequest?.contentLength = Int64(m3u8Data.count)
+            loadingRequest.contentInformationRequest?.isByteRangeAccessSupported = true
+            
             loadingRequest.finishLoading()
         }
-        masterPlaylistTask.resume()
+        task.resume()
         return true
     }
-
-    func addSubs(to dataString: String) -> String {
-        guard dataString.contains("#EXT-X-STREAM-INF:"), !self.subtitleBundles.isEmpty else { return dataString }
-        var tracks = dataString.split(separator: "\n").map({ $0.hasPrefix("#EXT-X-STREAM-INF:") ? $0 + ",SUBTITLES=\"subs\"" : $0 })
-        tracks.insert(contentsOf: self.subtitleBundles.map({
-            "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",LANGUAGE=\"\($0.subtitleDTO.language)\",NAME=\"\($0.subtitleDTO.title)\","
-            + "AUTOSELECT=YES,CHARACTERISTICS=\"public.accessibility.transcribes-spoken-dialog\""
-            + ",URI=\"\(Self.subtitleUrlPrefix)://\($0.subtitleDTO.language).\(Self.subtitleUrlSuffix)\""
-        }), at: tracks.firstIndex(where: { $0.contains("#EXT-X-STREAM-INF") }) ?? tracks.endIndex)
-        return tracks.joined(separator: "\n")
-    }
-
-    private func makePlaylistAndFragments(bundle: SubtitleBundle, subtitle: String) {
-        if let regex = try? NSRegularExpression(pattern: #"(\d{2}:\d{2}:\d{2}.\d{3})"#),
-           let timeString = regex.matches(in: subtitle, range: NSRange(location: 0, length: subtitle.count)).last.flatMap({
-               (subtitle as NSString).substring(with: $0.range)
-           }) {
-            let hour = timeString.split(separator: ":")[0].compactMap({ Double("\($0)") })[0]
-            let minute = timeString.split(separator: ":")[1].compactMap({ Double("\($0)") })[0]
-            let second = timeString.split(separator: ":")[2].compactMap({ Double("\($0)") })[0]
-            
-            let rounded = Int(ceil(hour * 3600 + minute * 60 + second))
-            bundle.playlist = [
-                "#EXTM3U",
-                "#EXT-X-TARGETDURATION:\(rounded)",
-                "#EXT-X-VERSION:3",
-                "#EXT-X-MEDIA-SEQUENCE:0",
-                "#EXT-X-PLAYLIST-TYPE:VOD",
-                "#EXTINF:\(rounded)",
-                bundle.subtitleDTO.url,
-                "#EXT-X-ENDLIST"
-            ].joined(separator: "\n")
-            
-        } else if let regex = try? NSRegularExpression(pattern: #"(\d{2}:\d{2}.\d{3})"#),
-                  let timeString = regex.matches(in: subtitle, range: NSRange(location: 0, length: subtitle.count)).last.flatMap({
-                      (subtitle as NSString).substring(with: $0.range)
-                  }) {
-            let minute = timeString.split(separator: ":")[0].compactMap({ Double("\($0)") })[0]
-            let second = timeString.split(separator: ":")[1].compactMap({ Double("\($0)") })[0]
-            
-            let rounded = Int(ceil(minute * 60 + second))
-            bundle.playlist = [
-                "#EXTM3U",
-                "#EXT-X-TARGETDURATION:\(rounded)",
-                "#EXT-X-VERSION:3",
-                "#EXT-X-MEDIA-SEQUENCE:0",
-                "#EXT-X-PLAYLIST-TYPE:VOD",
-                "#EXTINF:\(rounded)",
-                bundle.subtitleDTO.url,
-                "#EXT-X-ENDLIST"
-            ].joined(separator: "\n")
+    
+    func addSubs(to m3u8String: String) -> String {
+        var lines = m3u8String.split(separator: "\n", omittingEmptySubsequences: false).map { String($0) }
+        var lastPositionMedia: Int?
+        var firstPositionInf = 1
+        
+        for (idx, line) in lines.enumerated() {
+            if line.hasPrefix("#EXT-X-STREAM-INF") {
+                firstPositionInf = idx
+                break
+            } else if line.hasPrefix("#EXT-X-MEDIA") {
+                lastPositionMedia = idx + 1
+            }
         }
+        
+        var subtitlePosition = lastPositionMedia ?? firstPositionInf
+        
+        for (idx, subtitle) in self.subtitleBundles.enumerated() {
+            let m3u8Subtitles: OrderedDictionary = [
+                "TYPE": "SUBTITLES",
+                "GROUP-ID": "\"\(InterceptingAssetResourceLoaderDelegate.hlsSubtitleGroupID)\"",
+                "NAME": "\"\(subtitle.subtitleDTO.language)\"",
+                "CHARACTERISTICS": "\"public.accessibility.transcribes-spoken-dialog\"",
+                "DEFAULT": subtitle.subtitleDTO.language.contains("English") ? "YES" : "NO",
+                "AUTOSELECT": subtitle.subtitleDTO.language.contains("English") ? "YES" : "NO",
+                "FORCED": subtitle.subtitleDTO.language.contains("English") ? "YES" : "NO",
+                "URI": "\"\(InterceptingAssetResourceLoaderDelegate.subtitleUrlPrefix)://\(idx).subtitle.m3u8\"",
+                "LANGUAGE": "\"\(subtitle.subtitleDTO.language)\""
+            ]
+            
+            let m3u8SubtitlesString = "#EXT-X-MEDIA:" + m3u8Subtitles.map { "\($0.key)=\($0.value)" }
+                .joined(separator: ",")
+            if subtitlePosition <= lines.endIndex {
+                lines.insert(m3u8SubtitlesString, at: subtitlePosition)
+            } else {
+                lines.append(m3u8SubtitlesString)
+            }
+            subtitlePosition += 1
+        }
+        
+        for (idx, line) in lines.enumerated() where line.contains("#EXT-X-STREAM-INF") {
+            lines[idx] = line + "," + "SUBTITLES=\"\(Self.hlsSubtitleGroupID)\""
+        }
+        
+        return lines.joined(separator: "\n")
+    }
+    
+    private func makePlaylistAndFragments(bundle: SubtitleBundle, subtitle: String) {
+        let lastTimeStampString = (
+            try? NSRegularExpression(pattern: "(?:(\\d+):)?(\\d+):([\\d\\.]+)")
+                .matches(
+                    in: subtitle,
+                    range: .init(location: 0, length: subtitle.utf16.count)
+                )
+                .last
+                .flatMap { Range($0.range, in: subtitle) }
+                .flatMap { String(subtitle[$0]) }
+        ) ?? "0.000"
+        
+        let duration = lastTimeStampString.components(separatedBy: ":").reversed()
+            .compactMap { Double($0) }
+            .enumerated()
+            .map { pow(60.0, Double($0.offset)) * $0.element }
+            .reduce(0, +)
+        
+        let m3u8Subtitle = """
+        #EXTM3U
+        #EXT-X-VERSION:3
+        #EXT-X-MEDIA-SEQUENCE:1
+        #EXT-X-PLAYLIST-TYPE:VOD
+        #EXT-X-ALLOW-CACHE:NO
+        #EXT-X-TARGETDURATION:\(Int(duration))
+        #EXTINF:\(String(format: "%.3f", duration)), no desc
+        \(bundle.subtitleDTO.url)
+        #EXT-X-ENDLIST
+        """
+        
+        bundle.playlist = m3u8Subtitle
     }
 }
