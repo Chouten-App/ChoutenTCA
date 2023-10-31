@@ -11,5 +11,9 @@ struct Player: Feature {
         ComposableArchitecture()
         ViewComponents()
         Kingfisher()
+        Webview()
+        SharedModels()
+        ModuleClient()
+        DataClient()
     }
 }

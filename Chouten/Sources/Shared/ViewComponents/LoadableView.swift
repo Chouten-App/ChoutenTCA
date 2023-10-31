@@ -146,3 +146,4 @@ public extension LoadableStore where Loading == EmptyView, Failed == EmptyView, 
         self.pendingView = { _ in EmptyView() }
     }
 }
+

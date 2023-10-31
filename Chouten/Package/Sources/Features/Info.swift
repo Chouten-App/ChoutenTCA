@@ -12,5 +12,6 @@ struct Info: Feature {
         ComposableArchitecture()
         ViewComponents()
         Webview()
+        DataClient()
     }
 }

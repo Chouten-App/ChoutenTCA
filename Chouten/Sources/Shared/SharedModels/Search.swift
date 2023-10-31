@@ -37,4 +37,15 @@ public struct SearchData: Codable, Hashable, Equatable, Sendable {
             return "⁓"
         }
     }
+    
+    public static let sample = SearchData(
+        url: "",
+        img: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg",
+        title: "Title",
+        indicatorText: "18+",
+        currentCount: 12,
+        totalCount: 12
+    )
+    
+    public static let sampleList = [sample, sample, sample, sample, sample, sample]
 }

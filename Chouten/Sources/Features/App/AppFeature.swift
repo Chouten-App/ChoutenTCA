@@ -11,8 +11,11 @@ import More
 import Discover
 import Player
 import ModuleSheet
+import DataClient
 
 public struct AppFeature: Feature {
+    @Dependency(\.dataClient) var dataClient
+    
     public struct State: FeatureState {
         let versionString: String
         public var more: MoreFeature.State
@@ -23,6 +26,8 @@ public struct AppFeature: Feature {
         public var selected = Tab.home
         public var showTabbar: Bool = true
         public var showPlayer: Bool = false
+        public var fullscreen: Bool = false
+        public var videoUrl: String? = nil
         
         public init(versionString: String = "x.x.x") {
             self.versionString = versionString
@@ -73,6 +78,7 @@ public struct AppFeature: Feature {
             case changeTab(_ tab: State.Tab)
             case toggleTabbar
             case onAppear
+            case setVideoUrl(_ url: String?)
         }
 
         public enum DelegateAction: SendableAction {}
@@ -93,6 +99,8 @@ public struct AppFeature: Feature {
     public struct View: FeatureView {
         @Namespace var animation
         public let store: StoreOf<AppFeature>
+        @Environment(\.verticalSizeClass) var verticalSizeClass
+        @Environment(\.horizontalSizeClass) var horizontalSizeClass
         
         public nonisolated init(store: StoreOf<AppFeature>) {
             self.store = store

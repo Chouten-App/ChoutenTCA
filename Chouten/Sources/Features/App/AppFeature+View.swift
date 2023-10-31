@@ -12,6 +12,7 @@ import Discover
 import ViewComponents
 import Player
 import ModuleSheet
+import Kingfisher
 
 extension AppFeature.View: View {
     @MainActor
@@ -19,20 +20,120 @@ extension AppFeature.View: View {
         WithViewStore(store, observe: \.`self`) { viewStore in
             GeometryReader { proxy in
                 VStack(spacing: 0) {
-                    ZStack {
+                    Group {
                         switch viewStore.state.selected {
                         case .home:
-                            VStack {
-                                Text("HOME")
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text("Good Evening")
+                                            .opacity(0.7)
+                                        Text("Inumaki")
+                                            .font(.largeTitle)
+                                            .fontWeight(.bold)
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    KFImage(URL(string: "https://i.pinimg.com/736x/fc/b9/8a/fcb98aba272d7c1d4c24984f77614031.jpg"))
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 64, height: 64)
+                                        .clipShape(Circle())
+                                }
+                                .padding(.vertical, 30)
+                                .padding(.horizontal)
+                                
+                                // Continue Watching
+                                VStack(alignment: .leading) {
+                                    Text("Continue Watching")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                        .padding(.horizontal)
+                                    
+                                    ScrollView(.horizontal) {
+                                        HStack {
+                                            ForEach(0..<4, id: \.self) { _ in
+                                                VStack(alignment: .leading) {
+                                                    KFImage(URL(string: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg"))
+                                                        .resizable()
+                                                        .aspectRatio(16/9, contentMode: .fill)
+                                                        .frame(width: 260)
+                                                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                                                        .overlay(alignment: .topTrailing) {
+                                                            Text("1")
+                                                                .font(.title3)
+                                                                .fontWeight(.bold)
+                                                                .padding(.horizontal)
+                                                                .padding(.vertical, 4)
+                                                                .background {
+                                                                    Capsule()
+                                                                        .fill(.indigo)
+                                                                }
+                                                                .padding()
+                                                        }
+                                                    
+                                                    Text("Title")
+                                                        .font(.title3)
+                                                        .padding(.horizontal, 12)
+                                                }
+                                            }
+                                        }
+                                        .padding(.horizontal)
+                                    }
+                                }
+                                
+                                // List
+                                VStack(alignment: .leading) {
+                                    HStack(alignment: .bottom) {
+                                        Text("Planned To Watch")
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                        
+                                        Spacer()
+                                        
+                                        Text("See more")
+                                            .font(.caption)
+                                            .opacity(0.7)
+                                        
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption)
+                                            .opacity(0.7)
+                                    }
+                                    .padding(.horizontal)
+                                    .padding(.top)
+                                    
+                                    ScrollView(.horizontal) {
+                                        HStack {
+                                            ForEach(0..<24, id: \.self) { index in
+                                                VStack {
+                                                    KFImage(
+                                                        URL(string: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg")
+                                                    )
+                                                    .fade(duration: 0.8)
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fill)
+                                                    .frame(width: 90, height: 130)
+                                                    .cornerRadius(12)
+                                                    
+                                                    VStack(alignment: .leading) {
+                                                        Text("Title")
+                                                            .font(.subheadline)
+                                                            .frame(width: 72, alignment: .leading)
+                                                        
+                                                        Text("- / -")
+                                                            .font(.caption)
+                                                            .frame(width: 72, alignment: .leading)
+                                                            .opacity(0.7)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .padding(.horizontal)
+                                    }
+                                }
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        case .discover:
-                            DiscoverFeature.View(
-                                store: store.scope(
-                                    state: \.discover,
-                                    action: Action.InternalAction.discover
-                                )
-                            )
                         case .repos:
                             VStack {
                                 Text("REPOS")
@@ -45,12 +146,19 @@ extension AppFeature.View: View {
                                     action: Action.InternalAction.more
                                 )
                             )
+                        case .discover:
+                            DiscoverFeature.View(
+                                store: store.scope(
+                                    state: \.discover,
+                                    action: Action.InternalAction.discover
+                                )
+                            )
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .safeAreaInset(edge: .bottom) {
+                .overlay(alignment: .bottom) {
                     VStack(spacing: 0) {
                         ModuleSheetFeature.View(
                             store: store.scope(
@@ -61,21 +169,25 @@ extension AppFeature.View: View {
                         NavBar(viewStore.selected)
                     }
                     .offset(y: viewStore.showTabbar ? 0 :  proxy.safeAreaInsets.bottom + 120)
+                    .allowsHitTesting(viewStore.showTabbar)
                 }
                 .overlay {
-                    PlayerFeature.View(
-                        store: store.scope(
-                            state: \.player,
-                            action: Action.InternalAction.player
+                    if viewStore.videoUrl != nil {
+                        PlayerFeature.View(
+                            store: store.scope(
+                                state: \.player,
+                                action: Action.InternalAction.player
+                            )
                         )
-                    )
-                    .opacity(viewStore.showPlayer ? 1.0 : 0.0)
-                    .allowsHitTesting(viewStore.showPlayer)
+                        .opacity(viewStore.showPlayer ? 1.0 : 0.0)
+                    }
                 }
                 .onAppear {
                     viewStore.send(.view(.onAppear))
                 }
             }
+            .environment(\.horizontalSizeClass, viewStore.fullscreen ? .regular : .compact)
+            .environment(\.verticalSizeClass, viewStore.fullscreen ? .compact : .regular)
         }
     }
 }

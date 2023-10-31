@@ -15,7 +15,7 @@ public struct DiscoverFeature: Feature {
     public struct State: FeatureState {
         public var search: SearchFeature.State
         
-        public var state: LoadingStatus = .success
+        public var state: LoadingStatus = .notStarted
         public var searchVisible: Bool = false
         
         //@BindingState

@@ -617,6 +617,19 @@ extension _Path {
 //  File.swift
 //  
 //
+//  Created by Inumaki on 29.10.23.
+//
+
+struct DataClient: Client {
+    var dependencies: any Dependencies {
+        ComposableArchitecture()
+        Architecture()
+    }
+}
+//
+//  File.swift
+//  
+//
 //  Created by Inumaki on 17.10.23.
 //
 
@@ -731,6 +744,7 @@ struct ChoutenApp: Product, Target {
         ComposableArchitecture()
         Shimmer()
         Kingfisher()
+        DataClient()
     }
 }
 //
@@ -765,6 +779,7 @@ struct Info: Feature {
         ComposableArchitecture()
         ViewComponents()
         Webview()
+        DataClient()
     }
 }
 //
@@ -808,6 +823,10 @@ struct Player: Feature {
         ComposableArchitecture()
         ViewComponents()
         Kingfisher()
+        Webview()
+        SharedModels()
+        ModuleClient()
+        DataClient()
     }
 }
 //

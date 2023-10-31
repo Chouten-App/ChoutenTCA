@@ -247,12 +247,8 @@ extension DiscoverFeature.View: View {
                                                         KFImage(
                                                             URL(string: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg")
                                                         )
-                                                        .onSuccess { _ in
-                                                            withAnimation(.easeIn(duration: 0.4)) {
-                                                                // Add any animation effect you want here
-                                                            }
-                                                        }
                                                         .resizable()
+                                                        .fade(duration: 0.6)
                                                         .aspectRatio(contentMode: .fill)
                                                         .frame(width: 90, height: 130)
                                                         .cornerRadius(12)
@@ -326,7 +322,6 @@ extension DiscoverFeature.View: View {
                 }
                 .overlay {
                     if viewStore.searchVisible {
-                        // TODO: Turn into Feature
                         SearchFeature.View(
                             store: store.scope(
                                 state: \.search,

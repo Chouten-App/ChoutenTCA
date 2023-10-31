@@ -42,6 +42,20 @@ extension AppFeature: Reducer {
                     } else {
                         print("Couldnt find commonCode.js")
                     }
+                    return .merge(
+                        .run { send in
+                            let videoUrlStream = dataClient.observeVideoUrl()
+                            for await value in videoUrlStream {
+                                await send(.view(.setVideoUrl(value)))
+                            }
+                        }
+                    )
+                case .setVideoUrl(let url):
+                    state.videoUrl = url
+                    if let url, !url.isEmpty {
+                        state.player = PlayerFeature.State(url: url)
+                        state.showPlayer = true
+                    }
                     return .none
                 case .changeTab(let tab):
                     state.selected = tab
@@ -69,6 +83,9 @@ extension AppFeature: Reducer {
                     return .none
                 case .player(.view(.setPiP(let value))):
                     state.showPlayer = !value
+                    return .none
+                case .player(.view(.setFullscreen(let value))):
+                    state.fullscreen = value
                     return .none
                 case .player:
                     return .none

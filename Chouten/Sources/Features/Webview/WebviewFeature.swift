@@ -68,17 +68,20 @@ public struct WebviewFeature: Feature {
     public struct View: FeatureView {
         public let store: StoreOf<WebviewFeature>
         public let payload: String
+        public let action: String
         public let completionHandler: ((String) -> Void)?
         
-        public init(store: StoreOf<WebviewFeature>, payload: String? = "", completionHandler: ((String) -> Void)? = nil) {
+        public init(store: StoreOf<WebviewFeature>, payload: String? = "", action: String? = "logic", completionHandler: ((String) -> Void)? = nil) {
             self.store = store
             self.payload = payload ?? ""
+            self.action = action ?? "logic"
             self.completionHandler = completionHandler
         }
         
         public nonisolated init(store: StoreOf<WebviewFeature>) {
             self.store = store
             self.payload = ""
+            self.action = ""
             self.completionHandler = nil
         }
     }
@@ -90,7 +93,7 @@ extension WebviewFeature.View {
     @MainActor
     public var body: some View {
         WithViewStore(store, observe: \.`self`) { viewStore in
-            WebView(viewStore: viewStore, payload: payload, completionHandler: completionHandler)
+            WebView(viewStore: viewStore, payload: payload, completionHandler: completionHandler, action: action)
         }
     }
 }

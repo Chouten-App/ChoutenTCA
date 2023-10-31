@@ -12,12 +12,15 @@ import SharedModels
 import ViewComponents
 import OSLog
 import Webview
+import Info
 
 public struct SearchFeature: Feature {
     let logger = Logger(subsystem: "com.inumaki.Chouten", category: "Search")
     
     public struct State: FeatureState {
         public var webviewState: WebviewFeature.State
+        public var info: InfoFeature.State
+        
         @BindingState
         var query: String
         public var lastQuery: String = ""
@@ -26,16 +29,19 @@ public struct SearchFeature: Feature {
         public var jsString = ""
         
         public var searchResults: [SearchData] = []
+        public var searchLoadable: Loadable<[SearchData]> = .pending
         
         public var state: LoadingStatus = .notStarted
         public var itemOpacity: Double = 0.8
         public var scrollPosition: CGPoint = .zero
         
-        public var infoUrl: String? = nil
+        public var infoVisible: Bool = false
+        public var dragState = CGSize.zero
         
         public init() {
             self.query = ""
             self.webviewState = WebviewFeature.State(htmlString: "", javaScript: "")
+            self.info = InfoFeature.State(url: "")
         }
     }
     
@@ -59,12 +65,15 @@ public struct SearchFeature: Feature {
             case setSearchData(_ data: [SearchData])
             case parseResult(data: String)
             case setInfo(_ url: String)
+            case setInfoVisible(_ value: Bool)
+            case setDragState(_ value: CGSize)
             
             case binding(BindingAction<State>)
         }
         public enum DelegateAction: SendableAction {}
         public enum InternalAction: SendableAction {
             case webview(WebviewFeature.Action)
+            case info(InfoFeature.Action)
         }
 
         case view(ViewAction)

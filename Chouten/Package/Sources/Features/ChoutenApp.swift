@@ -26,5 +26,6 @@ struct ChoutenApp: Product, Target {
         ComposableArchitecture()
         Shimmer()
         Kingfisher()
+        DataClient()
     }
 }

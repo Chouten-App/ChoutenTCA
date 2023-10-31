@@ -11,6 +11,7 @@ import Kingfisher
 import AVKit
 import Combine
 import ViewComponents
+import Webview
 
 struct Seekbar: View {
     @Binding var percentage: Double // or some value binded
@@ -77,8 +78,8 @@ struct Seekbar: View {
                     )
             }
             .animation(.spring(response: 0.3), value: self.isDragging)
-            
         }
+        
     }
 }
 
@@ -234,35 +235,47 @@ extension PlayerFeature.View {
     public var body: some View {
         WithViewStore(store, observe: \.`self`) { viewStore in
             GeometryReader { proxy in
-                let fullscreen = (proxy.size.width / proxy.size.height) > 1
-                
                 ZStack(alignment: .top) {
                     Color.black
                         .ignoresSafeArea()
                     
                     
-                    if !fullscreen {
-                        CustomVideoPlayer(playerVM: playerVM)
+                    LoadableView(loadable: viewStore.videoLoadable) { videoData in
+                        ZStack {
+                            if !viewStore.fullscreen {
+                                CustomVideoPlayer(playerVM: playerVM)
+                                    .frame(width: proxy.size.width, height: proxy.size.width / 16 * 9)
+                                    .ignoresSafeArea(.all, edges: .bottom)
+                                    .clipped()
+                                    .blur(radius: 20)
+                                    .scaleEffect(1.2)
+                                    .opacity(0.3)
+                            }
+                            
+                            CustomVideoPlayer(playerVM: playerVM)
+                                .frame(width: viewStore.fullscreen ? .infinity : proxy.size.width, height: viewStore.fullscreen ? .infinity : proxy.size.width / 16 * 9)
+                                .ignoresSafeArea(.all, edges: .bottom)
+                        }
+                    } failedView: { error in
+                        Text("\(error.localizedDescription)")
                             .frame(width: proxy.size.width, height: proxy.size.width / 16 * 9)
-                            .ignoresSafeArea(.all, edges: .bottom)
-                            .clipped()
-                            .blur(radius: 20)
-                            .scaleEffect(1.2)
-                            .opacity(0.3)
+                    } loadingView: {
+                        Rectangle()
+                            .fill(.black)
+                            .frame(width: proxy.size.width, height: proxy.size.width / 16 * 9)
+                            .overlay {
+                                ProgressView()
+                            }
+                    } pendingView: {
+                        Rectangle()
+                            .fill(.black)
+                            .frame(width: proxy.size.width, height: proxy.size.width / 16 * 9)
+                            .overlay {
+                                ProgressView()
+                            }
                     }
-                    /*
-                     KFImage(URL(string: "https://www.leisurebyte.com/wp-content/uploads/2023/04/Screenshot-8330.png"))
-                     .resizable()
-                     .aspectRatio(contentMode: .fit)
-                     .padding(.trailing, fullscreen ? 30 : 0)
-                     .frame(width: fullscreen ? .infinity : proxy.size.width, height: fullscreen ? .infinity : proxy.size.width / 16 * 9)
-                     .ignoresSafeArea(.all, edges: .bottom)
-                     */
-                    CustomVideoPlayer(playerVM: playerVM)
-                        .frame(width: fullscreen ? .infinity : proxy.size.width, height: fullscreen ? .infinity : proxy.size.width / 16 * 9)
-                        .ignoresSafeArea(.all, edges: .bottom)
                     
-                    if fullscreen {
+                    if viewStore.fullscreen {
                         VStack {
                             // Top Bar
                             HStack(alignment: .top) {
@@ -282,7 +295,7 @@ extension PlayerFeature.View {
                                     Text("Module Name")
                                         .fontWeight(.bold)
                                     
-                                    Text("\(fullscreen ? "Landscape" : "Portrait")")
+                                    Text("\(viewStore.fullscreen ? "Landscape" : "Portrait")")
                                         .font(.subheadline)
                                         .opacity(0.7)
                                     
@@ -492,84 +505,90 @@ extension PlayerFeature.View {
                                             viewStore.send(.view(.setPiP(true)))
                                         } else if value.translation.height < -60 {
                                             // fullscreen
+                                            viewStore.send(.view(.setFullscreen(true)))
                                         }
                                     }
                             )
                             
-                            ScrollView {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    // Info
-                                    VStack(alignment: .leading) {
-                                        Text("Primary")
-                                            .font(.title2)
-                                            .fontWeight(.bold)
-                                            .lineLimit(2)
-                                        Text("Secondary")
-                                            .font(.caption)
-                                            .fontWeight(.heavy)
-                                            .lineLimit(2)
-                                            .opacity(0.7)
-                                    }
-                                    .padding(.horizontal, 20)
-                                    .padding(.top, 6)
-                                    
-                                    Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
-                                        .font(.subheadline)
-                                        .lineLimit(9)
-                                        .opacity(0.7)
-                                        .padding(.vertical, 6)
-                                        .contentShape(Rectangle())
-                                        .padding(.horizontal, 20)
-                                    
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        HStack {
-                                            Text("Season 1")
-                                                .font(.title3)
+                            if let infoData = viewStore.infoData {
+                                ScrollView {
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        // Info
+                                        VStack(alignment: .leading) {
+                                            Text(infoData.titles.primary)
+                                                .font(.title2)
                                                 .fontWeight(.bold)
-                                            
-                                            Spacer()
-                                            
-                                            Image(systemName: "chevron.right")
-                                                .padding(6)
-                                                .background {
-                                                    Circle()
-                                                        .fill(.regularMaterial)
-                                                }
+                                                .lineLimit(2)
+                                            if let secondary = infoData.titles.secondary {
+                                                Text(secondary)
+                                                    .font(.caption)
+                                                    .fontWeight(.heavy)
+                                                    .lineLimit(2)
+                                                    .opacity(0.7)
+                                            }
                                         }
-                                        .contentShape(Rectangle())
+                                        .padding(.horizontal, 20)
+                                        .padding(.top, 6)
                                         
-                                        HStack {
-                                            Text("12 Media")
-                                                .font(.subheadline)
-                                                .fontWeight(.semibold)
-                                                .opacity(0.7)
-                                            
-                                            Spacer()
-                                            
-                                            Image("arrow.down.filter")
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .frame(width: 16, height: 16)
-                                                .foregroundColor(.white)
-                                                .opacity(0.7)
+                                        Text(infoData.description)
+                                            .font(.subheadline)
+                                            .lineLimit(9)
+                                            .opacity(0.7)
+                                            .padding(.vertical, 6)
+                                            .contentShape(Rectangle())
+                                            .padding(.horizontal, 20)
+                                        
+                                        if infoData.mediaList.count > 0 {
+                                            VStack(alignment: .leading, spacing: 6) {
+                                                HStack {
+                                                    Text(infoData.mediaList[0].title)
+                                                        .font(.title3)
+                                                        .fontWeight(.bold)
+                                                    
+                                                    Spacer()
+                                                    
+                                                    Image(systemName: "chevron.right")
+                                                        .padding(6)
+                                                        .background {
+                                                            Circle()
+                                                                .fill(.regularMaterial)
+                                                        }
+                                                }
                                                 .contentShape(Rectangle())
-                                            
-                                            Image("arrow.down.filter")
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .frame(width: 16, height: 16)
-                                                .scaleEffect(CGSize(width: 1.0, height: -1.0))
-                                                .foregroundColor(.white)
-                                                .opacity(1.0)
-                                                .contentShape(Rectangle())
+                                                
+                                                HStack {
+                                                    Text("\(infoData.totalMediaCount ?? 0) \(infoData.mediaType)")
+                                                        .font(.subheadline)
+                                                        .fontWeight(.semibold)
+                                                        .opacity(0.7)
+                                                    
+                                                    Spacer()
+                                                    
+                                                    Image("arrow.down.filter")
+                                                        .resizable()
+                                                        .aspectRatio(contentMode: .fit)
+                                                        .frame(width: 16, height: 16)
+                                                        .foregroundColor(.white)
+                                                        .opacity(0.7)
+                                                        .contentShape(Rectangle())
+                                                    
+                                                    Image("arrow.down.filter")
+                                                        .resizable()
+                                                        .aspectRatio(contentMode: .fit)
+                                                        .frame(width: 16, height: 16)
+                                                        .scaleEffect(CGSize(width: 1.0, height: -1.0))
+                                                        .foregroundColor(.white)
+                                                        .opacity(1.0)
+                                                        .contentShape(Rectangle())
+                                                }
+                                            }
+                                            .padding(.vertical, 6)
+                                            .padding(.horizontal, 20)
                                         }
+                                        // Episode List
                                     }
-                                    .padding(.vertical, 6)
-                                    .padding(.horizontal, 20)
-                                    
-                                    // Episode List
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                                 }
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                             }
                         }
                     }
@@ -577,19 +596,116 @@ extension PlayerFeature.View {
                     
                 }
             }
+            .background {
+                if !viewStore.webviewState.htmlString.isEmpty && !viewStore.webviewState.javaScript.isEmpty {
+                    if viewStore.servers.count > 0 {
+                        WebviewFeature.View(
+                            store: self.store.scope(
+                                state: \.webviewState,
+                                action: Action.InternalAction.webview
+                            ),
+                            payload: viewStore.servers[0].list[0].url,
+                            action: "video"
+                        ) { result in
+                            print(result)
+                            viewStore.send(.view(.parseVideoResult(data: result)))
+                        }
+                        .hidden()
+                        .frame(maxWidth: 0, maxHeight: 0)
+                    } else {
+                        WebviewFeature.View(
+                            store: self.store.scope(
+                                state: \.webviewState,
+                                action: Action.InternalAction.webview
+                            ),
+                            payload: viewStore.url
+                        ) { result in
+                            print(result)
+                            viewStore.send(.view(.parseResult(data: result)))
+                            viewStore.send(.view(.resetWebviewChange))
+                        }
+                        .hidden()
+                        .frame(maxWidth: 0, maxHeight: 0)
+                    }
+                }
+            }
             .onChange(of: viewStore.speed) { newValue in
                 playerVM.player.rate = newValue
             }
+            .onChange(of: viewStore.videoLoadable) { loadable in
+                switch loadable {
+                case let .loaded(data):
+                    let dict = Dictionary(uniqueKeysWithValues: data.sources.map { ($0.quality, $0.file) })
+                    viewStore.send(.view(.setQualityDict(dict)))
+                    
+                    //let item = AVPlayerItem(url: URL(string: viewStore.qualities[viewStore.quality] ?? "")!)
+                    
+                    var subs: [VideoCompositionItem.SubtitleINTERNAL] = []
+                    
+                    if !data.subtitles.isEmpty {
+                        let sub = data.subtitles.filter({ ($0.language ?? "").contains("English") })[0]
+                        
+                        subs.append(VideoCompositionItem.SubtitleINTERNAL(
+                            name: sub.language ?? "N/A",
+                            default: true,
+                            autoselect: true,
+                            link: URL(string: sub.url)!
+                        ))
+                    }
+                    
+                    if let url = URL(string: viewStore.qualities[viewStore.quality] ?? "") {
+                        let videoCompItem = VideoCompositionItem(
+                            link: url,
+                            headers: data.headers ?? [:],
+                            subtitles: subs
+                        )
+                        
+                        let item = PlayerItem(videoCompItem)
+                        
+                        playerVM.setCurrentItem(item)
+                        playerVM.player.play()
+                    }
+                    break
+                case _:
+                    break
+                }
+            }
             .onChange(of: viewStore.quality) { newValue in
-                let storeTime = playerVM.currentTime
                 
-                let item = AVPlayerItem(url: URL(string: viewStore.qualities[newValue] ?? "")!)
-                
-                playerVM.setCurrentItem(item)
-                
-                playerVM.player.seek(to: CMTime(seconds: storeTime, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
-                
-                playerVM.player.play()
+                switch viewStore.videoLoadable {
+                case let .loaded(data):
+                    let storeTime = playerVM.currentTime
+                    
+                    var subs: [VideoCompositionItem.SubtitleINTERNAL] = []
+                    
+                    if !data.subtitles.isEmpty {
+                        let sub = data.subtitles.filter({ ($0.language ?? "").contains("English") })[0]
+                        
+                        subs.append(VideoCompositionItem.SubtitleINTERNAL(
+                            name: sub.language ?? "N/A",
+                            default: true,
+                            autoselect: true,
+                            link: URL(string: sub.url)!
+                        ))
+                    }
+                    
+                    let videoCompItem = VideoCompositionItem(
+                        link: URL(string: viewStore.qualities[newValue] ?? "")!,
+                        headers: data.headers ?? [:],
+                        subtitles: subs
+                    )
+                    
+                    let item = PlayerItem(videoCompItem)
+                    
+                    playerVM.setCurrentItem(item)
+                    
+                    playerVM.player.seek(to: CMTime(seconds: storeTime, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+                    
+                    playerVM.player.play()
+                    break
+                case _:
+                    break
+                }
             }
             .onChange(of: playerVM.isInPipMode) { newValue in
                 if !newValue {
@@ -597,9 +713,7 @@ extension PlayerFeature.View {
                 }
             }
             .onAppear {
-                let item = AVPlayerItem(url: URL(string: viewStore.qualities[viewStore.quality] ?? "")!)
-                
-                playerVM.setCurrentItem(item)
+                viewStore.send(.view(.onAppear))
             }
         }
     }

@@ -11,6 +11,7 @@ import SwiftUI
 import SharedModels
 import ModuleClient
 import Webview
+import Info
 
 private enum Cancellables: Hashable {
     case fetchingItemsDebounce
@@ -24,6 +25,10 @@ extension SearchFeature: Reducer {
         
         Scope(state: \.webviewState, action: /Action.InternalAction.webview) {
             WebviewFeature()
+        }
+        
+        Scope(state: \.info, action: /Action.InternalAction.info) {
+            InfoFeature()
         }
         
         Reduce { state, action in
@@ -41,7 +46,7 @@ extension SearchFeature: Reducer {
                 case .setSearchData(let data):
                     state.searchResults = data
                     state.state = .success
-                    
+                    state.searchLoadable = .loaded(data)
                     return .none
                 case .resetWebview:
                     return .merge(
@@ -51,6 +56,7 @@ extension SearchFeature: Reducer {
                     )
                 case .search:
                     state.state = .notStarted
+                    state.searchLoadable = .pending
                     state.searchResults = []
                     
                     let query = state.query
@@ -61,6 +67,7 @@ extension SearchFeature: Reducer {
                     
                     state.htmlString = ""
                     state.state = .loading
+                    state.searchLoadable = .loading
                     
                     // TODO: get current selected module
                     do {
@@ -95,7 +102,14 @@ extension SearchFeature: Reducer {
                     return .none
                 case .setInfo(let url):
                     print("setting info")
-                    state.infoUrl = url
+                    state.info = InfoFeature.State(url: url)
+                    state.infoVisible = true
+                    return .none
+                case .setInfoVisible(let value):
+                    state.infoVisible = value
+                    return .none
+                case .setDragState(let value):
+                    state.dragState = value
                     return .none
                 case .binding(\.$query):
                     return .none
@@ -127,15 +141,19 @@ extension SearchFeature: Reducer {
                             return .send(.view(.setSearchData(searchResult)))
                         } catch {
                             print("Error decoding JSON ODSFG:", error)
+                            state.searchLoadable = .failed(error)
                         }
                     } else {
                         print("Invalid JSON string")
+                        //state.searchLoadable = .failed()
                     }
                     return .none
                 }
             case let .internal(internalAction):
                 switch internalAction {
                 case .webview:
+                    return .none
+                case .info:
                     return .none
                 }
             }

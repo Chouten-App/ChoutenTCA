@@ -10,18 +10,26 @@ import ComposableArchitecture
 import SwiftUI
 import SharedModels
 import Webview
+import ModuleClient
+import DataClient
 
 public struct InfoFeature: Feature {
+    @Dependency(\.moduleClient) var moduleClient
+    @Dependency(\.dataClient) var dataClient
+    
     public struct State: FeatureState {
         public let url: String
         public var webviewState: WebviewFeature.State
         
-        public var state: LoadingStatus = .success
+        public var state: LoadingStatus = .notStarted
         
         public var backgroundColor: UIColor = .black
         public var textColor: UIColor = .white
         
         public var infoData: InfoData = InfoData.sample
+        public var infoLoadable: Loadable<InfoData> = .pending
+        
+        public var currentPage: Int = 1
         
         public init(url: String) {
             self.url = url
@@ -40,6 +48,15 @@ public struct InfoFeature: Feature {
         public enum ViewAction: SendableAction {
             case setBackgroundColor(color: UIColor)
             case setTextColor(color: UIColor)
+            
+            case onAppear
+            case info
+            case parseResult(data: String)
+            case parseMediaResult(data: String)
+            case setInfoData(data: InfoData)
+            case setMediaList(data: [MediaList])
+            
+            case episodeTap(item: MediaItem)
         }
         public enum DelegateAction: SendableAction {}
         public enum InternalAction: SendableAction {
@@ -54,9 +71,21 @@ public struct InfoFeature: Feature {
     @MainActor
     public struct View: FeatureView {
         public let store: StoreOf<InfoFeature>
+        @Binding var isVisible: Bool
+        @Binding var dragState: CGSize
+        
+        let mediaPerPage = 50
+        
+        public nonisolated init(store: StoreOf<InfoFeature>, isVisible: Binding<Bool>, dragState: Binding<CGSize>) {
+            self.store = store
+            self._isVisible = isVisible
+            self._dragState = dragState
+        }
         
         public nonisolated init(store: StoreOf<InfoFeature>) {
             self.store = store
+            self._dragState = .constant(.zero)
+            self._isVisible = .constant(true)
         }
     }
 
