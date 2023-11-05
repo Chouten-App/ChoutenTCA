@@ -720,6 +720,21 @@ struct ZIPFoundation: PackageDependency {
 //  File.swift
 //  
 //
+//  Created by Inumaki on 04.11.23.
+//
+
+struct Appearance: Feature {
+    var dependencies: any Dependencies {
+        Architecture()
+        ViewComponents()
+        SharedModels()
+        ComposableArchitecture()
+    }
+}
+//
+//  File.swift
+//  
+//
 //  Created by Inumaki on 10.10.23.
 //
 
@@ -808,6 +823,7 @@ struct More: Feature {
     var dependencies: any Dependencies {
         Architecture()
         ComposableArchitecture()
+        Appearance()
     }
 }
 //
@@ -975,6 +991,7 @@ let package = Package {
     Player()
     ModuleSheet()
     Webview()
+    Appearance()
     
     ChoutenApp()
 }

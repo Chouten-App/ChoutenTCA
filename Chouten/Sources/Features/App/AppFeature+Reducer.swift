@@ -86,6 +86,10 @@ extension AppFeature: Reducer {
                     return .none
                 case .player(.view(.setFullscreen(let value))):
                     state.fullscreen = value
+                    print(value)
+                    return .none
+                case .player(.view(.navigateBack)):
+                    state.showPlayer = false
                     return .none
                 case .player:
                     return .none

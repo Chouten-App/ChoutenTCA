@@ -40,6 +40,8 @@ extension PlayerFeature: Reducer {
                 case .setFullscreen(let value):
                     state.fullscreen = value
                     return .none
+                case .navigateBack:
+                    return .none
                 case .onAppear:
                     if state.infoData == nil {
                         state.infoData = dataClient.getInfoData()

@@ -14,6 +14,11 @@
 			<key>orderHint</key>
 			<integer>4</integer>
 		</dict>
+		<key>Appearance.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
 		<key>Architecture.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
@@ -22,7 +27,7 @@
 		<key>Chouten-Package.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>3</integer>
+			<integer>0</integer>
 		</dict>
 		<key>Chouten.xcscheme_^#shared#^_</key>
 		<dict>
@@ -32,7 +37,7 @@
 		<key>Discover.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>3</integer>
+			<integer>7</integer>
 		</dict>
 		<key>FoundationHelpers.xcscheme_^#shared#^_</key>
 		<dict>
@@ -57,17 +62,17 @@
 		<key>Player.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>5</integer>
+			<integer>8</integer>
 		</dict>
 		<key>Search.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>7</integer>
+			<integer>9</integer>
 		</dict>
 		<key>Webview.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>8</integer>
+			<integer>5</integer>
 		</dict>
 		<key>chouten-Package.xcscheme_^#shared#^_</key>
 		<dict>

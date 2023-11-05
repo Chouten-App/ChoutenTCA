@@ -43,7 +43,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                         )
                     )
                     .environment(\.managedObjectContext, dataController.container.viewContext)
-                    .supportedOrientation(.all)
+                    //.supportedOrientation(.all)
             )
             self.window = window
             window.makeKeyAndVisible()
@@ -123,7 +123,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                             )
                         )
                         .environment(\.managedObjectContext, dataController.container.viewContext)
-                        .supportedOrientation(.all)
+                        //.supportedOrientation(.all)
                 )
                 window.rootViewController = hostingController
                 window.makeKeyAndVisible()

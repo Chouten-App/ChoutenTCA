@@ -65,6 +65,14 @@ extension SearchFeature: Reducer {
                         return .none
                     }
                     
+                    // update search history
+                    var newArray = state.queryHistory
+                    if !newArray.contains(query) {
+                        newArray.insert(query, at: 0)
+                        state.queryHistory = newArray
+                    }
+                    
+                    
                     state.htmlString = ""
                     state.state = .loading
                     state.searchLoadable = .loading
@@ -96,6 +104,9 @@ extension SearchFeature: Reducer {
                     } catch {
                         logger.error("\(error.localizedDescription)")
                     }
+                    return .none
+                case .removeQuery(let at):
+                    state.queryHistory.remove(at: at)
                     return .none
                 case .setLoadingStatus(let status):
                     state.state = status

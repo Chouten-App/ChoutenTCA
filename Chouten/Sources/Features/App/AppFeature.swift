@@ -101,6 +101,7 @@ public struct AppFeature: Feature {
         public let store: StoreOf<AppFeature>
         @Environment(\.verticalSizeClass) var verticalSizeClass
         @Environment(\.horizontalSizeClass) var horizontalSizeClass
+        @AppStorage("colorScheme") var colorScheme: Int?
         
         public nonisolated init(store: StoreOf<AppFeature>) {
             self.store = store

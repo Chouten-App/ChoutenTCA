@@ -95,38 +95,75 @@ extension SearchFeature.View {
     @MainActor
     func Navbar(viewStore: ViewStore<SearchFeature.State, SearchFeature.Action.ViewAction>) -> some View {
         HStack {
-            Button {
-                viewStore.send(.backButtonPressed, animation: .easeInOut)
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.subheadline)
-                    .foregroundColor(.primary)
-                    .padding(8)
-                    .background {
-                        Circle()
-                            .fill(.regularMaterial)
-                    }
-                    .transition(.move(edge: .leading))
-            }
-            
-            ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(.regularMaterial)
-                    .frame(maxWidth: .infinity, minHeight: 32, maxHeight: 32)
-                    .matchedGeometryEffect(id: "searchBG", in: animation)
-                
-                HStack {
-                    Image(systemName: "magnifyingglass")
+            if !searchbarFocused {
+                Button {
+                    viewStore.send(.backButtonPressed, animation: .easeInOut)
+                } label: {
+                    Image(systemName: "chevron.left")
                         .font(.subheadline)
                         .foregroundColor(.primary)
-                        .matchedGeometryEffect(id: "searchIcon", in: animation)
-                    
-                    TextField("Search for something", text: viewStore.$query) {
-                        viewStore.send(.search)
+                        .padding(8)
+                        .background {
+                            Circle()
+                                .fill(.regularMaterial)
+                        }
+                }
+                .animation(.easeInOut, value: searchbarFocused)
+                .transition(.move(edge: .leading))
+            }
+            
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: searchbarFocused ? 12 : 6)
+                    .fill(.regularMaterial)
+                    .frame(maxWidth: .infinity, minHeight: 32, maxHeight: searchbarFocused ? 32 + 20 + Double(viewStore.queryHistory.count * 32) : 32)
+                    .matchedGeometryEffect(id: "searchBG", in: animation)
+                
+                VStack {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                            .matchedGeometryEffect(id: "searchIcon", in: animation)
+                        
+                        TextField("Search for something", text: viewStore.$query) {
+                            viewStore.send(.search)
+                        }
+                        .tint(.indigo)
+                        .focused($searchbarFocused)
                     }
-                    .tint(.indigo)
+                    
+                    if searchbarFocused {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("History")
+                                .font(.callout)
+                                .fontWeight(.bold)
+                            
+                            ForEach(0..<viewStore.queryHistory.count, id: \.self) { index in
+                                let history = viewStore.queryHistory[index]
+                                
+                                HStack {
+                                    Text(history)
+                                        .font(.subheadline)
+                                        .lineLimit(1)
+                                        .opacity(0.7)
+                                    
+                                    Spacer()
+                                    
+                                    Button {
+                                        viewStore.send(.removeQuery(at: index), animation: .easeInOut)
+                                    } label: {
+                                        Image(systemName: "xmark")
+                                            .font(.caption)
+                                            .foregroundColor(.primary)
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.top, 8)
+                    }
                 }
                 .padding(.horizontal, 8)
+                .padding(.top, 5)
             }
         }
         .padding(.bottom)

@@ -186,8 +186,14 @@ extension AppFeature.View: View {
                     viewStore.send(.view(.onAppear))
                 }
             }
-            .environment(\.horizontalSizeClass, viewStore.fullscreen ? .regular : .compact)
-            .environment(\.verticalSizeClass, viewStore.fullscreen ? .compact : .regular)
+            .supportedOrientation(viewStore.fullscreen ? .landscape : .portrait)
+            .prefersHomeIndicatorAutoHidden(viewStore.fullscreen)
+            .preferredColorScheme(
+                colorScheme == 0 ? .light :
+                    colorScheme == 1 ? .dark :
+                        .none
+            )
+            .animation(.easeInOut, value: colorScheme)
         }
     }
 }
@@ -212,7 +218,7 @@ private struct NavBarItem: View {
                 Spacer()
                     .frame(height: 12)
             }
-                
+            
             VStack(spacing: 4) {
                 Image(systemName: selected ? tab.selected : tab.image)
                     .font(.system(size: 18, weight: .bold))

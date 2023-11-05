@@ -2,13 +2,14 @@
 //  File.swift
 //  
 //
-//  Created by Inumaki on 10.10.23.
+//  Created by Inumaki on 04.11.23.
 //
 
-struct More: Feature {
+struct Appearance: Feature {
     var dependencies: any Dependencies {
         Architecture()
+        ViewComponents()
+        SharedModels()
         ComposableArchitecture()
-        Appearance()
     }
 }

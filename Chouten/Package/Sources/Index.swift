@@ -15,6 +15,7 @@ let package = Package {
     Player()
     ModuleSheet()
     Webview()
+    Appearance()
     
     ChoutenApp()
 }

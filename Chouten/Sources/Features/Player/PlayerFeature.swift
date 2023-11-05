@@ -59,6 +59,8 @@ public struct PlayerFeature: Feature {
             case setQuality(value: String)
             case setShowMenu(_ value: Bool)
             
+            case navigateBack
+            
             case setQualityDict(_ dict: [String: String])
             case setFullscreen(_ value: Bool)
             

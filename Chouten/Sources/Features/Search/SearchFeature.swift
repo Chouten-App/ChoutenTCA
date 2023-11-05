@@ -18,12 +18,49 @@ public struct SearchFeature: Feature {
     let logger = Logger(subsystem: "com.inumaki.Chouten", category: "Search")
     
     public struct State: FeatureState {
+        public static func == (lhs: SearchFeature.State, rhs: SearchFeature.State) -> Bool {
+            return lhs.webviewState == rhs.webviewState &&
+                       lhs.info == rhs.info &&
+                       lhs.query == rhs.query &&
+                       lhs.lastQuery == rhs.lastQuery &&
+                       lhs.queryHistory == rhs.queryHistory &&
+                       lhs.htmlString == rhs.htmlString &&
+                       lhs.jsString == rhs.jsString &&
+                       lhs.searchResults == rhs.searchResults &&
+                       lhs.searchLoadable == rhs.searchLoadable &&
+                       lhs.state == rhs.state &&
+                       lhs.itemOpacity == rhs.itemOpacity &&
+                       lhs.scrollPosition == rhs.scrollPosition &&
+                       lhs.infoVisible == rhs.infoVisible &&
+                       lhs.dragState == rhs.dragState
+        }
+        
         public var webviewState: WebviewFeature.State
         public var info: InfoFeature.State
         
         @BindingState
         var query: String
         public var lastQuery: String = ""
+        
+        @AppStorage("queryHistory")
+        private var stringArrayJSON = ""
+        public var queryHistory: [String] {
+            get {
+                if let data = stringArrayJSON.data(using: .utf8) {
+                    do {
+                        return try JSONDecoder().decode([String].self, from: data)
+                    } catch {
+                        return []
+                    }
+                }
+                return []
+            }
+            set {
+                if let data = try? JSONEncoder().encode(newValue) {
+                    stringArrayJSON = String(data: data, encoding: .utf8) ?? ""
+                }
+            }
+        }
         
         public var htmlString = ""
         public var jsString = ""
@@ -67,6 +104,7 @@ public struct SearchFeature: Feature {
             case setInfo(_ url: String)
             case setInfoVisible(_ value: Bool)
             case setDragState(_ value: CGSize)
+            case removeQuery(at: Int)
             
             case binding(BindingAction<State>)
         }
@@ -86,6 +124,7 @@ public struct SearchFeature: Feature {
         public let store: StoreOf<SearchFeature>
         //@Environment(\.namespace) var animation
         let animation: Namespace.ID
+        @FocusState public var searchbarFocused: Bool
         
         public func headerOpacity(scrollPosition: CGPoint) -> CGFloat {
             if scrollPosition.y < -90 { return 1.0 }

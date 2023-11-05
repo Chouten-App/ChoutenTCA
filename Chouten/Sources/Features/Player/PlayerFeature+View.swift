@@ -12,6 +12,7 @@ import AVKit
 import Combine
 import ViewComponents
 import Webview
+import Architecture
 
 struct Seekbar: View {
     @Binding var percentage: Double // or some value binded
@@ -239,7 +240,6 @@ extension PlayerFeature.View {
                     Color.black
                         .ignoresSafeArea()
                     
-                    
                     LoadableView(loadable: viewStore.videoLoadable) { videoData in
                         ZStack {
                             if !viewStore.fullscreen {
@@ -440,10 +440,38 @@ extension PlayerFeature.View {
                             .ignoresSafeArea()
                             .allowsHitTesting(false)
                         }
+                        .contentShape(Rectangle())
+                        .gesture(
+                            DragGesture()
+                                .onEnded{ value in
+                                    if value.translation.height > 60 {
+                                        // PiP
+                                        viewStore.send(.view(.setFullscreen(false)))
+                                    }
+                                }
+                        )
                     } else {
                         VStack {
                             VStack {
                                 HStack {
+                                    Button {
+                                        playerVM.player.pause()
+                                        playerVM.player.replaceCurrentItem(with: nil)
+                                        
+                                        viewStore.send(.view(.navigateBack))
+                                    } label: {
+                                        Image(systemName: "chevron.left")
+                                            .font(.caption)
+                                            .padding(8)
+                                            .background {
+                                                Circle()
+                                                    .fill(.indigo)
+                                            }
+                                            .contentShape(Rectangle())
+                                            .foregroundColor(.white)
+                                    }
+                                    
+                                    
                                     Spacer()
                                     
                                     Button {
@@ -592,8 +620,6 @@ extension PlayerFeature.View {
                             }
                         }
                     }
-                    
-                    
                 }
             }
             .background {
@@ -635,8 +661,10 @@ extension PlayerFeature.View {
             .onChange(of: viewStore.videoLoadable) { loadable in
                 switch loadable {
                 case let .loaded(data):
-                    let dict = Dictionary(uniqueKeysWithValues: data.sources.map { ($0.quality, $0.file) })
-                    viewStore.send(.view(.setQualityDict(dict)))
+                    let sourceDict = data.sources.reduce(into: [String: String]()) { dict, source in
+                        dict[source.quality] = source.file
+                    }
+                    viewStore.send(.view(.setQualityDict(sourceDict)))
                     
                     //let item = AVPlayerItem(url: URL(string: viewStore.qualities[viewStore.quality] ?? "")!)
                     
@@ -679,10 +707,10 @@ extension PlayerFeature.View {
                     var subs: [VideoCompositionItem.SubtitleINTERNAL] = []
                     
                     if !data.subtitles.isEmpty {
-                        let sub = data.subtitles.filter({ ($0.language ?? "").contains("English") })[0]
+                        let sub = data.subtitles.filter({ $0.language.contains("English") })[0]
                         
                         subs.append(VideoCompositionItem.SubtitleINTERNAL(
-                            name: sub.language ?? "N/A",
+                            name: sub.language,
                             default: true,
                             autoselect: true,
                             link: URL(string: sub.url)!

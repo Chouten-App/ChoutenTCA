@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Architecture
 
 class HostingController: UIHostingController<AnyView> {
     override var prefersHomeIndicatorAutoHidden: Bool { _prefersHomeIndicatorAutoHidden }
@@ -68,36 +69,4 @@ class HostingController: UIHostingController<AnyView> {
 private class HostingBox {
     weak var delegate: HostingController?
 
-}
-
-struct HomeIndicatorAutoHiddenPreferenceKey: PreferenceKey {
-    static var defaultValue: Bool = false
-
-    static func reduce(
-        value: inout Bool,
-        nextValue: () -> Bool
-    ) {
-        value = nextValue()
-    }
-}
-
-struct SupportedOrientationPreferenceKey: PreferenceKey {
-    static var defaultValue: UIInterfaceOrientationMask = .portrait
-
-    static func reduce(
-        value: inout UIInterfaceOrientationMask,
-        nextValue: () -> UIInterfaceOrientationMask
-    ) {
-        value = nextValue()
-    }
-}
-
-extension View {
-    func prefersHomeIndicatorAutoHidden(_ value: Bool) -> some View {
-        preference(key: HomeIndicatorAutoHiddenPreferenceKey.self, value: value)
-    }
-
-    func supportedOrientation(_ orientation: UIInterfaceOrientationMask) -> some View {
-        preference(key: SupportedOrientationPreferenceKey.self, value: orientation)
-    }
 }

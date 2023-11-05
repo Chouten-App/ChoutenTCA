@@ -7,63 +7,66 @@
 
 import SwiftUI
 import ComposableArchitecture
+import Appearance
 
 extension MoreFeature.View: View {
     @MainActor
     public var body: some View {
         WithViewStore(store, observe: \.`self`) { viewStore in
-            NavigationView {
-                VStack(spacing: 12) {
-                    Text("頂点")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 20)
-                    
-                    VStack {
-                        HStack {
-                            Image(systemName: "square.and.arrow.down.fill")
-                                .frame(width: 20, height: 20)
-                                .padding(4)
-                                .background(.blue)
-                                .cornerRadius(6)
-                            
-                            Text("Downloaded Only")
-                                .fontWeight(.semibold)
-                            
-                            Spacer()
-                            
-                            
-                            Toggle(
-                                isOn: viewStore.$isDownloadedOnly,
-                                label: {}
-                            )
-                        }
+            VStack(spacing: 12) {
+                Text("頂点")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 20)
+                
+                VStack {
+                    HStack {
+                        Image(systemName: "square.and.arrow.down.fill")
+                            .frame(width: 20, height: 20)
+                            .padding(4)
+                            .background(.blue)
+                            .cornerRadius(6)
                         
-                        HStack {
-                            Image(systemName: "eyeglasses")
-                                .frame(width: 16, height: 16)
-                                .padding(6)
-                                .background(.red)
-                                .cornerRadius(6)
-                            
-                            Text("Incognito Mode")
-                                .fontWeight(.semibold)
-                            
-                            Spacer()
-                            
-                            Toggle(isOn: viewStore.$isIncognito, label: {})
-                        }
-                    }
-                    .padding(12)
-                    .background {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(
-                                .regularMaterial
-                            )
+                        Text("Downloaded Only")
+                            .fontWeight(.semibold)
+                        
+                        Spacer()
+                        
+                        
+                        Toggle(
+                            isOn: viewStore.$isDownloadedOnly,
+                            label: {}
+                        )
                     }
                     
-                    VStack {
+                    HStack {
+                        Image(systemName: "eyeglasses")
+                            .frame(width: 16, height: 16)
+                            .padding(6)
+                            .background(.red)
+                            .cornerRadius(6)
+                        
+                        Text("Incognito Mode")
+                            .fontWeight(.semibold)
+                        
+                        Spacer()
+                        
+                        Toggle(isOn: viewStore.$isIncognito, label: {})
+                    }
+                }
+                .padding(12)
+                .background {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(
+                            .regularMaterial
+                        )
+                }
+                
+                VStack {
+                    Button {
+                        viewStore.send(.setPageState(to: .appearance), animation: .easeInOut)
+                    } label: {
                         HStack {
                             Image(systemName: "swatchpalette.fill")
                                 .frame(width: 20, height: 20)
@@ -81,58 +84,70 @@ extension MoreFeature.View: View {
                                 .aspectRatio(contentMode: .fit)
                                 .frame(height: 16)
                         }
-                        
-                        HStack {
-                            Image(systemName: "wifi")
-                                .frame(width: 20, height: 20)
-                                .padding(4)
-                                .background(.yellow)
-                                .cornerRadius(6)
-                            
-                            Text("Network")
-                                .fontWeight(.semibold)
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(height: 16)
-                        }
-                        
-                        HStack {
-                            Image(systemName: "laptopcomputer")
-                                .frame(width: 20, height: 20)
-                                .padding(4)
-                                .background(.indigo)
-                                .cornerRadius(6)
-                            
-                            Text("Developer")
-                                .fontWeight(.semibold)
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(height: 16)
-                        }
-                    }
-                    .padding(12)
-                    .background {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(
-                                .regularMaterial
-                            )
+                        .foregroundColor(.primary)
                     }
                     
-                    Text("Version \(viewStore.versionString)")
-                        .font(.caption)
-                        .padding(.top, 12)
+                    HStack {
+                        Image(systemName: "wifi")
+                            .frame(width: 20, height: 20)
+                            .padding(4)
+                            .background(.yellow)
+                            .cornerRadius(6)
+                        
+                        Text("Network")
+                            .fontWeight(.semibold)
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 16)
+                    }
                     
+                    HStack {
+                        Image(systemName: "laptopcomputer")
+                            .frame(width: 20, height: 20)
+                            .padding(4)
+                            .background(.indigo)
+                            .cornerRadius(6)
+                        
+                        Text("Developer")
+                            .fontWeight(.semibold)
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 16)
+                    }
                 }
-                .padding(.horizontal, 20)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .padding(12)
+                .background {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(
+                            .regularMaterial
+                        )
+                }
+                
+                Text("Version \(viewStore.versionString)")
+                    .font(.caption)
+                    .padding(.top, 12)
+                
+            }
+            .padding(.horizontal, 20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .overlay {
+                if viewStore.pageState == .appearance {
+                    AppearanceFeature.View(
+                        store: self.store.scope(
+                            state: \.appearance,
+                            action: Action.InternalAction.appearance
+                        )
+                    )
+                    .transition(.move(edge: .trailing))
+                }
             }
         }
         .frame(
