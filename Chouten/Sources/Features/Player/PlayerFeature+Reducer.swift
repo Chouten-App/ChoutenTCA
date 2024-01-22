@@ -42,6 +42,12 @@ extension PlayerFeature: Reducer {
                     return .none
                 case .navigateBack:
                     return .none
+                case .setInfoData(let data):
+                    state.infoData = data
+                    return .none
+                case .toggleUI:
+                    state.showUI.toggle()
+                    return .none
                 case .onAppear:
                     if state.infoData == nil {
                         state.infoData = dataClient.getInfoData()
@@ -51,27 +57,27 @@ extension PlayerFeature: Reducer {
                     state.videoLoadable = .loading
                     
                     // TODO: get current selected module
-                    do {
-                        let module = try moduleClient.getModules().first
+                    let module = moduleClient.getCurrentModule()
+                    
+                    if let module {
+                        moduleClient.setSelectedModuleName(module)
                         
-                        if let module {
-                            moduleClient.setSelectedModuleName(module)
+                        state.module = module
+                        
+                        do {
+                            let js = try moduleClient.getJs("media") ?? ""
                             
-                            do {
-                                let js = try moduleClient.getJs("media") ?? ""
-                                
-                                return .merge(
-                                    .send(.internal(.webview(.view(.setHtmlString(newString: AppConstants.defaultHtml))))),
-                                    .send(.internal(.webview(.view(.setJsString(newString: js))))),
-                                    .send(.internal(.webview(.view(.setRequestType(type: "media")))))
-                                )
-                            } catch {
-                                
-                                //logger.error("\(error.localizedDescription)")
-                            }
+                            return .merge(
+                                .send(.internal(.webview(.view(.setHtmlString(newString: AppConstants.defaultHtml))))),
+                                .send(.internal(.webview(.view(.setJsString(newString: js))))),
+                                .send(.internal(.webview(.view(.setRequestType(type: "media")))))
+                            )
+                        } catch {
+                            state.videoLoadable = .failed(VideoLoadingError.other(error))
+                            //logger.error("\(error.localizedDescription)")
                         }
-                    } catch {
-                        //logger.error("\(error.localizedDescription)")
+                    } else {
+                        state.videoLoadable = .failed(VideoLoadingError.other("No Module Selected."))
                     }
                     return .none
                 case .parseResult(let data):
@@ -87,6 +93,7 @@ extension PlayerFeature: Reducer {
                         }
                     } else {
                         print("Invalid JSON string")
+                        state.videoLoadable = .failed(VideoLoadingError.dataParsingError("Invalid JSON string"))
                         //state.searchLoadable = .failed()
                     }
                     return .none
@@ -103,6 +110,7 @@ extension PlayerFeature: Reducer {
                         }
                     } else {
                         print("Invalid JSON string")
+                        state.videoLoadable = .failed(VideoLoadingError.dataParsingError("Invalid JSON string"))
                         //state.searchLoadable = .failed()
                     }
                     return .none
@@ -111,7 +119,12 @@ extension PlayerFeature: Reducer {
                     return .none
                 case .setVideoData(let data):
                     state.videoLoadable = .loaded(data)
-                    return .none
+                    
+                    let dict = data.sources.reduce(into: [String: String]()) { result, source in
+                        result[source.quality] = source.file
+                    }
+                    
+                    return .send(.view(.setQualityDict(dict)))
                 case .resetWebviewChange:
                     return .merge(
                         .send(.internal(.webview(.view(.setHtmlString(newString: ""))))),
@@ -120,6 +133,52 @@ extension PlayerFeature: Reducer {
                     )
                 case .setQualityDict(let dict):
                     state.qualities = dict
+                    
+                    state.quality = dict.filter({ (key: String, value: String) in
+                        key.lowercased() == "auto"
+                    }).first?.key ?? ""
+                    return .none
+                case .setCurrentItem(let data):
+                    let sourceDict = data.sources.reduce(into: [String: String]()) { dict, source in
+                        dict[source.quality] = source.file
+                    }
+                    state.qualities = sourceDict
+                    
+                    //let item = AVPlayerItem(url: URL(string: viewStore.qualities[viewStore.quality] ?? "")!)
+                    
+                    var subs: [VideoCompositionItem.SubtitleINTERNAL] = []
+                    
+                    if !data.subtitles.isEmpty {
+                        let sub = data.subtitles.filter { $0.language.lowercased().contains("english") }[0]
+                        
+                        subs.append(VideoCompositionItem.SubtitleINTERNAL(
+                            name: sub.language,
+                            default: true,
+                            autoselect: true,
+                            link: URL(string: sub.url)!
+                        ))
+                    }
+                    
+                    if !state.qualities.contains(where: { (key: String, value: String) in
+                        key.lowercased() == "auto"
+                    }) {
+                        state.quality = Array(state.qualities.keys)[0]
+                    }
+                    
+                    if let url = URL(string: state.qualities[state.quality] ?? "") {
+                        let videoCompItem = VideoCompositionItem(
+                            link: url,
+                            headers: data.headers ?? [:],
+                            subtitles: subs
+                        )
+                        
+                        state.item = PlayerItem(videoCompItem)
+                    } else {
+                        state.videoLoadable = .failed(VideoLoadingError.invalidURL)
+                    }
+                    return .none
+                case .setLoadable(let loadableState):
+                    state.videoLoadable = loadableState
                     return .none
                 }
             case let .internal(internalAction):

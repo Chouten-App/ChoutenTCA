@@ -8,14 +8,18 @@
 import Dependencies
 import Foundation
 import OSLog
+import SharedModels
 
 public struct ModuleClient: Sendable {
     public static var moduleFolderNames: [String] = []
+    public static var selectedModule: Module? = nil
     public static var moduleIds: [String] = []
     public static var selectedModuleName: String = ""
     public static let minimumFormatVersion: Int = 1
     
     public var importFromFile: @Sendable (_ fileUrl: URL) throws -> Void
+    public var getCurrentModule: @Sendable () -> Module?
+    public var setCurrentModule: @Sendable (_ module: Module) -> Void
     public var getModules: @Sendable () throws -> [Module]
     public var getMetadata: @Sendable (_ folderUrl: URL) -> Module?
     public var getJs: @Sendable (_ for: String) throws -> String?
@@ -26,6 +30,8 @@ public struct ModuleClient: Sendable {
 extension ModuleClient: TestDependencyKey {
     public static let testValue = Self(
         importFromFile: unimplemented(),
+        getCurrentModule: unimplemented(),
+        setCurrentModule: unimplemented(),
         getModules: unimplemented(),
         getMetadata: unimplemented(),
         getJs: unimplemented(),

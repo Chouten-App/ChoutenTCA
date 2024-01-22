@@ -23,7 +23,6 @@ public struct SearchFeature: Feature {
                        lhs.info == rhs.info &&
                        lhs.query == rhs.query &&
                        lhs.lastQuery == rhs.lastQuery &&
-                       lhs.queryHistory == rhs.queryHistory &&
                        lhs.htmlString == rhs.htmlString &&
                        lhs.jsString == rhs.jsString &&
                        lhs.searchResults == rhs.searchResults &&
@@ -32,7 +31,9 @@ public struct SearchFeature: Feature {
                        lhs.itemOpacity == rhs.itemOpacity &&
                        lhs.scrollPosition == rhs.scrollPosition &&
                        lhs.infoVisible == rhs.infoVisible &&
-                       lhs.dragState == rhs.dragState
+                       lhs.dragState == rhs.dragState &&
+                       lhs.searchFocused == rhs.searchFocused &&
+                       lhs.headerOpacity == rhs.headerOpacity
         }
         
         public var webviewState: WebviewFeature.State
@@ -41,26 +42,10 @@ public struct SearchFeature: Feature {
         @BindingState
         var query: String
         public var lastQuery: String = ""
+        public var page = 1
+        public var wasLastPage = false
+        public var isFetching = false
         
-        @AppStorage("queryHistory")
-        private var stringArrayJSON = ""
-        public var queryHistory: [String] {
-            get {
-                if let data = stringArrayJSON.data(using: .utf8) {
-                    do {
-                        return try JSONDecoder().decode([String].self, from: data)
-                    } catch {
-                        return []
-                    }
-                }
-                return []
-            }
-            set {
-                if let data = try? JSONEncoder().encode(newValue) {
-                    stringArrayJSON = String(data: data, encoding: .utf8) ?? ""
-                }
-            }
-        }
         
         public var htmlString = ""
         public var jsString = ""
@@ -71,8 +56,10 @@ public struct SearchFeature: Feature {
         public var state: LoadingStatus = .notStarted
         public var itemOpacity: Double = 0.8
         public var scrollPosition: CGPoint = .zero
+        public var headerOpacity: Double = 0.0
         
         public var infoVisible: Bool = false
+        public var searchFocused: Bool = false
         public var dragState = CGSize.zero
         
         public init() {
@@ -98,13 +85,18 @@ public struct SearchFeature: Feature {
             case setItemOpacity(value: Double)
             case backButtonPressed
             case setScrollPosition(_ value: CGPoint)
+            case setHeaderOpacity(_ value: Double)
             case setLoadingStatus(_ status: LoadingStatus)
             case setSearchData(_ data: [SearchData])
+            case appendSearchData(_ data: [SearchData])
             case parseResult(data: String)
             case setInfo(_ url: String)
             case setInfoVisible(_ value: Bool)
             case setDragState(_ value: CGSize)
             case removeQuery(at: Int)
+            case setSearchFocused(_ val: Bool)
+            case increasePageNumber
+            case setLoadable(_ state: Loadable<[SearchData]>)
             
             case binding(BindingAction<State>)
         }
@@ -126,11 +118,7 @@ public struct SearchFeature: Feature {
         let animation: Namespace.ID
         @FocusState public var searchbarFocused: Bool
         
-        public func headerOpacity(scrollPosition: CGPoint) -> CGFloat {
-            if scrollPosition.y < -90 { return 1.0 }
-            
-            return (scrollPosition.y / CGFloat(-90))
-        }
+        public var headerOpacity: Double = 0.0
         
         public init(store: StoreOf<SearchFeature>, animation: Namespace.ID) {
             self.store = store

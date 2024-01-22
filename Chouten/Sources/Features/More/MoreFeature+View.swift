@@ -8,6 +8,7 @@
 import SwiftUI
 import ComposableArchitecture
 import Appearance
+import NukeUI
 
 extension MoreFeature.View: View {
     @MainActor
@@ -105,22 +106,27 @@ extension MoreFeature.View: View {
                             .frame(height: 16)
                     }
                     
-                    HStack {
-                        Image(systemName: "laptopcomputer")
-                            .frame(width: 20, height: 20)
-                            .padding(4)
-                            .background(.indigo)
-                            .cornerRadius(6)
-                        
-                        Text("Developer")
-                            .fontWeight(.semibold)
-                        
-                        Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(height: 16)
+                    Button {
+                        viewStore.send(.setPageState(to: .developer), animation: .easeInOut)
+                    } label: {
+                        HStack {
+                            Image(systemName: "laptopcomputer")
+                                .frame(width: 20, height: 20)
+                                .padding(4)
+                                .background(.indigo)
+                                .cornerRadius(6)
+                            
+                            Text("Developer")
+                                .fontWeight(.semibold)
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: 16)
+                        }
+                        .foregroundColor(.primary)
                     }
                 }
                 .padding(12)
@@ -147,6 +153,88 @@ extension MoreFeature.View: View {
                         )
                     )
                     .transition(.move(edge: .trailing))
+                } else if viewStore.pageState == .developer {
+                    // Logs
+                    VStack {
+                        ScrollView {
+                            VStack {
+                                ForEach(0..<4, id: \.self) { index in
+                                    VStack(alignment: .leading) {
+                                        HStack {
+                                            LazyImage(
+                                                url: URL(string: "https://pbs.twimg.com/profile_images/1676239730994737152/Ii75RYHN_400x400.jpg"),
+                                                transaction: .init(animation: .easeInOut(duration: 0.4))
+                                            ) { state in
+                                                if let image = state.image {
+                                                  image
+                                                    .resizable()
+                                                } else {
+                                                    Color.gray.opacity(0.3)
+                                                }
+                                            }
+                                            .scaledToFill()
+                                            .frame(maxWidth: 32, maxHeight: 32)
+                                            .cornerRadius(6)
+                                            
+                                            HStack {
+                                                Text("Log")
+                                                    .fontWeight(.bold)
+                                                Text("(index.ts | 14:23)")
+                                                    .font(.footnote)
+                                            }
+                                            .opacity(0.7)
+                                            
+                                            Spacer()
+                                            
+                                            Text("14:56:236")
+                                                .font(.caption)
+                                                .fontWeight(.semibold)
+                                                .opacity(0.7)
+                                        }
+                                        
+                                        Text(verbatim: "https://aniwatch.to/ajax/v2/episode/sources?id=609965")
+                                            .font(.subheadline)
+                                            .foregroundColor(.primary)
+                                    }
+                                    .padding()
+                                    .background(.regularMaterial)
+                                    .cornerRadius(12)
+                                }
+                            }
+                            .padding()
+                            .padding(.top, 40)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(.background)
+                    .overlay(alignment: .top) {
+                        HStack(spacing: 20) {
+                            Image(systemName: "chevron.left")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 12, height: 12)
+                                .offset(x: -1)
+                                .padding(6)
+                                .contentShape(Rectangle())
+                                .foregroundColor(.primary)
+                                .background {
+                                    Circle()
+                                        .fill(
+                                            .regularMaterial
+                                        )
+                                }
+                            
+                            Text("Logs")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                            
+                            Spacer()
+                            
+                        }
+                        .padding(.horizontal)
+                        .padding(.bottom, 12)
+                        //.background(.regularMaterial)
+                    }
                 }
             }
         }

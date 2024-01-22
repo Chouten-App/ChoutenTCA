@@ -10,5 +10,6 @@ struct More: Feature {
         Architecture()
         ComposableArchitecture()
         Appearance()
+        NukeUI()
     }
 }

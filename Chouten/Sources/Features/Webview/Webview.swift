@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Inumaki on 20.10.23.
 //
@@ -10,39 +10,40 @@ import WebKit
 import ComposableArchitecture
 import OSLog
 import Architecture
+import SwiftSoup
 
 /*
-func setCookiesInWebView(cookies: [Cookie], webView: WKWebView) {
-    let httpCookies = convertToHTTPCookies(cookies: cookies)
-    let cookieStore = webView.configuration.websiteDataStore.httpCookieStore
-    
-    for cookie in httpCookies {
-        cookieStore.setCookie(cookie)
-    }
-}
-
-func convertToHTTPCookies(cookies: [Cookie]) -> [HTTPCookie] {
-    return cookies.compactMap { cookie in
-        let httpCookieProperties: [HTTPCookiePropertyKey: Any] = [
-            .name: cookie.name,
-            .value: cookie.value,
-            .domain: cookie.domain,
-            .path: cookie.path,
-            .version: cookie.version,
-            .expires: cookie.expiresDate ?? Date.distantFuture
-        ]
-        
-        return HTTPCookie(properties: httpCookieProperties)
-    }
-}
-*/
+ func setCookiesInWebView(cookies: [Cookie], webView: WKWebView) {
+ let httpCookies = convertToHTTPCookies(cookies: cookies)
+ let cookieStore = webView.configuration.websiteDataStore.httpCookieStore
+ 
+ for cookie in httpCookies {
+ cookieStore.setCookie(cookie)
+ }
+ }
+ 
+ func convertToHTTPCookies(cookies: [Cookie]) -> [HTTPCookie] {
+ return cookies.compactMap { cookie in
+ let httpCookieProperties: [HTTPCookiePropertyKey: Any] = [
+ .name: cookie.name,
+ .value: cookie.value,
+ .domain: cookie.domain,
+ .path: cookie.path,
+ .version: cookie.version,
+ .expires: cookie.expiresDate ?? Date.distantFuture
+ ]
+ 
+ return HTTPCookie(properties: httpCookieProperties)
+ }
+ }
+ */
 
 import Foundation
 import OSLog
 
 extension OSLog {
     private static var subsystem = Bundle.main.bundleIdentifier!
-
+    
     /// Creates a custom log category for URLRequest logging.
     static let urlRequest = OSLog(subsystem: subsystem, category: "URLRequest")
     
@@ -66,7 +67,7 @@ extension URLRequest {
             let statusCode = response.statusCode
             logMessage.append(", Status Code: \(statusCode)")
         }
-
+        
         // Log the message using OSLog
         os_log("%{public}@", log: OSLog.urlRequest, type: .info, logMessage)
     }
@@ -96,7 +97,6 @@ public struct WebView: UIViewRepresentable {
     var completionHandler: ((String) -> Void)? // Add completionHandler
     
     var action: String = "logic"
-    
     
     public func makeUIView(context: Context) -> WKWebView {
         // inject JS to capture console.log output and send to iOS
@@ -141,11 +141,11 @@ public struct WebView: UIViewRepresentable {
         let webView = WKWebView(frame: .zero, configuration: configuration)
         
         /*let cookies = globalData.getCookies()
-        
-        if cookies != nil {
-            setCookiesInWebView(cookies: cookies!.cookies, webView: webView)
-        }
-        */
+         
+         if cookies != nil {
+         setCookiesInWebView(cookies: cookies!.cookies, webView: webView)
+         }
+         */
         webView.navigationDelegate = context.coordinator
         
         print(commonCode)
@@ -188,8 +188,6 @@ public struct WebView: UIViewRepresentable {
         }
         
         public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            print("CALLED: \(message.name)")
-            
             if message.name == "Native" {
                 if let body = message.body as? String {
                     sendHttpRequest(data: body)
@@ -204,22 +202,22 @@ public struct WebView: UIViewRepresentable {
                     os_log("%{public}@", log: OSLog.webview, type: .error, message)
                     
                     /*
-                    do {
-                        if data != nil {
-                            var consoleData = try decoder.decode(ConsoleData.self, from: data!)
-                            let module = globalData.getModule()
-                            consoleData.moduleName = module?.name ?? ""
-                            consoleData.moduleIconPath = module?.icon ?? ""
-                            print("LOG: \(consoleData.msg)")
-                            viewStore.send(.appendGlobalLog(item: consoleData))
-                        }
-                    } catch {
-                        error.log(logger: OSLog.webview)
-                        let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
-                        NotificationCenter.default
-                            .post(name:           NSNotification.Name("floaty"),
-                                  object: nil, userInfo: data)
-                    }
+                     do {
+                     if data != nil {
+                     var consoleData = try decoder.decode(ConsoleData.self, from: data!)
+                     let module = globalData.getModule()
+                     consoleData.moduleName = module?.name ?? ""
+                     consoleData.moduleIconPath = module?.icon ?? ""
+                     print("LOG: \(consoleData.msg)")
+                     viewStore.send(.appendGlobalLog(item: consoleData))
+                     }
+                     } catch {
+                     error.log(logger: OSLog.webview)
+                     let data = ["data": FloatyData(message: "\(error)", error: true, action: nil)]
+                     NotificationCenter.default
+                     .post(name:           NSNotification.Name("floaty"),
+                     object: nil, userInfo: data)
+                     }
                      */
                 }
             }
@@ -241,6 +239,8 @@ public struct WebView: UIViewRepresentable {
             completionHandler: @escaping (String?, Error?) -> Void
         ) async throws {
             URLSession.shared.configuration.httpCookieStorage = HTTPCookieStorage.shared
+            URLSession.shared.configuration.httpShouldSetCookies = true
+            URLSession.shared.configuration.httpShouldUsePipelining = true
             
             var request = URLRequest(url: url)
             request.httpMethod = method
@@ -281,21 +281,44 @@ public struct WebView: UIViewRepresentable {
                 // CF hit
                 print("cf")
                 /*
-                self.globalData.setCfUrl(url.absoluteString)
-                self.globalData.setShowOverlay(true)
-                */
+                 self.globalData.setCfUrl(url.absoluteString)
+                 self.globalData.setShowOverlay(true)
+                 */
                 /*
-                DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-                    Task {
-                        do {
-                            try await self.request(url: url, headers: headers, method: "POST", body: body, completionHandler: completionHandler)
-                        } catch {
-                            print(error.localizedDescription)
+                 DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                 Task {
+                 do {
+                 try await self.request(url: url, headers: headers, method: "POST", body: body, completionHandler: completionHandler)
+                 } catch {
+                 print(error.localizedDescription)
+                 }
+                 }
+                 }
+                 */
+                completionHandler(nil, NSError(domain: "", code: -1, userInfo: nil))
+            }
+            
+            if status == 200, let mimeType = response.mimeType, mimeType == "text/html" {
+                if let htmlString = String(data: data, encoding: .utf8) {
+                    do {
+                        let doc: Document = try SwiftSoup.parse(htmlString)
+                        if let metaRefresh = try doc.select("meta[http-equiv=refresh]").first(),
+                           let content = try? metaRefresh.attr("content"),
+                           let urlRange = content.range(of: "url=") {
+                            let redirectURL = String(content[urlRange.upperBound...])
+                            
+                            if let redirect = URL(string: redirectURL) {
+                                // Handle the redirect by making another request
+                                try await self.request(url: redirect, headers: headers, completionHandler: completionHandler)
+                                return
+                            }
                         }
+                    } catch {
+                        print("Error parsing HTML: \(error)")
+                        completionHandler(nil, error)
+                        return
                     }
                 }
-                */
-                completionHandler(nil, NSError(domain: "", code: -1, userInfo: nil))
             }
             
             if let responseString = String(data: data, encoding: .utf8) {
@@ -368,7 +391,6 @@ public struct WebView: UIViewRepresentable {
         }
         
         public func parseResult(body: String) {
-            print(body)
             if let jsonData = body.data(using: .utf8) {
                 do {
                     let decoder = JSONDecoder()

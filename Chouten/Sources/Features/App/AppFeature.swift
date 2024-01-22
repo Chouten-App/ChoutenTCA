@@ -12,11 +12,30 @@ import Discover
 import Player
 import ModuleSheet
 import DataClient
+import SharedModels
 
 public struct AppFeature: Feature {
     @Dependency(\.dataClient) var dataClient
+    @Dependency(\.moduleClient) var moduleClient
     
     public struct State: FeatureState {
+        public static func == (lhs: State, rhs: State) -> Bool {
+            return lhs.versionString == rhs.versionString &&
+                lhs.more == rhs.more &&
+                lhs.discover == rhs.discover &&
+                lhs.player == rhs.player &&
+                lhs.sheet == rhs.sheet &&
+                lhs.selected == rhs.selected &&
+                lhs.showTabbar == rhs.showTabbar &&
+                lhs.showPlayer == rhs.showPlayer &&
+                lhs.fullscreen == rhs.fullscreen &&
+                lhs.videoUrl == rhs.videoUrl &&
+                lhs.videoIndex == rhs.videoIndex &&
+                lhs.selectedModuleId == rhs.selectedModuleId &&
+                lhs.mediaItems == rhs.mediaItems &&
+                lhs.modules == rhs.modules
+        }
+        
         let versionString: String
         public var more: MoreFeature.State
         public var discover: DiscoverFeature.State
@@ -28,8 +47,15 @@ public struct AppFeature: Feature {
         public var showPlayer: Bool = false
         public var fullscreen: Bool = false
         public var videoUrl: String? = nil
+        public var videoIndex: Int? = nil
         
-        public init(versionString: String = "x.x.x") {
+        public var mediaItems: [Media] = []
+        public var modules: [Module] = []
+        
+        @AppStorage("selectedModuleId")
+        public var selectedModuleId: String = ""
+        
+        public init(versionString: String = "x.x.x(x)") {
             self.versionString = versionString
             self.more = MoreFeature.State(
                 versionString: versionString
@@ -78,7 +104,8 @@ public struct AppFeature: Feature {
             case changeTab(_ tab: State.Tab)
             case toggleTabbar
             case onAppear
-            case setVideoUrl(_ url: String?)
+            case setVideoUrl(_ url: String?, index: Int?)
+            case updateMediaItems(_ items: [Media])
         }
 
         public enum DelegateAction: SendableAction {}
@@ -102,6 +129,12 @@ public struct AppFeature: Feature {
         @Environment(\.verticalSizeClass) var verticalSizeClass
         @Environment(\.horizontalSizeClass) var horizontalSizeClass
         @AppStorage("colorScheme") var colorScheme: Int?
+        @SwiftUI.State var showContextMenu: Bool = false
+        @SwiftUI.State var hoveredIndex = -1
+        @GestureState var press = false
+        
+        @SwiftUI.State var showAlert: Bool = false
+        @SwiftUI.State var changeMediaData: Media? = nil
         
         public nonisolated init(store: StoreOf<AppFeature>) {
             self.store = store

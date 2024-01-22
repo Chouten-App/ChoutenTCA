@@ -24,7 +24,7 @@ public struct MoreFeature: Feature {
         @AppStorage("incognito")
         public var isIncognito: Bool = false
         
-        public var pageState: PageState = .more
+        public var pageState: PageState = .developer
         
         let versionString: String
         public var appearance: AppearanceFeature.State
@@ -38,6 +38,7 @@ public struct MoreFeature: Feature {
     public enum PageState: String, Sendable {
         case more
         case appearance
+        case developer
     }
     
     public enum Action: FeatureAction {

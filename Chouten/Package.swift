@@ -624,6 +624,7 @@ struct DataClient: Client {
     var dependencies: any Dependencies {
         ComposableArchitecture()
         Architecture()
+        SharedModels()
     }
 }
 //
@@ -650,6 +651,7 @@ struct ModuleClient: Client {
         ComposableArchitecture()
         ZIPFoundation()
         Architecture()
+        SharedModels()
     }
 }
 //
@@ -672,12 +674,36 @@ extension Client {
 //  File.swift
 //  
 //
+//  Created by Inumaki on 02.12.23.
+//
+
+struct ASCollectionView: PackageDependency {
+    var dependency: Package.Dependency {
+        .package(url: "https://github.com/apptekstudios/ASCollectionView", from: "2.1.1")
+    }
+}
+//
+//  File.swift
+//  
+//
 //  Created by Inumaki on 10.10.23.
 //
 
 struct ComposableArchitecture: PackageDependency {
     var dependency: Package.Dependency {
         .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.2.0")
+    }
+}
+//
+//  File.swift
+//  
+//
+//  Created by Inumaki on 24.12.23.
+//
+
+struct GRDB: PackageDependency {
+    var dependency: Package.Dependency {
+        .package(url: "https://github.com/Eltik/GRDB.git", exact: "6.21.6")
     }
 }
 //
@@ -693,6 +719,18 @@ struct Kingfisher: PackageDependency {
     }
 }
 //
+//  File.swift
+//  
+//
+//  Created by Inumaki on 17.12.23.
+//
+
+struct NukeUI: PackageDependency {
+    var dependency: Package.Dependency {
+        .package(url: "https://github.com/kean/Nuke.git", from: "12.2.0")
+    }
+}
+//
 //  Shimmer.swift
 //
 //
@@ -702,6 +740,30 @@ struct Kingfisher: PackageDependency {
 struct Shimmer: PackageDependency {
     var dependency: Package.Dependency {
         .package(url: "https://github.com/markiv/SwiftUI-Shimmer.git", exact: "1.4.0")
+    }
+}
+//
+//  File.swift
+//  
+//
+//  Created by Inumaki on 31.12.23.
+//
+
+struct SwiftSoup: PackageDependency {
+    var dependency: Package.Dependency {
+        .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.6.1")
+    }
+}
+//
+//  File.swift
+//  
+//
+//  Created by Inumaki on 30.11.23.
+//
+
+struct AsyncDisplayKit: PackageDependency {
+    var dependency: Package.Dependency {
+        .package(url: "https://github.com/Suwatte/Texture.git", from: "3.1.1")
     }
 }
 //
@@ -760,6 +822,7 @@ struct ChoutenApp: Product, Target {
         Shimmer()
         Kingfisher()
         DataClient()
+        GRDB()
     }
 }
 //
@@ -784,6 +847,22 @@ struct Discover: Feature {
 //  File.swift
 //  
 //
+//  Created by Inumaki on 14.12.23.
+//
+
+struct Home: Feature {
+    var dependencies: any Dependencies {
+        Architecture()
+        Kingfisher()
+        ComposableArchitecture()
+        ViewComponents()
+        Shimmer()
+    }
+}
+//
+//  File.swift
+//  
+//
 //  Created by Inumaki on 16.10.23.
 //
 
@@ -794,7 +873,9 @@ struct Info: Feature {
         ComposableArchitecture()
         ViewComponents()
         Webview()
+        Shimmer()
         DataClient()
+        NukeUI()
     }
 }
 //
@@ -824,6 +905,7 @@ struct More: Feature {
         Architecture()
         ComposableArchitecture()
         Appearance()
+        NukeUI()
     }
 }
 //
@@ -843,6 +925,26 @@ struct Player: Feature {
         SharedModels()
         ModuleClient()
         DataClient()
+        GRDB()
+    }
+}
+//
+//  File.swift
+//  
+//
+//  Created by Inumaki on 15.12.23.
+//
+
+struct Repo: Feature {
+    var dependencies: any Dependencies {
+        Architecture()
+        Kingfisher()
+        ComposableArchitecture()
+        ViewComponents()
+        Shimmer()
+        NukeUI()
+        SharedModels()
+        ModuleClient()
     }
 }
 //
@@ -863,6 +965,8 @@ struct Search: Feature {
         SharedModels()
         ModuleClient()
         Webview()
+        ASCollectionView()
+        NukeUI()
     }
 }
 //
@@ -877,6 +981,7 @@ struct Webview: Feature {
         Architecture()
         ComposableArchitecture()
         ModuleClient()
+        SwiftSoup()
     }
 }
 //
@@ -940,6 +1045,7 @@ struct FoundationHelpers: Shared {}
 struct SharedModels: Shared {
     var dependencies: any Dependencies {
         ComposableArchitecture()
+        GRDB()
     }
 }
 //
@@ -992,6 +1098,8 @@ let package = Package {
     ModuleSheet()
     Webview()
     Appearance()
+    Home()
+    Repo()
     
     ChoutenApp()
 }

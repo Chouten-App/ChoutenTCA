@@ -27,5 +27,6 @@ struct ChoutenApp: Product, Target {
         Shimmer()
         Kingfisher()
         DataClient()
+        GRDB()
     }
 }

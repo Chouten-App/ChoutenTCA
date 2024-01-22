@@ -15,13 +15,16 @@ import SharedModels
 public struct DataClient: Sendable {
     public static var infoData: CurrentValueSubject<InfoData?, Never> = .init(nil)
     public static var videoUrl: CurrentValueSubject<String?, Never> = .init(nil)
+    public static var index: CurrentValueSubject<Int?, Never> = .init(nil)
     
     public var setInfoData: @Sendable (_ infoData: InfoData?) -> Void
     public var getInfoData: @Sendable () -> InfoData?
     public var observeInfoData: @Sendable () -> AsyncStream<InfoData?>
-    public var setVideoUrl: @Sendable (_ url: String?) -> Void
+    public var setVideoUrl: @Sendable (_ url: String?, _ index: Int?) -> Void
     public var getVideoUrl: @Sendable () -> String?
+    public var getVideoIndex: @Sendable () -> Int?
     public var observeVideoUrl: @Sendable () -> AsyncStream<String?>
+    public var observeVideoIndex: @Sendable () -> AsyncStream<Int?>
 }
 
 extension DataClient: TestDependencyKey {
@@ -31,7 +34,9 @@ extension DataClient: TestDependencyKey {
         observeInfoData: unimplemented(),
         setVideoUrl: unimplemented(),
         getVideoUrl: unimplemented(),
-        observeVideoUrl: unimplemented()
+        getVideoIndex: unimplemented(),
+        observeVideoUrl: unimplemented(),
+        observeVideoIndex: unimplemented()
     )
 }
 

@@ -51,6 +51,7 @@ extension DiscoverFeature.View: View {
                                         .frame(height: 14)
                                         .shimmering()
                                 }
+                                .opacity(0.4)
                                 
                                 ScrollView(.horizontal) {
                                     HStack {
@@ -59,6 +60,7 @@ extension DiscoverFeature.View: View {
                                                 RoundedRectangle(cornerRadius: 12)
                                                     .frame(width: 90, height: 130)
                                                     .shimmering()
+                                                    .opacity(0.2)
                                                 
                                                 VStack(alignment: .leading) {
                                                     RoundedRectangle(cornerRadius: 6)
@@ -66,12 +68,14 @@ extension DiscoverFeature.View: View {
                                                         .shimmering()
                                                         .frame(width: 90, height: 14)
                                                         .clipShape(RoundedRectangle(cornerRadius: 6))
+                                                        .opacity(0.3)
                                                     
                                                     RoundedRectangle(cornerRadius: 4)
                                                         .frame(width: 90, height: 130)
                                                         .shimmering()
                                                         .frame(width: 40, height: 10)
                                                         .clipShape(RoundedRectangle(cornerRadius: 6))
+                                                        .opacity(0.3)
                                                 }
                                             }
                                         }
@@ -97,6 +101,7 @@ extension DiscoverFeature.View: View {
                                         .frame(height: 14)
                                         .shimmering()
                                 }
+                                .opacity(0.4)
                                 
                                 ScrollView(.horizontal) {
                                     HStack {
@@ -106,23 +111,27 @@ extension DiscoverFeature.View: View {
                                                     RoundedRectangle(cornerRadius: 12)
                                                         .frame(width: 80, height: 110)
                                                         .shimmering()
+                                                        .opacity(0.2)
                                                     
                                                     RoundedRectangle(cornerRadius: 6)
                                                         .frame(width: 80, height: 110)
                                                         .shimmering()
                                                         .frame(width: 80, height: 12)
                                                         .clipShape(RoundedRectangle(cornerRadius: 6))
+                                                        .opacity(0.3)
                                                 }
                                                 VStack {
                                                     RoundedRectangle(cornerRadius: 12)
                                                         .frame(width: 80, height: 110)
                                                         .shimmering()
+                                                        .opacity(0.2)
                                                     
                                                     RoundedRectangle(cornerRadius: 6)
                                                         .frame(width: 80, height: 110)
                                                         .shimmering()
                                                         .frame(width: 80, height: 12)
                                                         .clipShape(RoundedRectangle(cornerRadius: 6))
+                                                        .opacity(0.3)
                                                 }
                                             }
                                         }
@@ -136,8 +145,11 @@ extension DiscoverFeature.View: View {
                         ScrollView {
                             // Carousel
                             ShimmerCarousel(proxy: proxy)
-                            
+                                .onTapGesture {
+                                    viewStore.send(.view(.setState(newState: .success)))
+                                }
                             // loop through HomeData
+                            
                             VStack(alignment: .leading) {
                                 HStack(alignment: .bottom) {
                                     RoundedRectangle(cornerRadius: 6)
@@ -154,6 +166,7 @@ extension DiscoverFeature.View: View {
                                         .frame(height: 14)
                                         .shimmering()
                                 }
+                                .opacity(0.4)
                                 
                                 ScrollView(.horizontal) {
                                     HStack {
@@ -162,6 +175,7 @@ extension DiscoverFeature.View: View {
                                                 RoundedRectangle(cornerRadius: 12)
                                                     .frame(width: 90, height: 130)
                                                     .shimmering()
+                                                    .opacity(0.2)
                                                 
                                                 VStack(alignment: .leading) {
                                                     RoundedRectangle(cornerRadius: 6)
@@ -169,12 +183,70 @@ extension DiscoverFeature.View: View {
                                                         .shimmering()
                                                         .frame(width: 90, height: 14)
                                                         .clipShape(RoundedRectangle(cornerRadius: 6))
+                                                        .opacity(0.3)
                                                     
                                                     RoundedRectangle(cornerRadius: 4)
                                                         .frame(width: 90, height: 130)
                                                         .shimmering()
                                                         .frame(width: 40, height: 10)
                                                         .clipShape(RoundedRectangle(cornerRadius: 6))
+                                                        .opacity(0.3)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            .padding()
+                            .frame(maxWidth: proxy.size.width, alignment: .leading)
+                            
+                            VStack(alignment: .leading) {
+                                HStack(alignment: .bottom) {
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .frame(width: 80, height: 20)
+                                        .shimmering()
+                                    
+                                    Spacer()
+                                    
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .frame(width: 40, height: 14)
+                                        .shimmering()
+                                    
+                                    Circle()
+                                        .frame(height: 14)
+                                        .shimmering()
+                                }
+                                .opacity(0.4)
+                                
+                                ScrollView(.horizontal) {
+                                    HStack {
+                                        ForEach(0..<12, id: \.self) { index in
+                                            VStack {
+                                                VStack {
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .frame(width: 80, height: 110)
+                                                        .shimmering()
+                                                        .opacity(0.2)
+                                                    
+                                                    RoundedRectangle(cornerRadius: 6)
+                                                        .frame(width: 80, height: 110)
+                                                        .shimmering()
+                                                        .frame(width: 80, height: 12)
+                                                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                                                        .opacity(0.3)
+                                                }
+                                                VStack {
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .frame(width: 80, height: 110)
+                                                        .shimmering()
+                                                        .opacity(0.2)
+                                                    
+                                                    RoundedRectangle(cornerRadius: 6)
+                                                        .frame(width: 80, height: 110)
+                                                        .shimmering()
+                                                        .frame(width: 80, height: 12)
+                                                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                                                        .opacity(0.3)
                                                 }
                                             }
                                         }
@@ -401,6 +473,7 @@ extension DiscoverFeature.View {
             Rectangle()
                 .frame(width: proxy.size.width, height: 360)
                 .shimmering()
+                .opacity(0.2)
             
             VStack(alignment: .leading) {
                 HStack(alignment: .bottom) {
@@ -414,6 +487,7 @@ extension DiscoverFeature.View {
                             .opacity(0.7)
                             .shimmering()
                     }
+                    .opacity(0.4)
                     
                     Spacer()
                     
@@ -426,6 +500,7 @@ extension DiscoverFeature.View {
                             .frame(width: 12)
                             .shimmering()
                     }
+                    .opacity(0.4)
                 }
                 
                 
@@ -442,7 +517,7 @@ extension DiscoverFeature.View {
                         .frame(width: proxy.size.width - 80, height: 15)
                         .shimmering()
                 }
-                .opacity(0.7)
+                .opacity(0.2)
             }
             .padding()
             .frame(width: proxy.size.width, height: 360, alignment: .bottomLeading)

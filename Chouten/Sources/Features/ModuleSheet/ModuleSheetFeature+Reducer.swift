@@ -36,6 +36,10 @@ extension ModuleSheetFeature: Reducer {
                 case .setAnimate(let value):
                     state.animate = value
                     return .none
+                case .setModule(let module):
+                    moduleClient.setCurrentModule(module)
+                    state.selectedModuleId = module.id
+                    return .none
                 case .onAppear:
                     do {
                         let modules = try moduleClient.getModules()

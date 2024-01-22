@@ -51,6 +51,14 @@ public enum Loadable<T> {
         }
         return nil
     }
+    
+    @inlinable
+    public var isNotLoaded: Bool {
+        if case .loaded = self {
+            return false
+        }
+        return true
+    }
 
     public var error: Error? {
         if case let .failed(error) = self {

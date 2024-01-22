@@ -15,5 +15,6 @@ struct Player: Feature {
         SharedModels()
         ModuleClient()
         DataClient()
+        GRDB()
     }
 }

@@ -10,5 +10,6 @@ struct ModuleClient: Client {
         ComposableArchitecture()
         ZIPFoundation()
         Architecture()
+        SharedModels()
     }
 }

@@ -30,11 +30,11 @@ public struct SupportedOrientationPreferenceKey: PreferenceKey {
 }
 
 public extension View {
-    public func prefersHomeIndicatorAutoHidden(_ value: Bool) -> some View {
+    func prefersHomeIndicatorAutoHidden(_ value: Bool) -> some View {
         preference(key: HomeIndicatorAutoHiddenPreferenceKey.self, value: value)
     }
 
-    public func supportedOrientation(_ orientation: UIInterfaceOrientationMask) -> some View {
+    func supportedOrientation(_ orientation: UIInterfaceOrientationMask) -> some View {
         preference(key: SupportedOrientationPreferenceKey.self, value: orientation)
     }
 }

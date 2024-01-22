@@ -10,6 +10,7 @@ import Architecture
 import ComposableArchitecture
 import ModuleClient
 import Kingfisher
+import SharedModels
 
 extension ModuleSheetFeature.View: View {
     public var body: some View {
@@ -21,9 +22,17 @@ extension ModuleSheetFeature.View: View {
                     VStack {
                         // Title bar
                         HStack {
-                            Text("Module Name")
-                                .font(.title2)
-                                .fontWeight(.bold)
+                            let module = ModuleClient.selectedModule
+                            
+                            if let module {
+                                Text(module.name)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                            } else {
+                                Text("No Module Selected")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                            }
                             
                             Spacer()
                         }
@@ -32,69 +41,67 @@ extension ModuleSheetFeature.View: View {
                         
                         ScrollView {
                             VStack {
-                                ModuleList(type: "Video", viewStore.availableModules)
+                                ModuleList(type: "Video", viewStore.availableModules, viewStore: viewStore)
                                 
-                                ModuleList(type: "Book", viewStore.availableModules)
+                                ModuleList(type: "Book", viewStore.availableModules, viewStore: viewStore)
                                 
-                                ModuleList(type: "Text", viewStore.availableModules)
+                                ModuleList(type: "Text", viewStore.availableModules, viewStore: viewStore)
                             }
                         }
                         .padding(.top, 20)
                     }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                        .background(.regularMaterial)
-                        .cornerRadius(20, corners: [.topLeft, .topRight])
-                        .overlay(alignment: .top) {
-                            ZStack {
-                                Color.clear
-                                
-                                RoundedRectangle(cornerRadius: 4)
-                                    .frame(
-                                        maxWidth: 40,
-                                        maxHeight: 6
-                                    )
-                                    .padding(.top, 4)
-                                    .padding(.leading, 0)
-                            }
-                            .frame(
-                                maxWidth: .infinity,
-                                maxHeight: 20
-                            )
-                            .contentShape(Rectangle())
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .background(.regularMaterial)
+                    .cornerRadius(20, corners: [.topLeft, .topRight])
+                    .overlay(alignment: .top) {
+                        ZStack {
+                            Color.clear
+                            
+                            RoundedRectangle(cornerRadius: 4)
+                                .frame(
+                                    maxWidth: 40,
+                                    maxHeight: 6
+                                )
+                                .padding(.top, 4)
+                                .padding(.leading, 0)
                         }
-                        .offset(y: height - minimum)
-                        .offset(y: viewStore.offset)
-                    //.animation(.easeInOut, value: viewStore.animate)
-                        .gesture(
-                            DragGesture()
-                                .updating($gestureOffset) { value, out, _ in
-                                    out = value.translation.height
-                                    
-                                    let ret = onChange(offset: viewStore.offset, lastOffset: viewStore.tempOffset)
-                                    if let ret {
-                                        viewStore.send(.view(.setOffset(value: ret)))
-                                    }
-                                }
-                                .onEnded { value in
-                                    //viewStore.send(.setAnimate(true))
-                                    let maxHeight = height - minimum
-                                    
-                                    withAnimation(.spring(response: 0.3)) {
-                                        if -viewStore.offset > minimum && -viewStore.offset < maxHeight / 2 {
-                                            // MID
-                                            viewStore.send(.view(.setOffset(value:  -(maxHeight / 3))))
-                                        } else if -viewStore.offset > maxHeight / 2 {
-                                            viewStore.send(.view(.setOffset(value:  -maxHeight)))
-                                        } else {
-                                            viewStore.send(.view(.setOffset(value:  0)))
-                                        }
-                                    }
-                                    
-                                    //viewStore.send(.setAnimate(false))
-                                    
-                                    viewStore.send(.view(.setTempOffset(value: viewStore.offset)))
-                                }
+                        .frame(
+                            maxWidth: .infinity,
+                            maxHeight: 20
                         )
+                        .contentShape(Rectangle())
+                    }
+                    .offset(y: height - minimum)
+                    .offset(y: viewStore.offset)
+                //.animation(.easeInOut, value: viewStore.animate)
+                    .gesture(
+                        DragGesture()
+                            .updating($gestureOffset) { value, out, _ in
+                                out = value.translation.height
+                                
+                                let ret = onChange(offset: viewStore.offset, lastOffset: viewStore.tempOffset)
+                                if let ret {
+                                    viewStore.send(.view(.setOffset(value: ret)))
+                                }
+                            }
+                            .onEnded { value in
+                                //viewStore.send(.setAnimate(true))
+                                let maxHeight = height - minimum
+                                
+                                if -viewStore.offset > minimum && -viewStore.offset < maxHeight / 2 {
+                                    // MID
+                                    viewStore.send(.view(.setOffset(value:  -(maxHeight / 3))), animation: .easeInOut)
+                                } else if -viewStore.offset > maxHeight / 2 {
+                                    viewStore.send(.view(.setOffset(value:  -maxHeight)), animation: .easeInOut)
+                                } else {
+                                    viewStore.send(.view(.setOffset(value:  0)), animation: .easeInOut)
+                                }
+                                
+                                //viewStore.send(.setAnimate(false))
+                                
+                                viewStore.send(.view(.setTempOffset(value: viewStore.offset)))
+                            }
+                    )
                 )
             }
             .frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height - 64, alignment: .bottom)
@@ -109,7 +116,7 @@ extension ModuleSheetFeature.View: View {
 
 extension ModuleSheetFeature.View {
     @MainActor
-    func ModuleList(type: String, _ availableModules: [Module]) -> some View {
+    func ModuleList(type: String, _ availableModules: [Module], viewStore: ViewStoreOf<ModuleSheetFeature>) -> some View {
         VStack {
             let filteredModules = availableModules.filter({ $0.type == type })
             Text(type)
@@ -123,7 +130,7 @@ extension ModuleSheetFeature.View {
                     ForEach(0..<filteredModules.count, id: \.self) { index in
                         let module = filteredModules[index]
                         
-                        ModuleButton(module: module)
+                        ModuleButton(module: module, viewStore: viewStore)
                         
                         /*
                          ModuleSelectorButton(
@@ -153,21 +160,22 @@ extension ModuleSheetFeature.View {
     }
     
     @MainActor
-    func ModuleButton(module: Module) -> some View {
+    func ModuleButton(module: Module, viewStore: ViewStoreOf<ModuleSheetFeature>) -> some View {
         Button {
+            viewStore.send(.view(.setModule(module: module)))
             /*
-            viewStore.send(.loadModule)
-            viewStore.send(.resetData)
-            if userInfo.count > 0 {
-                userInfo[0].selectedModuleId = viewStore.module.id
-                try! moc.save()
-                print("saved")
-            } else {
-                let info = UserInfo(context: moc)
-                info.selectedModuleId = viewStore.module.id
-                try! moc.save()
-                print("saved2")
-            }
+             viewStore.send(.loadModule)
+             viewStore.send(.resetData)
+             if userInfo.count > 0 {
+             userInfo[0].selectedModuleId = viewStore.module.id
+             try! moc.save()
+             print("saved")
+             } else {
+             let info = UserInfo(context: moc)
+             info.selectedModuleId = viewStore.module.id
+             try! moc.save()
+             print("saved2")
+             }
              */
         } label: {
             HStack(alignment: .center) {
@@ -246,10 +254,19 @@ extension ModuleSheetFeature.View {
 }
 
 #Preview {
-    ModuleSheetFeature.View(
-        store: .init(
-            initialState: .init(),
-            reducer: { ModuleSheetFeature() }
+    VStack(spacing: 0) {
+        ModuleSheetFeature.View(
+            store: .init(
+                initialState: .init(),
+                reducer: { ModuleSheetFeature() }
+            )
         )
-    )
+        
+        Rectangle()
+            .fill(.regularMaterial)
+            .frame(height: 80)
+            .background(.regularMaterial)
+            .ignoresSafeArea()
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
 }

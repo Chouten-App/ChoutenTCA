@@ -18,13 +18,26 @@ public struct InfoFeature: Feature {
     @Dependency(\.dataClient) var dataClient
     
     public struct State: FeatureState {
+        public static func == (lhs: State, rhs: State) -> Bool {
+            // Compare all properties for equality
+            return lhs.url == rhs.url &&
+                   lhs.webviewState == rhs.webviewState &&
+                   lhs.state == rhs.state &&
+                   lhs.colorTheme == rhs.colorTheme &&
+                   lhs.dynamicInfo == rhs.dynamicInfo &&
+                   lhs.infoData == rhs.infoData &&
+                   lhs.infoLoadable == rhs.infoLoadable &&
+                   lhs.currentPage == rhs.currentPage
+        }
+        
         public let url: String
         public var webviewState: WebviewFeature.State
         
         public var state: LoadingStatus = .notStarted
         
-        public var backgroundColor: UIColor = .black
-        public var textColor: UIColor = .white
+        public var colorTheme: ColorTheme = ColorTheme(averageColor: .black, contrastingTone: .white, accentColor: .indigo, accentText: .white, dark: true)
+        @AppStorage("dynamicInfo")
+        public var dynamicInfo: Bool = true
         
         public var infoData: InfoData = InfoData.sample
         public var infoLoadable: Loadable<InfoData> = .pending
@@ -46,17 +59,17 @@ public struct InfoFeature: Feature {
     
     public enum Action: FeatureAction {
         public enum ViewAction: SendableAction {
-            case setBackgroundColor(color: UIColor)
-            case setTextColor(color: UIColor)
+            case setColorTheme(_ theme: ColorTheme)
             
             case onAppear
+            case navigateBack
             case info
             case parseResult(data: String)
             case parseMediaResult(data: String)
             case setInfoData(data: InfoData)
             case setMediaList(data: [MediaList])
             
-            case episodeTap(item: MediaItem)
+            case episodeTap(item: MediaItem, index: Int)
         }
         public enum DelegateAction: SendableAction {}
         public enum InternalAction: SendableAction {

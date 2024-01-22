@@ -10,5 +10,6 @@ struct Webview: Feature {
         Architecture()
         ComposableArchitecture()
         ModuleClient()
+        SwiftSoup()
     }
 }

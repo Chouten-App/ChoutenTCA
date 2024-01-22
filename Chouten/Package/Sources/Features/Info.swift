@@ -12,6 +12,8 @@ struct Info: Feature {
         ComposableArchitecture()
         ViewComponents()
         Webview()
+        Shimmer()
         DataClient()
+        NukeUI()
     }
 }

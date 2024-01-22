@@ -9,6 +9,7 @@ import Foundation
 import OSLog
 import Dependencies
 import ZIPFoundation
+import SharedModels
 import Architecture
 
 extension ModuleClient: DependencyKey {
@@ -35,11 +36,16 @@ extension ModuleClient: DependencyKey {
         func getMetadata(folderUrl: URL) -> Module? {
             do {
                 let metadataData = try Data(contentsOf: folderUrl.appendingPathComponent("metadata.json"))
-                var decoded = try JSONDecoder().decode(Module.self, from: metadataData)
                 
-                // store icon file path
-                decoded.icon = folderUrl.appendingPathComponent("icon.png").absoluteString
-                return decoded
+                do {
+                    var decoded = try JSONDecoder().decode(Module.self, from: metadataData)
+                    // store icon file path
+                    decoded.icon = folderUrl.appendingPathComponent("icon.png").absoluteString
+                    return decoded
+                } catch {
+                    print(error.localizedDescription)
+                }
+                return nil
             } catch {
                 logger.error("Error loading metadata: \(error)")
                 return nil
@@ -138,12 +144,21 @@ extension ModuleClient: DependencyKey {
                     }
                 }
             },
+            getCurrentModule: {
+                return selectedModule
+            },
+            setCurrentModule: { module in
+                selectedModule = module
+            },
             getModules: {
                 moduleFolderNames = try getModules()
                 var list: [Module] = []
                 if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
                     for module in moduleFolderNames {
                         let m = getMetadata(folderUrl: documentsDirectory.appendingPathComponent("Modules").appendingPathComponent(module))
+                        
+                        print(m)
+                        
                         if m != nil {
                             list.append(m!)
                             moduleIds.append(m!.id)

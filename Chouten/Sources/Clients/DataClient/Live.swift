@@ -24,14 +24,21 @@ extension DataClient: DependencyKey {
             observeInfoData: {
                 infoData.values.eraseToStream()
             },
-            setVideoUrl: { url in
+            setVideoUrl: { url, video_index in
                 videoUrl.value = url
+                index.value = video_index
             },
             getVideoUrl: {
                 return videoUrl.value
             },
+            getVideoIndex: {
+                return index.value
+            },
             observeVideoUrl: {
-                videoUrl.values.eraseToStream()
+                return videoUrl.values.eraseToStream()
+            },
+            observeVideoIndex: {
+                return index.values.eraseToStream()
             }
         )
     }()

@@ -13,6 +13,8 @@ import Combine
 import ViewComponents
 import Webview
 import Architecture
+import SharedModels
+import GRDB
 
 struct Seekbar: View {
     @Binding var percentage: Double // or some value binded
@@ -27,7 +29,7 @@ struct Seekbar: View {
             ZStack(alignment: .bottomLeading) {
                 
                 Capsule()
-                    .foregroundColor(.white.opacity(0.4)).frame(height: barHeight, alignment: .bottom).cornerRadius(12)
+                    .foregroundColor(.gray).frame(height: barHeight, alignment: .bottom).cornerRadius(12)
                 
                 Capsule()
                     .foregroundColor(.white.opacity(0.4))
@@ -56,9 +58,8 @@ struct Seekbar: View {
                     )
             }
             .frame(height: barHeight)
-            .cornerRadius(400)
+            .clipShape(Capsule())
             .frame(maxHeight: .infinity, alignment: .center)
-            .clipped(antialiased: true)
             .overlay {
                 Color.clear
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
@@ -84,6 +85,22 @@ struct Seekbar: View {
     }
 }
 
+struct SeekbarBridge: View {
+    @State var dragging = false
+    @State var buffered = 0.7
+    @State var progress = 0.0
+    
+    var body: some View {
+        Seekbar(percentage: $progress, buffered: $buffered, isDragging: $dragging, total: 1.0)
+            .frame(maxHeight: 24)
+            .padding(.horizontal)
+    }
+}
+
+#Preview("Seekbar") {
+    SeekbarBridge()
+}
+
 class PlayerView: UIView {
     
     // Override the property to make AVPlayerLayer the view's backing layer.
@@ -97,6 +114,29 @@ class PlayerView: UIView {
     
     var playerLayer: AVPlayerLayer { layer as! AVPlayerLayer }
 }
+
+extension PlayerView {
+    func hideSubtitles(_ hide: Bool) {
+        guard let currentItem = player?.currentItem else { return }
+        
+        if hide {
+            // Hide subtitles by creating a transparent text style rule
+            let transparentBackgroundColor = UIColor.clear.cgColor
+            let backgroundColorAttribute = NSAttributedString.Key.backgroundColor.rawValue
+            
+            let transparentStyle = AVTextStyleRule(textMarkupAttributes: [backgroundColorAttribute: transparentBackgroundColor])
+            
+            // Create an array to hold the transparentStyle
+            currentItem.textStyleRules = [transparentStyle].compactMap { $0 }
+        } else {
+            // Show subtitles by removing all text style rules
+            currentItem.textStyleRules = []
+        }
+    }
+}
+
+
+
 
 final class PlayerViewModel: ObservableObject {
     let player = AVPlayer()
@@ -196,6 +236,7 @@ struct CustomVideoPlayer: UIViewRepresentable {
         private let parent: CustomVideoPlayer
         private var controller: AVPictureInPictureController?
         private var cancellable: AnyCancellable?
+        private var subtitlesHidden = false
         
         init(_ parent: CustomVideoPlayer) {
             self.parent = parent
@@ -242,7 +283,7 @@ extension PlayerFeature.View {
                     
                     LoadableView(loadable: viewStore.videoLoadable) { videoData in
                         ZStack {
-                            if !viewStore.fullscreen {
+                            if !viewStore.fullscreen && !viewStore.ambientMode {
                                 CustomVideoPlayer(playerVM: playerVM)
                                     .frame(width: proxy.size.width, height: proxy.size.width / 16 * 9)
                                     .ignoresSafeArea(.all, edges: .bottom)
@@ -255,10 +296,37 @@ extension PlayerFeature.View {
                             CustomVideoPlayer(playerVM: playerVM)
                                 .frame(width: viewStore.fullscreen ? .infinity : proxy.size.width, height: viewStore.fullscreen ? .infinity : proxy.size.width / 16 * 9)
                                 .ignoresSafeArea(.all, edges: .bottom)
+                                .onTapGesture {
+                                    viewStore.send(.view(.toggleUI))
+                                }
                         }
                     } failedView: { error in
-                        Text("\(error.localizedDescription)")
-                            .frame(width: proxy.size.width, height: proxy.size.width / 16 * 9)
+                        VStack {
+                            Spacer()
+                            
+                            HStack {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .font(.system(size: viewStore.fullscreen ? 46 : 32))
+                                    .foregroundColor(.red)
+                                
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Error")
+                                        .font(viewStore.fullscreen ? .title2 : .callout)
+                                        .fontWeight(.bold)
+                                    
+                                    Text("\((error as? VideoLoadingError)?.localizedDescription ?? "")")
+                                        .font(viewStore.fullscreen ? .subheadline : .caption)
+                                        .opacity(0.7)
+                                }
+                            }
+                            .padding(viewStore.fullscreen ? 16 : 12)
+                            .frame(maxWidth: viewStore.fullscreen ? 360 : 280)
+                            .background(.regularMaterial)
+                            .cornerRadius(20)
+                            
+                            Spacer()
+                        }
+                        .frame(width: viewStore.fullscreen ? .infinity : proxy.size.width, height: viewStore.fullscreen ? .infinity : proxy.size.width / 16 * 9)
                     } loadingView: {
                         Rectangle()
                             .fill(.black)
@@ -275,349 +343,11 @@ extension PlayerFeature.View {
                             }
                     }
                     
-                    if viewStore.fullscreen {
-                        VStack {
-                            // Top Bar
-                            HStack(alignment: .top) {
-                                VStack(alignment: .leading) {
-                                    Text("1: Episode Title")
-                                        .fontWeight(.bold)
-                                    Text("Primary Title")
-                                        .font(.subheadline)
-                                        .opacity(0.7)
-                                }
-                                
-                                Spacer()
-                                
-                                VStack(alignment: .trailing) {
-                                    
-                                    
-                                    Text("Module Name")
-                                        .fontWeight(.bold)
-                                    
-                                    Text("\(viewStore.fullscreen ? "Landscape" : "Portrait")")
-                                        .font(.subheadline)
-                                        .opacity(0.7)
-                                    
-                                    Text("1920x1080")
-                                        .font(.subheadline)
-                                        .opacity(0.7)
-                                }
-                            }
-                            
-                            Spacer()
-                            
-                            // Bottom Bar
-                            VStack {
-                                if let duration = playerVM.duration {
-                                    Seekbar(percentage: $playerVM.currentTime, buffered: .constant(0), isDragging: $playerVM.isEditingCurrentTime, total: duration)
-                                        .frame(maxHeight: 24)
-                                } else {
-                                    Seekbar(percentage: .constant(0), buffered: .constant(0), isDragging: .constant(false), total: 400)
-                                        .frame(maxHeight: 24)
-                                }
-                                
-                                HStack {
-                                    if let duration = playerVM.duration {
-                                        let currentTimeString = secondsToMinutesSeconds(Int(playerVM.currentTime))
-                                        let durationString = secondsToMinutesSeconds(Int(duration))
-                                        Text("\(currentTimeString)/\(durationString)")
-                                    } else {
-                                        Text("--:--/--:--")
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    Button {
-                                        viewStore.send(.view(.setShowMenu(true)))
-                                    } label: {
-                                        Image(systemName: "gear")
-                                            .font(.title3)
-                                            .foregroundColor(.white)
-                                    }
-                                }
-                            }
-                        }
-                        .padding(.top)
-                        .overlay {
-                            Color.black
-                                .opacity(viewStore.showMenu ? 0.3 : 0.0)
-                                .ignoresSafeArea()
-                                .contentShape(Rectangle())
-                                .allowsHitTesting(viewStore.showMenu)
-                                .onTapGesture {
-                                    viewStore.send(.view(.setShowMenu(false)))
-                                }
-                                .animation(.spring(response: 0.3), value: viewStore.showMenu)
-                        }
-                        .overlay(alignment: .bottomTrailing) {
-                            if viewStore.showMenu {
-                                PlayerMenu(
-                                    selectedQuality: viewStore.binding(
-                                        get: \.quality,
-                                        send: { PlayerFeature.Action.view(.setQuality(value: $0)) }
-                                    ),
-                                    selectedServer: viewStore.binding(
-                                        get: \.server,
-                                        send: { PlayerFeature.Action.view(.setServer(value: $0)) }
-                                    ),
-                                    selectedSpeed: viewStore.binding(
-                                        get: \.speed,
-                                        send: { PlayerFeature.Action.view(.setSpeed(value: $0)) }
-                                    )
-                                )
-                                .padding(.bottom, 30)
-                                .padding(.trailing, -16)
-                                .alignmentGuide(HorizontalAlignment.trailing) { d in
-                                    d[HorizontalAlignment.trailing]
-                                }
-                                .alignmentGuide(VerticalAlignment.top) { d in
-                                    d[VerticalAlignment.bottom]
-                                }
-                            }
-                        }
-                        .background {
-                            HStack(spacing: 60) {
-                                ZStack {
-                                    Text("10")
-                                        .font(.system(size: 10, weight: .bold))
-                                        .offset(y: 2)
-                                    
-                                    Image(systemName: "gobackward")
-                                        .font(.system(size: 32))
-                                    
-                                    Text("-10")
-                                        .font(.system(size: 18, weight: .semibold))
-                                        .offset(x: 0, y: 2)
-                                        .opacity(0.0)
-                                }
-                                .contentShape(Rectangle())
-                                .opacity(0.7)
-                                
-                                Button {
-                                    // play/pause
-                                    if playerVM.isPlaying {
-                                        playerVM.player.pause()
-                                    } else {
-                                        playerVM.player.play()
-                                    }
-                                } label: {
-                                    Image(systemName: playerVM.isPlaying ? "pause.fill" : "play.fill")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(height: 40)
-                                        .foregroundColor(.white)
-                                }
-                                
-                                ZStack {
-                                    Text("10")
-                                        .font(.system(size: 10, weight: .bold))
-                                        .offset(y: 2)
-                                    
-                                    Image(systemName: "goforward")
-                                        .font(.system(size: 32))
-                                    
-                                    Text("+10")
-                                        .font(.system(size: 18, weight: .semibold))
-                                        .offset(x: 0, y: 2)
-                                        .opacity(0.0)
-                                }
-                                .contentShape(Rectangle())
-                                .opacity(0.7)
-                            }
-                        }
-                        .background {
-                            LinearGradient(
-                                stops: [
-                                    .init(color: .black.opacity(0.7), location: 0.0),
-                                    .init(color: .black.opacity(0.4), location: 0.3),
-                                    .init(color: .black.opacity(0.4), location: 0.7),
-                                    .init(color: .black.opacity(0.7), location: 1.0),
-                                ],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                            .ignoresSafeArea()
-                            .allowsHitTesting(false)
-                        }
-                        .contentShape(Rectangle())
-                        .gesture(
-                            DragGesture()
-                                .onEnded{ value in
-                                    if value.translation.height > 60 {
-                                        // PiP
-                                        viewStore.send(.view(.setFullscreen(false)))
-                                    }
-                                }
-                        )
-                    } else {
-                        VStack {
-                            VStack {
-                                HStack {
-                                    Button {
-                                        playerVM.player.pause()
-                                        playerVM.player.replaceCurrentItem(with: nil)
-                                        
-                                        viewStore.send(.view(.navigateBack))
-                                    } label: {
-                                        Image(systemName: "chevron.left")
-                                            .font(.caption)
-                                            .padding(8)
-                                            .background {
-                                                Circle()
-                                                    .fill(.indigo)
-                                            }
-                                            .contentShape(Rectangle())
-                                            .foregroundColor(.white)
-                                    }
-                                    
-                                    
-                                    Spacer()
-                                    
-                                    Button {
-                                        
-                                    } label: {
-                                        Image(systemName: "gear")
-                                            .contentShape(Rectangle())
-                                            .foregroundColor(.white)
-                                    }
-                                }
-                                
-                                Spacer()
-                                
-                                if let duration = playerVM.duration {
-                                    Seekbar(percentage: $playerVM.currentTime, buffered: .constant(0), isDragging: $playerVM.isEditingCurrentTime, total: duration)
-                                        .frame(maxHeight: 24)
-                                } else {
-                                    Seekbar(percentage: .constant(0), buffered: .constant(0), isDragging: .constant(false), total: 400)
-                                        .frame(maxHeight: 24)
-                                }
-                            }
-                            .padding()
-                            .background {
-                                Button {
-                                    // play/pause
-                                    if playerVM.isPlaying {
-                                        playerVM.player.pause()
-                                    } else {
-                                        playerVM.player.play()
-                                    }
-                                } label: {
-                                    Image(systemName: playerVM.isPlaying ? "pause.fill" : "play.fill")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(height: 30)
-                                        .foregroundColor(.white)
-                                }
-                            }
-                            .background {
-                                LinearGradient(
-                                    stops: [
-                                        .init(color: .black.opacity(0.7), location: 0.0),
-                                        .init(color: .black.opacity(0.0), location: 0.3),
-                                        .init(color: .black.opacity(0.0), location: 0.7),
-                                        .init(color: .black.opacity(0.7), location: 1.0),
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            }
-                            .frame(width: proxy.size.width, height: proxy.size.width / 16 * 9)
-                            .contentShape(Rectangle())
-                            .gesture(
-                                DragGesture()
-                                    .onEnded{ value in
-                                        if value.translation.height > 60 {
-                                            // PiP
-                                            playerVM.isInPipMode = true
-                                            viewStore.send(.view(.setPiP(true)))
-                                        } else if value.translation.height < -60 {
-                                            // fullscreen
-                                            viewStore.send(.view(.setFullscreen(true)))
-                                        }
-                                    }
-                            )
-                            
-                            if let infoData = viewStore.infoData {
-                                ScrollView {
-                                    VStack(alignment: .leading, spacing: 12) {
-                                        // Info
-                                        VStack(alignment: .leading) {
-                                            Text(infoData.titles.primary)
-                                                .font(.title2)
-                                                .fontWeight(.bold)
-                                                .lineLimit(2)
-                                            if let secondary = infoData.titles.secondary {
-                                                Text(secondary)
-                                                    .font(.caption)
-                                                    .fontWeight(.heavy)
-                                                    .lineLimit(2)
-                                                    .opacity(0.7)
-                                            }
-                                        }
-                                        .padding(.horizontal, 20)
-                                        .padding(.top, 6)
-                                        
-                                        Text(infoData.description)
-                                            .font(.subheadline)
-                                            .lineLimit(9)
-                                            .opacity(0.7)
-                                            .padding(.vertical, 6)
-                                            .contentShape(Rectangle())
-                                            .padding(.horizontal, 20)
-                                        
-                                        if infoData.mediaList.count > 0 {
-                                            VStack(alignment: .leading, spacing: 6) {
-                                                HStack {
-                                                    Text(infoData.mediaList[0].title)
-                                                        .font(.title3)
-                                                        .fontWeight(.bold)
-                                                    
-                                                    Spacer()
-                                                    
-                                                    Image(systemName: "chevron.right")
-                                                        .padding(6)
-                                                        .background {
-                                                            Circle()
-                                                                .fill(.regularMaterial)
-                                                        }
-                                                }
-                                                .contentShape(Rectangle())
-                                                
-                                                HStack {
-                                                    Text("\(infoData.totalMediaCount ?? 0) \(infoData.mediaType)")
-                                                        .font(.subheadline)
-                                                        .fontWeight(.semibold)
-                                                        .opacity(0.7)
-                                                    
-                                                    Spacer()
-                                                    
-                                                    Image("arrow.down.filter")
-                                                        .resizable()
-                                                        .aspectRatio(contentMode: .fit)
-                                                        .frame(width: 16, height: 16)
-                                                        .foregroundColor(.white)
-                                                        .opacity(0.7)
-                                                        .contentShape(Rectangle())
-                                                    
-                                                    Image("arrow.down.filter")
-                                                        .resizable()
-                                                        .aspectRatio(contentMode: .fit)
-                                                        .frame(width: 16, height: 16)
-                                                        .scaleEffect(CGSize(width: 1.0, height: -1.0))
-                                                        .foregroundColor(.white)
-                                                        .opacity(1.0)
-                                                        .contentShape(Rectangle())
-                                                }
-                                            }
-                                            .padding(.vertical, 6)
-                                            .padding(.horizontal, 20)
-                                        }
-                                        // Episode List
-                                    }
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                                }
-                            }
+                    Group {
+                        if viewStore.fullscreen {
+                            FullscreenUI(viewStore: viewStore, playerVM: playerVM)
+                        } else {
+                            PortraitUI(viewStore: viewStore, playerVM: playerVM, proxy: proxy)
                         }
                     }
                 }
@@ -659,39 +389,16 @@ extension PlayerFeature.View {
                 playerVM.player.rate = newValue
             }
             .onChange(of: viewStore.videoLoadable) { loadable in
+                
+                // TODO: Refactor
                 switch loadable {
                 case let .loaded(data):
-                    let sourceDict = data.sources.reduce(into: [String: String]()) { dict, source in
-                        dict[source.quality] = source.file
-                    }
-                    viewStore.send(.view(.setQualityDict(sourceDict)))
-                    
-                    //let item = AVPlayerItem(url: URL(string: viewStore.qualities[viewStore.quality] ?? "")!)
-                    
-                    var subs: [VideoCompositionItem.SubtitleINTERNAL] = []
-                    
-                    if !data.subtitles.isEmpty {
-                        let sub = data.subtitles.filter({ ($0.language ?? "").contains("English") })[0]
-                        
-                        subs.append(VideoCompositionItem.SubtitleINTERNAL(
-                            name: sub.language ?? "N/A",
-                            default: true,
-                            autoselect: true,
-                            link: URL(string: sub.url)!
-                        ))
-                    }
-                    
-                    if let url = URL(string: viewStore.qualities[viewStore.quality] ?? "") {
-                        let videoCompItem = VideoCompositionItem(
-                            link: url,
-                            headers: data.headers ?? [:],
-                            subtitles: subs
-                        )
-                        
-                        let item = PlayerItem(videoCompItem)
-                        
+                    viewStore.send(.view(.setCurrentItem(data: data)))
+                    if let item = viewStore.item {
                         playerVM.setCurrentItem(item)
                         playerVM.player.play()
+                    } else {
+                        viewStore.send(.view(.setLoadable(.failed(VideoLoadingError.dataParsingError("Couldnt create the PlayerItem")))))
                     }
                     break
                 case _:
@@ -699,49 +406,552 @@ extension PlayerFeature.View {
                 }
             }
             .onChange(of: viewStore.quality) { newValue in
-                
                 switch viewStore.videoLoadable {
                 case let .loaded(data):
                     let storeTime = playerVM.currentTime
                     
-                    var subs: [VideoCompositionItem.SubtitleINTERNAL] = []
-                    
-                    if !data.subtitles.isEmpty {
-                        let sub = data.subtitles.filter({ $0.language.contains("English") })[0]
+                    viewStore.send(.view(.setCurrentItem(data: data)))
+                    if let item = viewStore.item {
+                        playerVM.setCurrentItem(item)
                         
-                        subs.append(VideoCompositionItem.SubtitleINTERNAL(
-                            name: sub.language,
-                            default: true,
-                            autoselect: true,
-                            link: URL(string: sub.url)!
-                        ))
+                        playerVM.player.seek(to: CMTime(seconds: storeTime, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+                        
+                        playerVM.player.play()
+                    } else {
+                        viewStore.send(.view(.setLoadable(.failed(VideoLoadingError.dataParsingError("Couldnt create the PlayerItem")))))
                     }
-                    
-                    let videoCompItem = VideoCompositionItem(
-                        link: URL(string: viewStore.qualities[newValue] ?? "")!,
-                        headers: data.headers ?? [:],
-                        subtitles: subs
-                    )
-                    
-                    let item = PlayerItem(videoCompItem)
-                    
-                    playerVM.setCurrentItem(item)
-                    
-                    playerVM.player.seek(to: CMTime(seconds: storeTime, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
-                    
-                    playerVM.player.play()
                     break
                 case _:
                     break
                 }
             }
-            .onChange(of: playerVM.isInPipMode) { newValue in
-                if !newValue {
+            .onChange(of: playerVM.isInPipMode) { isPiP in
+                if !isPiP {
                     viewStore.send(.view(.setPiP(false)))
                 }
             }
+            .onChange(of: playerVM.currentTime) { currentTime in
+                // update current episode in continue watching
+                if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                    var isDirectory: ObjCBool = false
+                    if !FileManager.default.fileExists(atPath: documentsDirectory.appendingPathComponent("Databases").path, isDirectory: &isDirectory) {
+                        do {
+                            try FileManager.default.createDirectory(at: documentsDirectory.appendingPathComponent("Databases"), withIntermediateDirectories: false, attributes: nil)
+                            print("Created Database Directory")
+                        } catch {
+                            print("Error: \(error)")
+                        }
+                    }
+                    
+                    do {
+                        let dbQueue = try DatabaseQueue(path: documentsDirectory.appendingPathComponent("Databases").appendingPathComponent("chouten.sqlite").absoluteString)
+                        
+                        try dbQueue.write { db in
+                            // Fetch the Media item using moduleID from the database
+                            if var mediaItem = try Media.filter(Column("mediaUrl") == viewStore.url).fetchOne(db) {
+                                // Update the current time
+                                mediaItem.current = currentTime
+                                
+                                // Perform the update in the database
+                                try mediaItem.update(db)
+                            } else {
+                                // If the Media item doesn't exist, you may choose to create it here
+                                // For example:
+                                if let infoData = viewStore.infoData {
+                                    print(infoData)
+                                    
+                                    if infoData.mediaList.count > 0 {
+                                        
+                                        let item = infoData.mediaList[0].list[viewStore.index]
+                                        let newMediaItem = Media(moduleID: viewStore.module?.id ?? "", image: item.image ?? infoData.poster, current: currentTime, duration: playerVM.duration ?? 1.0, title: item.title ?? "Episode \(item.number)", mediaUrl: viewStore.url, number: item.number)
+                                        
+                                        print(newMediaItem)
+                                        
+                                        try newMediaItem.insert(db)
+                                    }
+                                }
+                            }
+                        }
+                    } catch {
+                        print(error.localizedDescription)
+                    }
+                }
+                
+            }
             .onAppear {
-                viewStore.send(.view(.onAppear))
+                if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+                    let videoData = VideoData(
+                        sources: [
+                            Source(
+                                file: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8", 
+                                type: "hls",
+                                quality: "auto"
+                            )
+                        ],
+                        subtitles: [],
+                        skips: [],
+                        headers: nil
+                    )
+                    viewStore.send(.view(.setVideoData(data: videoData)))
+                    viewStore.send(.view(.setInfoData(data: InfoData.sample)))
+                } else {
+                    viewStore.send(.view(.onAppear))
+                }
+            }
+        }
+    }
+}
+
+extension PlayerFeature.View {
+    @MainActor
+    func FullscreenUI(viewStore: ViewStoreOf<PlayerFeature>, playerVM: PlayerViewModel) -> some View {
+        VStack {
+            // Top Bar
+            HStack(alignment: .top) {
+                if let infoData = viewStore.infoData {
+                    VStack(alignment: .leading) {
+                        if let list = infoData.mediaList.first {
+                            var formattedValue: String {
+                                if list.list[viewStore.index].number.truncatingRemainder(dividingBy: 1) == 0 {
+                                    return String(format: "%.0f", list.list[viewStore.index].number)
+                                } else {
+                                    return String(list.list[viewStore.index].number)
+                                }
+                            }
+                            
+                            Text("\(formattedValue): \(list.list[viewStore.index].title ?? "Episode \(formattedValue)")")
+                                .fontWeight(.bold)
+                        }
+                        Text(infoData.titles.primary)
+                            .font(.subheadline)
+                            .opacity(0.7)
+                    }
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .trailing) {
+                    
+                    Text("Module Name")
+                        .fontWeight(.bold)
+                    
+                    Text("1920x1080")
+                        .font(.subheadline)
+                        .opacity(0.7)
+                }
+            }
+            
+            Spacer()
+            
+            // Bottom Bar
+            VStack {
+                if let duration = playerVM.duration {
+                    Seekbar(percentage: $playerVM.currentTime, buffered: .constant(0), isDragging: $playerVM.isEditingCurrentTime, total: duration)
+                        .frame(maxHeight: 24)
+                } else {
+                    Seekbar(percentage: .constant(0), buffered: .constant(0), isDragging: .constant(false), total: 400)
+                        .frame(maxHeight: 24)
+                }
+                
+                HStack {
+                    if let duration = playerVM.duration {
+                        let currentTimeString = secondsToMinutesSeconds(Int(playerVM.currentTime))
+                        let durationString = secondsToMinutesSeconds(Int(duration))
+                        Text("\(currentTimeString)/\(durationString)")
+                    } else {
+                        Text("--:--/--:--")
+                    }
+                    
+                    Spacer()
+                    
+                    Button {
+                        viewStore.send(.view(.setShowMenu(true)))
+                    } label: {
+                        Image(systemName: "gear")
+                            .font(.title3)
+                            .foregroundColor(.white)
+                    }
+                    
+                    Button {
+                        viewStore.send(.view(.setFullscreen(false)))
+                    } label: {
+                        Image(systemName: "arrow.down.right.and.arrow.up.left")
+                            .contentShape(Rectangle())
+                            .foregroundColor(.white)
+                    }
+                }
+            }
+        }
+        .padding(.top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay {
+            Color.black
+                .opacity(viewStore.showMenu ? 0.3 : 0.0)
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .allowsHitTesting(viewStore.showMenu)
+                .onTapGesture {
+                    viewStore.send(.view(.setShowMenu(false)))
+                }
+                .animation(.spring(response: 0.3), value: viewStore.showMenu)
+        }
+        .overlay(alignment: .bottomTrailing) {
+            if viewStore.showMenu {
+                PlayerMenu(
+                    selectedQuality: viewStore.binding(
+                        get: \.quality,
+                        send: { PlayerFeature.Action.view(.setQuality(value: $0)) }
+                    ),
+                    selectedServer: viewStore.binding(
+                        get: \.server,
+                        send: { PlayerFeature.Action.view(.setServer(value: $0)) }
+                    ),
+                    selectedSpeed: viewStore.binding(
+                        get: \.speed,
+                        send: { PlayerFeature.Action.view(.setSpeed(value: $0)) }
+                    ),
+                    qualities: Array(viewStore.qualities.keys),
+                    servers: [],
+                    speeds: [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
+                )
+                .padding(.bottom, 30)
+                .padding(.trailing, -16)
+                .alignmentGuide(HorizontalAlignment.trailing) { d in
+                    d[HorizontalAlignment.trailing]
+                }
+                .alignmentGuide(VerticalAlignment.top) { d in
+                    d[VerticalAlignment.bottom]
+                }
+            }
+        }
+        .background {
+            if case .failed(_) =  viewStore.videoLoadable {
+                // TODO: Fix to not need an else
+            } else {
+                HStack(spacing: 120) {
+                    ZStack {
+                        Text("10")
+                            .font(.system(size: 10, weight: .bold))
+                            .offset(y: 2)
+                        
+                        Image(systemName: "gobackward")
+                            .font(.system(size: 32))
+                        
+                        Text("-10")
+                            .font(.system(size: 18, weight: .semibold))
+                            .offset(x: 0, y: 2)
+                            .opacity(0.0)
+                    }
+                    .contentShape(Rectangle())
+                    .opacity(0.7)
+                    
+                    if case .loaded(_) =  viewStore.videoLoadable {
+                        Button {
+                            // play/pause
+                            if playerVM.isPlaying {
+                                playerVM.player.pause()
+                            } else {
+                                playerVM.player.play()
+                            }
+                        } label: {
+                            Image(systemName: playerVM.isPlaying ? "pause.fill" : "play.fill")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: 40)
+                                .foregroundColor(.white)
+                        }
+                    }
+                    
+                    ZStack {
+                        Text("10")
+                            .font(.system(size: 10, weight: .bold))
+                            .offset(y: 2)
+                        
+                        Image(systemName: "goforward")
+                            .font(.system(size: 32))
+                        
+                        Text("+10")
+                            .font(.system(size: 18, weight: .semibold))
+                            .offset(x: 0, y: 2)
+                            .opacity(0.0)
+                    }
+                    .contentShape(Rectangle())
+                    .opacity(0.7)
+                }
+            }
+        }
+        .background {
+            if case .failed(_) =  viewStore.videoLoadable {
+                // TODO: Fix to not need an else
+            } else {
+                LinearGradient(
+                    stops: [
+                        .init(color: .black.opacity(0.7), location: 0.0),
+                        .init(color: .black.opacity(0.4), location: 0.3),
+                        .init(color: .black.opacity(0.4), location: 0.7),
+                        .init(color: .black.opacity(0.7), location: 1.0),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+                .onTapGesture {
+                    viewStore.send(.view(.toggleUI))
+                }
+            }
+        }
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture()
+                .onEnded{ value in
+                    if value.translation.height > 60 {
+                        viewStore.send(.view(.setFullscreen(false)))
+                    }
+                }
+        )
+        .opacity(viewStore.showUI ? 1.0 : 0.0)
+        .animation(.easeInOut, value: viewStore.showUI)
+    }
+}
+
+extension PlayerFeature.View {
+    @MainActor
+    func PortraitUI(
+        viewStore: ViewStoreOf<PlayerFeature>,
+        playerVM: PlayerViewModel,
+        proxy: GeometryProxy
+    ) -> some View {
+        VStack {
+            VStack(alignment: .leading) {
+                HStack {
+                    Button {
+                        playerVM.player.pause()
+                        playerVM.player.replaceCurrentItem(with: nil)
+                        
+                        viewStore.send(.view(.navigateBack))
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.caption)
+                            .padding(8)
+                            .background {
+                                Circle()
+                                    .fill(.indigo)
+                            }
+                            .contentShape(Rectangle())
+                            .foregroundColor(.white)
+                    }
+                    
+                    
+                    Spacer()
+                    
+                    Button {
+                        
+                    } label: {
+                        Text("cc")
+                            .font(.caption2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.black)
+                            .padding(.top, 1)
+                            .padding(.bottom, 2)
+                            .padding(.horizontal, 6)
+                            .background {
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(.white)
+                            }
+                    }
+                    
+                    Button {
+                        playerVM.isInPipMode = true
+                        viewStore.send(.view(.setPiP(true)))
+                    } label: {
+                        Image(systemName: playerVM.isInPipMode ? "pip.exit" : "pip.enter")
+                            .contentShape(Rectangle())
+                            .foregroundColor(.white)
+                    }
+                    
+                    Button {
+                        if let playerItem = viewStore.item, let module = viewStore.module {
+                            print("capturing frame")
+                            captureFrame(of: playerItem, at: playerVM.player.currentTime(), module: module, url: viewStore.url)
+                        } else {
+                            print("no player item found")
+                        }
+                    } label: {
+                        Image(systemName: "gear")
+                            .contentShape(Rectangle())
+                            .foregroundColor(.white)
+                    }
+                }
+                
+                Spacer()
+                
+                HStack {
+                    if let duration = playerVM.duration {
+                        let durationString = secondsToMinutesSeconds(Int(duration))
+                        let currentTimeString =  secondsToMinutesSeconds(Int(playerVM.currentTime))
+                        
+                        Text("\(currentTimeString)/\(durationString)")
+                            .font(.caption)
+                    } else {
+                        Text("--:--/--:--")
+                            .font(.caption)
+                    }
+                    
+                    Spacer()
+                    
+                    Button {
+                        viewStore.send(.view(.setFullscreen(true)))
+                    } label: {
+                        Image(systemName: "arrow.up.left.and.arrow.down.right")
+                            .contentShape(Rectangle())
+                            .foregroundColor(.white)
+                    }
+                }
+                .padding(.bottom, -8)
+                
+                if let duration = playerVM.duration {
+                    Seekbar(percentage: $playerVM.currentTime, buffered: .constant(0), isDragging: $playerVM.isEditingCurrentTime, total: duration)
+                        .frame(maxHeight: 24)
+                } else {
+                    Seekbar(percentage: .constant(0), buffered: .constant(0), isDragging: .constant(false), total: 400)
+                        .frame(maxHeight: 24)
+                }
+            }
+            .padding()
+            .background {
+                if case .failed(_) =  viewStore.videoLoadable {
+                    // TODO: Fix to not need an else
+                } else {
+                    if viewStore.videoLoadable != .loading {
+                        Button {
+                            // play/pause
+                            if playerVM.isPlaying {
+                                playerVM.player.pause()
+                            } else {
+                                playerVM.player.play()
+                            }
+                        } label: {
+                            Image(systemName: playerVM.isPlaying ? "pause.fill" : "play.fill")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: 30)
+                                .foregroundColor(.white)
+                        }
+                    }
+                }
+            }
+            .background {
+                LinearGradient(
+                    stops: [
+                        .init(color: .black.opacity(0.7), location: 0.0),
+                        .init(color: .black.opacity(0.2), location: 0.3),
+                        .init(color: .black.opacity(0.2), location: 0.7),
+                        .init(color: .black.opacity(0.7), location: 1.0),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .onTapGesture {
+                    viewStore.send(.view(.toggleUI))
+                }
+            }
+            .frame(width: proxy.size.width, height: proxy.size.width / 16 * 9)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture()
+                    .onEnded{ value in
+                        if value.translation.height > 60 {
+                            // PiP
+                            playerVM.isInPipMode = true
+                            viewStore.send(.view(.setPiP(true)))
+                        } else if value.translation.height < -60 {
+                            // fullscreen
+                            viewStore.send(.view(.setFullscreen(true)))
+                        }
+                    }
+            )
+            .opacity(viewStore.showUI ? 1.0 : 0.0)
+            .animation(.easeInOut, value: viewStore.showUI)
+            
+            if let infoData = viewStore.infoData {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        // Info
+                        VStack(alignment: .leading) {
+                            Text(infoData.titles.primary)
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .lineLimit(2)
+                            if let secondary = infoData.titles.secondary {
+                                Text(secondary)
+                                    .font(.caption)
+                                    .fontWeight(.heavy)
+                                    .lineLimit(2)
+                                    .opacity(0.7)
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 6)
+                        
+                        Text(infoData.description)
+                            .font(.subheadline)
+                            .lineLimit(9)
+                            .opacity(0.7)
+                            .padding(.vertical, 6)
+                            .contentShape(Rectangle())
+                            .padding(.horizontal, 20)
+                        
+                        if infoData.mediaList.count > 0 {
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Text(infoData.mediaList[0].title)
+                                        .font(.title3)
+                                        .fontWeight(.bold)
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "chevron.right")
+                                        .padding(6)
+                                        .background {
+                                            Circle()
+                                                .fill(.regularMaterial)
+                                        }
+                                }
+                                .contentShape(Rectangle())
+                                
+                                HStack {
+                                    Text("\(infoData.totalMediaCount ?? 0) \(infoData.mediaType)")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .opacity(0.7)
+                                    
+                                    Spacer()
+                                    
+                                    Image("arrow.down.filter")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 16, height: 16)
+                                        .foregroundColor(.white)
+                                        .opacity(0.7)
+                                        .contentShape(Rectangle())
+                                    
+                                    Image("arrow.down.filter")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 16, height: 16)
+                                        .scaleEffect(CGSize(width: 1.0, height: -1.0))
+                                        .foregroundColor(.white)
+                                        .opacity(1.0)
+                                        .contentShape(Rectangle())
+                                }
+                            }
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 20)
+                        }
+                        // Episode List
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                }
             }
         }
     }

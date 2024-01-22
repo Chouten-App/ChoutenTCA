@@ -19,17 +19,26 @@ public struct PlayerMenu: View {
     @Binding var selectedServer: String
     @Binding var selectedSpeed: Float
     @State var state: MenuState = .main
+    var qualities: [String]
+    var servers: [String]
+    var speeds: [Float]
     
     @Namespace var animation
     
     public init(
         selectedQuality: Binding<String>,
         selectedServer: Binding<String>,
-        selectedSpeed: Binding<Float>
+        selectedSpeed: Binding<Float>,
+        qualities: [String],
+        servers: [String],
+        speeds: [Float]
     ) {
         self._selectedQuality = selectedQuality
         self._selectedServer = selectedServer
         self._selectedSpeed = selectedSpeed
+        self.qualities = qualities
+        self.servers = servers
+        self.speeds = speeds
     }
     
     public var body: some View {
@@ -93,16 +102,10 @@ public struct PlayerMenu: View {
                 .padding(.horizontal)
                 .frame(width: 240, alignment: .leading)
             case .quality:
-                let qualities: [String] = ["Auto", "1080p", "720p", "480p", "240p"]
-                
                 SubMenu<String>(state: $state, label: "Quality", items: qualities, selected: $selectedQuality, animation: animation)
             case .speed:
-                let speeds: [Float] = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
-                
                 SubMenu<Float>(state: $state, label: "Speed", items: speeds, selected: $selectedSpeed, animation: animation)
             case .server:
-                let servers: [String] = ["Vidstreaming (Sub)", "Vidstreaming (Dub)", "Vizcloud (Sub)", "Vizcloud (Dub)"]
-                
                 SubMenu<String>(state: $state, label: "Server", items: servers, selected: $selectedServer, animation: animation)
             }
         }
@@ -127,23 +130,31 @@ struct SubMenu<T: Equatable>: View {
     let animation: Namespace.ID
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 32) {
-                Text(label)
-                    .matchedGeometryEffect(id: label, in: animation)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        state = .main
-                    }
-                    .padding(.horizontal, 26)
+        VStack(alignment: .leading) {
+            HStack {
+                Image(systemName: "chevron.left")
                 
-                ForEach(items.indices, id: \.self) { index in
-                    let item = items[index]
-                    MenuItem(label: item as? String ?? "\(item)", selected: item == selected)
-                        .onTapGesture {
-                            selected = item
-                        }
+                Text(label)
+                    .fontWeight(.semibold)
+                    .matchedGeometryEffect(id: label, in: animation)
+            }
+            .padding(.horizontal, 26)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                state = .main
+            }
+            
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 32) {
+                    ForEach(items.indices, id: \.self) { index in
+                        let item = items[index]
+                        MenuItem(label: item as? String ?? "\(item)", selected: item == selected)
+                            .onTapGesture {
+                                selected = item
+                            }
+                    }
                 }
+                .padding(.vertical, 16)
             }
         }
     }
@@ -180,11 +191,19 @@ struct MenuItem: View {
 }
 
 #Preview {
-    ZStack {
+    ZStack(alignment: .bottomTrailing) {
         RoundedRectangle(cornerRadius: 12)
             .fill(.red)
             .frame(width: 120)
         
-        PlayerMenu(selectedQuality: .constant("Auto"), selectedServer: .constant("Vidstreaming (Sub)"), selectedSpeed: .constant(1.0))
+        PlayerMenu(
+            selectedQuality: .constant("Auto"),
+            selectedServer: .constant("Vidstreaming (Sub)"),
+            selectedSpeed: .constant(1.0),
+            qualities: ["Auto", "1080p", "720p", "480p", "240p"],
+            servers: ["Vidstreaming (Sub)", "Vidstreaming (Dub)", "Vizcloud (Sub)", "Vizcloud (Dub)"],
+            speeds: [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
+        )
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
 }

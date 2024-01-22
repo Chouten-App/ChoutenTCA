@@ -19,10 +19,33 @@ public struct PlayerFeature: Feature {
     @Dependency(\.moduleClient) var moduleClient
     
     public struct State: FeatureState {
+        public static func == (lhs: PlayerFeature.State, rhs: PlayerFeature.State) -> Bool {
+            return lhs.url == rhs.url &&
+                   lhs.infoData == rhs.infoData &&
+                   lhs.fullscreen == rhs.fullscreen &&
+                   lhs.showUI == rhs.showUI &&
+                   lhs.ambientMode == rhs.ambientMode &&
+                   lhs.webviewState == rhs.webviewState &&
+                   lhs.videoLoadable == rhs.videoLoadable &&
+                   lhs.speed == rhs.speed &&
+                   lhs.server == rhs.server &&
+                   lhs.quality == rhs.quality &&
+                   lhs.servers == rhs.servers &&
+                   lhs.item == rhs.item &&
+                   lhs.qualities == rhs.qualities &&
+                   lhs.showMenu == rhs.showMenu
+        }
+        
         public let url: String
+        public let index: Int
         public var infoData: InfoData? = nil
+        public var module: Module? = nil
         
         public var fullscreen: Bool = (UIScreen.main.bounds.width / UIScreen.main.bounds.height) > 1
+        public var showUI: Bool = true
+        
+        @AppStorage("ambientMode")
+        public var ambientMode: Bool = true
         
         public var webviewState: WebviewFeature.State
         
@@ -33,6 +56,7 @@ public struct PlayerFeature: Feature {
         public var quality: String = "auto"
         
         public var servers: [ServerData] = []
+        public var item: AVPlayerItem? = nil
         
         public var qualities: [String: String] = [
             "240p": "https://test-streams.mux.dev/x36xhzz/url_2/193039199_mp4_h264_aac_ld_7.m3u8", // 240p
@@ -45,9 +69,13 @@ public struct PlayerFeature: Feature {
         
         public var showMenu: Bool = false
         
-        public init(url: String = "") {
+        public init(url: String = "", index: Int = 0) {
             self.url = url
+            self.index = index
             self.webviewState = WebviewFeature.State(htmlString: "", javaScript: "")
+            self.quality = qualities.filter({ (key: String, value: String) in
+                key.lowercased() == "auto"
+            }).first?.key ?? ""
         }
     }
     
@@ -58,6 +86,7 @@ public struct PlayerFeature: Feature {
             case setServer(value: String)
             case setQuality(value: String)
             case setShowMenu(_ value: Bool)
+            case toggleUI
             
             case navigateBack
             
@@ -70,6 +99,9 @@ public struct PlayerFeature: Feature {
             case parseVideoResult(data: String)
             case setServers(data: [ServerData])
             case setVideoData(data: VideoData)
+            case setCurrentItem(data: VideoData)
+            case setLoadable(_ loadableState: Loadable<VideoData>)
+            case setInfoData(data: InfoData)
         }
         public enum DelegateAction: SendableAction {}
         public enum InternalAction: SendableAction {
@@ -87,6 +119,80 @@ public struct PlayerFeature: Feature {
         
         @StateObject var playerVM = PlayerViewModel()
         
+        func captureFrame(of playerItem: AVPlayerItem, at time: CMTime, module: Module, url: String) {
+            let imageGenerator = AVAssetImageGenerator(asset: playerItem.asset)
+
+            // Set the requested time for the frame
+            imageGenerator.appliesPreferredTrackTransform = true
+            imageGenerator.generateCGImagesAsynchronously(forTimes: [NSValue(time: time)]) { _, cgImage, _, _, error in
+                if let error = error {
+                    print("Error generating image: \(error)")
+                    return
+                }
+
+                // Save the captured frame as an image file
+                if let cgImage = cgImage {
+                    let image = UIImage(cgImage: cgImage)
+                    self.saveImage(image, module: module, url: url)
+                }
+            }
+        }
+
+        func saveImage(_ image: UIImage, module: Module, url: String) {
+            // Convert image to data
+            if let imageData = image.jpegData(compressionQuality: 0.8) {
+                // Get the documents directory or your desired directory
+                if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                    let framesDirectory = documentsDirectory
+                            .appendingPathComponent("Frames", isDirectory: true)
+                        
+                    // Create a directory URL based on module ID inside 'Frames' directory
+                    let moduleDirectory = framesDirectory
+                        .appendingPathComponent(module.id, isDirectory: true)
+                    
+                    // Create a directory URL based on 'url' inside module directory
+                    let urlDirectory = moduleDirectory
+                        .appendingPathComponent(URL(string: url)?
+                            .absoluteString
+                            .replacingOccurrences(of: "://", with: "_")
+                            .replacingOccurrences(of: "/", with: "_")
+                            .replacingOccurrences(of: ".", with: "_") ?? "UNKNOWN", isDirectory: true)
+                    
+                    do {
+                        // Check if 'Frames' directory exists, if not, create it
+                        if !FileManager.default.fileExists(atPath: framesDirectory.path) {
+                            try FileManager.default.createDirectory(at: framesDirectory, withIntermediateDirectories: true, attributes: nil)
+                        }
+                        
+                        // Check if module directory exists, if not, create it
+                        if !FileManager.default.fileExists(atPath: moduleDirectory.path) {
+                            try FileManager.default.createDirectory(at: moduleDirectory, withIntermediateDirectories: true, attributes: nil)
+                        }
+                        
+                        // Check if 'url' directory exists inside the module directory, if not, create it
+                        if !FileManager.default.fileExists(atPath: urlDirectory.path) {
+                            try FileManager.default.createDirectory(at: urlDirectory, withIntermediateDirectories: true, attributes: nil)
+                        }
+                        
+                        // At this point, the required directories should exist
+                        // You can proceed with file operations within the 'urlDirectory'
+                        let fileURL = urlDirectory.appendingPathComponent("frame.jpg")
+                        
+                        // Save the image data to file
+                        do {
+                            try imageData.write(to: fileURL)
+                            print("Frame saved at: \(fileURL)")
+                        } catch {
+                            print("Error saving frame: \(error)")
+                        }
+                    } catch {
+                        // Handle any errors that occur during directory creation
+                        print("Error creating directories: \(error.localizedDescription)")
+                    }
+                }
+            }
+        }
+        
         func secondsToMinutesSeconds(_ seconds: Int) -> String {
             let hours = (seconds / 3600)
             let minutes = (seconds % 3600) / 60
@@ -98,7 +204,7 @@ public struct PlayerFeature: Feature {
             
             return (hours > 0 ? hourString + ":" : "") + minuteString + ":" + secondsString
         }
-
+        
         public nonisolated init(store: StoreOf<PlayerFeature>) {
             self.store = store
         }

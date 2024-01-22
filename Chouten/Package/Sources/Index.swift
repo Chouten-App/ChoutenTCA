@@ -16,6 +16,8 @@ let package = Package {
     ModuleSheet()
     Webview()
     Appearance()
+    Home()
+    Repo()
     
     ChoutenApp()
 }

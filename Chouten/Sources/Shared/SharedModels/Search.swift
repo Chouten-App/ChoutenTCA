@@ -5,7 +5,9 @@
 //  Created by Inumaki on 17.10.23.
 //
 
-public struct SearchData: Codable, Hashable, Equatable, Sendable {
+import Foundation
+
+public struct SearchData: Codable, Hashable, Equatable {
     public let url: String
     public let img: String
     public let title: String
@@ -23,7 +25,7 @@ public struct SearchData: Codable, Hashable, Equatable, Sendable {
     }
     
     public var currentCountString: String {
-        if let currentCount {
+        if let currentCount = currentCount {
             return "\(currentCount)"
         } else {
             return "⁓"
@@ -31,7 +33,7 @@ public struct SearchData: Codable, Hashable, Equatable, Sendable {
     }
     
     public var totalCountString: String {
-        if let totalCount {
+        if let totalCount = totalCount {
             return "\(totalCount)"
         } else {
             return "⁓"
@@ -47,5 +49,11 @@ public struct SearchData: Codable, Hashable, Equatable, Sendable {
         totalCount: 12
     )
     
-    public static let sampleList = [sample, sample, sample, sample, sample, sample]
+    public static let sampleList = [SearchData](repeating: sample, count: 50)
+}
+
+extension SearchData: Identifiable {
+    public var id: String {
+        return "\(hashValue)"
+    }
 }

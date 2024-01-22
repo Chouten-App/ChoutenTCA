@@ -48,65 +48,78 @@ extension SearchFeature: Reducer {
                     state.state = .success
                     state.searchLoadable = .loaded(data)
                     return .none
+                case .appendSearchData(let data):
+                    let temp = state.searchLoadable.value
+                    if let temp {
+                        print("adding to results")
+                        state.searchLoadable = .loaded(temp + data)
+                    } else {
+                        state.searchLoadable = .loaded(data)
+                    }
+                    return .merge(
+                        .send(.internal(.webview(.view(.setHtmlString(newString: ""))))),
+                        .send(.internal(.webview(.view(.setJsString(newString: "")))))
+                    )
                 case .resetWebview:
                     return .merge(
                         .send(.internal(.webview(.view(.setHtmlString(newString: ""))))),
                         .send(.internal(.webview(.view(.setJsString(newString: ""))))),
                         .send(.view(.search))
                     )
+                case .setSearchFocused(let val):
+                    state.searchFocused = val
+                    return .none
+                case .increasePageNumber:
+                    state.isFetching = true
+                    state.page += 1
+                    return .none
                 case .search:
-                    state.state = .notStarted
-                    state.searchLoadable = .pending
-                    state.searchResults = []
+                    if state.searchLoadable.isNotLoaded {
+                        state.state = .notStarted
+                        state.searchLoadable = .pending
+                        state.searchResults = []
+                    }
                     
                     let query = state.query
                     
                     if query.isEmpty {
+                        state.isFetching = false
                         return .none
-                    }
-                    
-                    // update search history
-                    var newArray = state.queryHistory
-                    if !newArray.contains(query) {
-                        newArray.insert(query, at: 0)
-                        state.queryHistory = newArray
                     }
                     
                     
                     state.htmlString = ""
-                    state.state = .loading
-                    state.searchLoadable = .loading
+                    if state.searchLoadable.isNotLoaded {
+                        state.state = .loading
+                        state.searchLoadable = .loading
+                    }
                     
                     // TODO: get current selected module
-                    do {
-                        let module = try moduleClient.getModules().first
+                    let module = moduleClient.getCurrentModule()
+                    
+                    if let module {
+                        moduleClient.setSelectedModuleName(module)
                         
-                        if let module {
-                            moduleClient.setSelectedModuleName(module)
+                        do {
+                            let js = try moduleClient.getJs("search") ?? ""
+                            state.jsString = js
                             
-                            do {
-                                let js = try moduleClient.getJs("search") ?? ""
-                                state.jsString = js
-                                
-                                state.htmlString = AppConstants.defaultHtml
-                                
-                                state.lastQuery = query
-                                
-                                return .merge(
-                                    .send(.internal(.webview(.view(.setHtmlString(newString: AppConstants.defaultHtml))))),
-                                    .send(.internal(.webview(.view(.setJsString(newString: js))))),
-                                    .send(.internal(.webview(.view(.setRequestType(type: "search")))))
-                                )
-                            } catch  {
-                                logger.error("\(error.localizedDescription)")
-                            }
+                            state.htmlString = AppConstants.defaultHtml
+                            
+                            state.lastQuery = query
+                            
+                            return .merge(
+                                .send(.internal(.webview(.view(.setHtmlString(newString: AppConstants.defaultHtml))))),
+                                .send(.internal(.webview(.view(.setJsString(newString: js))))),
+                                .send(.internal(.webview(.view(.setRequestType(type: "search")))))
+                            )
+                        } catch  {
+                            state.isFetching = false
+                            logger.error("\(error.localizedDescription)")
                         }
-                    } catch {
-                        logger.error("\(error.localizedDescription)")
                     }
                     return .none
                 case .removeQuery(let at):
-                    state.queryHistory.remove(at: at)
                     return .none
                 case .setLoadingStatus(let status):
                     state.state = status
@@ -141,7 +154,12 @@ extension SearchFeature: Reducer {
                      */
                 case .binding:
                     return .none
+                case .setLoadable(let new_state):
+                    state.searchLoadable = new_state
+                    return .none
                 case .parseResult(let data):
+                    print(data)
+                    
                     if let jsonData = data.data(using: .utf8) {
                         do {
                             let decoder = JSONDecoder()
@@ -149,20 +167,33 @@ extension SearchFeature: Reducer {
                             
                             print("Decoded search result:", searchResult)
                             //globalData.setSearchResults(searchResult)
-                            return .send(.view(.setSearchData(searchResult)))
+                            if searchResult.count == 0 {
+                                state.wasLastPage = true
+                                state.isFetching = false
+                                return .none
+                            }
+                            return .send(.view(.appendSearchData(searchResult)))
                         } catch {
                             print("Error decoding JSON ODSFG:", error)
+                            state.isFetching = false
                             state.searchLoadable = .failed(error)
                         }
                     } else {
                         print("Invalid JSON string")
+                        state.isFetching = false
                         //state.searchLoadable = .failed()
                     }
+                    return .none
+                case .setHeaderOpacity(let value):
+                    state.headerOpacity = value
                     return .none
                 }
             case let .internal(internalAction):
                 switch internalAction {
                 case .webview:
+                    return .none
+                case .info(.view(.navigateBack)):
+                    state.infoVisible = false
                     return .none
                 case .info:
                     return .none

@@ -21,6 +21,7 @@ public struct FillAspectImage: View {
     
     public var body: some View {
         GeometryReader { proxy in
+            
             KFImage.url(url)
                 .onSuccess { image in
                     finishedLoading = true

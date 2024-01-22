@@ -2,7 +2,7 @@
 //  PlayerItem+HLS.swift
 //  ChoutenTCA
 //
-//  Created by Inumaki on 13.10.23.
+//  Copied from ErrorErrorError on 13.10.23.
 //
 
 import AVFoundation

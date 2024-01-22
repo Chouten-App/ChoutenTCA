@@ -16,5 +16,7 @@ struct Search: Feature {
         SharedModels()
         ModuleClient()
         Webview()
+        ASCollectionView()
+        NukeUI()
     }
 }

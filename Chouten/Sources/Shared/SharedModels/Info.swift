@@ -16,12 +16,13 @@ public struct InfoData: Codable, Equatable, Sendable {
     public let poster: String
     public let banner: String?
     public let status: String?
+    public let rating: Double?
     public let totalMediaCount: Int?
     public let mediaType: String
     public let seasons: [SeasonData]
     public var mediaList: [MediaList]
     
-    public init(id: String, titles: Titles, altTitles: [String], epListURLs: [String], description: String, poster: String, banner: String?, status: String?, totalMediaCount: Int?, mediaType: String, seasons: [SeasonData], mediaList: [MediaList]) {
+    public init(id: String, titles: Titles, altTitles: [String], epListURLs: [String], description: String, poster: String, banner: String? = nil, status: String? = nil, rating: Double? = nil, totalMediaCount: Int? = nil, mediaType: String, seasons: [SeasonData], mediaList: [MediaList]) {
         self.id = id
         self.titles = titles
         self.altTitles = altTitles
@@ -30,25 +31,59 @@ public struct InfoData: Codable, Equatable, Sendable {
         self.poster = poster
         self.banner = banner
         self.status = status
+        self.rating = rating
         self.totalMediaCount = totalMediaCount
         self.mediaType = mediaType
         self.seasons = seasons
         self.mediaList = mediaList
     }
     
+    public static let img = "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg"
+    
     public static let sample = InfoData(
         id: "",
         titles: Titles(primary: "Primary", secondary: "Secondary"),
-        altTitles: [],
+        altTitles: [
+            "Drama",
+            "Psychology",
+            "24 mins/EP"
+        ],
         epListURLs: [],
         description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-        poster: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg",
-        banner: nil,
+        poster: img,
         status: "Finished",
+        rating: 7.8,
         totalMediaCount: 12,
         mediaType: "Episodes",
         seasons: [],
-        mediaList: []
+        mediaList: [
+            MediaList(
+                title: "Season 1",
+                list: [
+                    MediaItem(
+                        url: "",
+                        number: 1,
+                        title: "Title",
+                        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                        image: img
+                    ),
+                    MediaItem(
+                        url: "",
+                        number: 2,
+                        title: "Title",
+                        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                        image: img
+                    ),
+                    MediaItem(
+                        url: "",
+                        number: 3,
+                        title: "Title",
+                        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                        image: img
+                    )
+                ]
+            )
+        ]
     )
 }
 

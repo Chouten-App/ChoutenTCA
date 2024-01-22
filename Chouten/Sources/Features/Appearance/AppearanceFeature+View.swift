@@ -89,6 +89,25 @@ extension AppearanceFeature.View {
                                 .aspectRatio(contentMode: .fit)
                                 .frame(height: 16)
                         }
+                        
+                        HStack {
+                            Text("Ambient Mode")
+                            
+                            Spacer()
+                            
+                            Toggle("", isOn: viewStore.$ambientMode)
+                                .tint(.indigo)
+                        }
+                        
+                        HStack {
+                            Text("Dynamic Info Background")
+                            
+                            Spacer()
+                            
+                            Toggle("", isOn: viewStore.$dynamicInfo)
+                                .tint(.indigo)
+                                .fixedSize()
+                        }
                     }
                 }
             }

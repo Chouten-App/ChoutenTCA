@@ -8,5 +8,6 @@
 struct SharedModels: Shared {
     var dependencies: any Dependencies {
         ComposableArchitecture()
+        GRDB()
     }
 }

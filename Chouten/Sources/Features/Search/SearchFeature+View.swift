@@ -13,6 +13,8 @@ import SharedModels
 import ViewComponents
 import Webview
 import Info
+import ASCollectionView
+import NukeUI
 
 struct ScrollOffsetPreferenceKey: PreferenceKey {
     static var defaultValue: CGPoint = .zero
@@ -49,9 +51,8 @@ extension SearchFeature.View {
                                     state: \.webviewState,
                                     action: Action.InternalAction.webview
                                 ),
-                                payload: viewStore.query
+                                payload: "{\"query\": \"\(viewStore.query)\", \"page\": \(viewStore.page)}"
                             ) { result in
-                                //print(result)
                                 viewStore.send(.parseResult(data: result))
                             }
                             .hidden()
@@ -59,7 +60,7 @@ extension SearchFeature.View {
                         }
                     }
                     .overlay(alignment: .top) {
-                        Navbar(viewStore: viewStore)
+                        Navbar(viewStore: viewStore, proxy: proxy)
                     }
                     
                     if viewStore.infoVisible {
@@ -82,8 +83,12 @@ extension SearchFeature.View {
                 }
                 .onAppear {
                     if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+                        //viewStore.send(.setLoadable(.loading))
                         viewStore.send(.setSearchData(SearchData.sampleList))
                     }
+                }
+                .onChange(of: searchbarFocused) { newValue in
+                    viewStore.send(.setSearchFocused(newValue))
                 }
             }
         }
@@ -93,29 +98,20 @@ extension SearchFeature.View {
 // navbar
 extension SearchFeature.View {
     @MainActor
-    func Navbar(viewStore: ViewStore<SearchFeature.State, SearchFeature.Action.ViewAction>) -> some View {
+    func Navbar(viewStore: ViewStore<SearchFeature.State, SearchFeature.Action.ViewAction>, proxy: GeometryProxy) -> some View {
         HStack {
-            if !searchbarFocused {
-                Button {
+            if !viewStore.searchFocused {
+                NavigationBackButton {
                     viewStore.send(.backButtonPressed, animation: .easeInOut)
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.subheadline)
-                        .foregroundColor(.primary)
-                        .padding(8)
-                        .background {
-                            Circle()
-                                .fill(.regularMaterial)
-                        }
                 }
-                .animation(.easeInOut, value: searchbarFocused)
+                .animation(.easeInOut, value: viewStore.searchFocused)
                 .transition(.move(edge: .leading))
             }
             
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: searchbarFocused ? 12 : 6)
+                RoundedRectangle(cornerRadius: viewStore.searchFocused ? 12 : 6)
                     .fill(.regularMaterial)
-                    .frame(maxWidth: .infinity, minHeight: 32, maxHeight: searchbarFocused ? 32 + 20 + Double(viewStore.queryHistory.count * 32) : 32)
+                    .frame(maxWidth: .infinity, maxHeight: 32)
                     .matchedGeometryEffect(id: "searchBG", in: animation)
                 
                 VStack {
@@ -131,47 +127,59 @@ extension SearchFeature.View {
                         .tint(.indigo)
                         .focused($searchbarFocused)
                     }
-                    
-                    if searchbarFocused {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("History")
-                                .font(.callout)
-                                .fontWeight(.bold)
-                            
-                            ForEach(0..<viewStore.queryHistory.count, id: \.self) { index in
-                                let history = viewStore.queryHistory[index]
-                                
-                                HStack {
-                                    Text(history)
-                                        .font(.subheadline)
-                                        .lineLimit(1)
-                                        .opacity(0.7)
-                                    
-                                    Spacer()
-                                    
-                                    Button {
-                                        viewStore.send(.removeQuery(at: index), animation: .easeInOut)
-                                    } label: {
-                                        Image(systemName: "xmark")
-                                            .font(.caption)
-                                            .foregroundColor(.primary)
-                                    }
-                                }
-                            }
-                        }
-                        .padding(.top, 8)
-                    }
                 }
                 .padding(.horizontal, 8)
                 .padding(.top, 5)
             }
+            .animation(.easeInOut, value: viewStore.searchFocused)
         }
+        .clipped()
         .padding(.bottom)
         .padding(.horizontal)
         .background(
             .regularMaterial
-                .opacity(headerOpacity(scrollPosition: viewStore.scrollPosition))
+                .opacity(viewStore.headerOpacity)
         )
+        /*.overlay(alignment: .bottom) {
+            if searchbarFocused {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(0..<viewStore.queryHistory.count, id: \.self) { index in
+                        let history = viewStore.queryHistory[index]
+                        
+                        VStack {
+                            HStack {
+                                Text(history)
+                                    .font(.subheadline)
+                                    .lineLimit(1)
+                                    .opacity(0.7)
+                                
+                                Spacer()
+                                
+                                Button {
+                                    viewStore.send(.removeQuery(at: index), animation: .easeInOut)
+                                } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.caption)
+                                        .foregroundColor(.primary)
+                                }
+                            }
+                            
+                            if index != viewStore.queryHistory.count - 1 {
+                                Divider()
+                            }
+                        }
+                    }
+                }
+                .padding(12)
+                .background(.regularMaterial)
+                .cornerRadius(12)
+                .padding(.horizontal)
+                .offset(y: proxy.safeAreaInsets.top + 12)
+                .animation(.easeInOut, value: viewStore.searchFocused)
+                .transition(.scale(scale: 1.0, anchor: .top))
+            }
+        }*/
+        .animation(.easeInOut, value: viewStore.searchFocused)
     }
 }
 
@@ -209,19 +217,12 @@ extension SearchFeature.View {
 extension SearchFeature.View {
     @MainActor
     public func LoadingView(viewStore: ViewStore<SearchFeature.State, SearchFeature.Action.ViewAction>, proxy: GeometryProxy) -> some View {
-        ScrollView(showsIndicators: false) {
-            VStack {
-                let anim = Animation.linear(duration: 2.0).delay(0.25).repeatForever(autoreverses: false)
-                
-                LazyVGrid(
-                    columns: [
-                        .init(alignment: .top),
-                        .init(alignment: .top),
-                        .init(alignment: .top),
-                    ],
-                    spacing: 20
-                ) {
-                    ForEach(0..<9, id: \.self) { index in
+        VStack {
+            let anim = Animation.linear(duration: 2.0).delay(0.25).repeatForever(autoreverses: false)
+            
+            ForEach(0..<4, id: \.self) { _ in
+                HStack(spacing: 12) {
+                    ForEach(0..<3, id: \.self) { index in
                         VStack {
                             RoundedRectangle(cornerRadius: 12)
                                 .frame(width: 110, height: 160)
@@ -229,6 +230,7 @@ extension SearchFeature.View {
                                     active: true,
                                     animation: anim.delay(0.2 * Double(index))
                                 )
+                                .opacity(0.3)
                             
                             VStack(alignment: .leading) {
                                 RoundedRectangle(cornerRadius: 6)
@@ -239,6 +241,7 @@ extension SearchFeature.View {
                                     )
                                     .frame(width: 110, height: 16)
                                     .clipShape(RoundedRectangle(cornerRadius: 6))
+                                    .opacity(0.2)
                                 
                                 RoundedRectangle(cornerRadius: 4)
                                     .frame(width: 110, height: 160)
@@ -248,34 +251,22 @@ extension SearchFeature.View {
                                     )
                                     .frame(width: 40, height: 12)
                                     .clipShape(RoundedRectangle(cornerRadius: 6))
+                                    .opacity(0.3)
                             }
                         }
                         .opacity(viewStore.itemOpacity)
-                        .animation(.easeInOut(duration: 3.0).repeatForever().delay(0.2 * Double(index)), value: viewStore.itemOpacity)
+                        .animation(.easeInOut(duration: 2.0).repeatForever().delay(0.2 * Double(index)), value: viewStore.itemOpacity)
                     }
                 }
             }
-            .padding(.horizontal)
-            .padding(.top, proxy.safeAreaInsets.top)
-            /*.background(
-                GeometryReader { geometry in
-                    Color.clear
-                        .preference(key: ScrollOffsetPreferenceKey.self, value: geometry.frame(in: .named("scroll")).origin)
-                }
-            )
-            .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
-                print(value)
-                viewStore.send(.setScrollPosition(value))
-            }
-             */
         }
-        //.coordinateSpace(name: "scroll")
+        .padding(.horizontal)
+        .padding(.top, proxy.safeAreaInsets.top)
         .onAppear {
             viewStore.send(
                 .setItemOpacity(value: Double(0.0))
             )
         }
-        //.transition(.opacity)
     }
 }
 
@@ -283,67 +274,80 @@ extension SearchFeature.View {
 extension SearchFeature.View {
     @MainActor
     public func SuccessView(results: [SearchData], viewStore: ViewStore<SearchFeature.State, SearchFeature.Action.ViewAction>, proxy: GeometryProxy) -> some View {
-        ScrollView(showsIndicators: false) {
-            VStack {
-                LazyVGrid(
-                    columns: [
-                        .init(alignment: .top),
-                        .init(alignment: .top),
-                        .init(alignment: .top),
-                    ]
-                ) {
-                    ForEach(0..<results.count, id: \.self) { index in
-                        let result = viewStore.searchResults[index]
-                        
-                        Button {
-                            print("tapped")
-                            viewStore.send(.setInfo(result.url), animation: .easeInOut)
-                        } label: {
-                            VStack {
-                                KFImage(
-                                    URL(string: result.img)
-                                )
-                                .fade(duration: 0.6)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
+        ASCollectionView(data: results, dataID: \.self)
+        { result, _ in
+            Button {
+                viewStore.send(.setInfo(result.url), animation: .easeInOut)
+            } label: {
+                VStack {
+                    LazyImage(
+                        url: URL(string: result.img),
+                        transaction: .init(animation: .easeInOut(duration: 0.4))
+                    ) { state in
+                        if let image = state.image {
+                          image
+                            .resizable()
+                        } else {
+                            let anim = Animation.linear(duration: 2.0).delay(0.25).repeatForever(autoreverses: false)
+                            
+                            RoundedRectangle(cornerRadius: 12)
                                 .frame(width: 110, height: 160)
-                                .cornerRadius(12)
-                                
-                                VStack(alignment: .leading) {
-                                    Text(result.title)
-                                        .font(.subheadline)
-                                        .lineLimit(2)
-                                        .multilineTextAlignment(.leading)
-                                        .frame(width: 94, alignment: .leading)
-                                    
-                                    Text("\(result.currentCountString)/\(result.totalCountString)")
-                                        .font(.caption)
-                                        .frame(width: 94, alignment: .leading)
-                                        .opacity(0.7)
-                                }
-                                .foregroundColor(.white)
-                            }
+                                .shimmering(
+                                    active: true,
+                                    animation: anim
+                                )
+                                .opacity(0.3)
                         }
-                        .contentShape(Rectangle()) // Set the content shape for hit testing
                     }
+                    .scaledToFill()
+                    .frame(width: 110, height: 160)
+                    .cornerRadius(12)
+                    
+                    VStack(alignment: .leading) {
+                        Text(result.title)
+                            .font(.subheadline)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                            .frame(width: 94, alignment: .leading)
+                        
+                        Text("\(result.currentCountString)/\(result.totalCountString)")
+                            .font(.caption)
+                            .frame(width: 94, alignment: .leading)
+                            .opacity(0.7)
+                    }
+                    .foregroundColor(.white)
                 }
             }
-            .padding(.horizontal)
-            .padding(.top, proxy.safeAreaInsets.top)
-            .background(
-                GeometryReader { geometry in
-                    Color.clear
-                        .preference(key: ScrollOffsetPreferenceKey.self, value: geometry.frame(in: .named("scrollSuccess")).origin)
-                }
-            )
-            .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
-                print(value)
-                viewStore.send(.setScrollPosition(value))
-            }
-             
+            .contentShape(Rectangle())
+            .frame(width: 110)
         }
-        .coordinateSpace(name: "scrollSuccess")
-        .transition(.opacity)
+        .layout {
+            .grid(
+                layoutMode: .adaptive(withMinItemSize: 120),
+                itemSpacing: 8,
+                lineSpacing: 12,
+                itemSize: .estimated(110),
+                sectionInsets: .init(top: 50, leading: 12, bottom: 0, trailing: 12)
+            )
+        }
+        .onReachedBoundary { boundary in
+            if boundary == .bottom && !viewStore.isFetching {
+                print("Load next results")
+                // Run search logic with page count + 1
+                viewStore.send(.increasePageNumber)
+                viewStore.send(.search)
+            }
+        }
+        .onScroll { contentOffset, _ in
+            if 50 + contentOffset.y > 90 {
+                if viewStore.headerOpacity < 1.0 {
+                    viewStore.send(.setHeaderOpacity(1.0))
+                }
+            } else {
+                viewStore.send(.setHeaderOpacity((50.0 + contentOffset.y) / CGFloat(90)))
+            }
+        }
+        .ignoresSafeArea()
     }
 }
 

@@ -24,24 +24,17 @@ extension InfoFeature: Reducer {
             switch action {
             case let .view(viewAction):
                 switch viewAction {
-                case .setTextColor(let color):
-                    state.textColor = color
+                case .setColorTheme(let theme):
+                    state.colorTheme = theme
                     return .none
-                case .setBackgroundColor(let color):
-                    state.backgroundColor = color
-                    return .send(
-                        .view(
-                            .setTextColor(
-                                color: color.complementaryColor()
-                            )
-                        )
-                    )
                 case .onAppear:
                     return .merge(
                         .send(.internal(.webview(.view(.setHtmlString(newString: ""))))),
                         .send(.internal(.webview(.view(.setJsString(newString: ""))))),
                         .send(.view(.info))
                     )
+                case .navigateBack:
+                    return .none
                 case .info:
                     print("started info")
                     state.state = .notStarted
@@ -50,27 +43,23 @@ extension InfoFeature: Reducer {
                     state.infoLoadable = .loading
                     
                     // TODO: get current selected module
-                    do {
-                        let module = try moduleClient.getModules().first
+                    let module = moduleClient.getCurrentModule()
+                    
+                    if let module {
+                        moduleClient.setSelectedModuleName(module)
                         
-                        if let module {
-                            moduleClient.setSelectedModuleName(module)
+                        do {
+                            let js = try moduleClient.getJs("info") ?? ""
                             
-                            do {
-                                let js = try moduleClient.getJs("info") ?? ""
-                                
-                                return .merge(
-                                    .send(.internal(.webview(.view(.setHtmlString(newString: AppConstants.defaultHtml))))),
-                                    .send(.internal(.webview(.view(.setJsString(newString: js))))),
-                                    .send(.internal(.webview(.view(.setRequestType(type: "info")))))
-                                )
-                            } catch {
-                                
-                                //logger.error("\(error.localizedDescription)")
-                            }
+                            return .merge(
+                                .send(.internal(.webview(.view(.setHtmlString(newString: AppConstants.defaultHtml))))),
+                                .send(.internal(.webview(.view(.setJsString(newString: js))))),
+                                .send(.internal(.webview(.view(.setRequestType(type: "info")))))
+                            )
+                        } catch {
+                            
+                            //logger.error("\(error.localizedDescription)")
                         }
-                    } catch {
-                        //logger.error("\(error.localizedDescription)")
                     }
                     return .none
                 case .parseResult(let data):
@@ -107,18 +96,24 @@ extension InfoFeature: Reducer {
                     return .none
                 case .setInfoData(let data):
                     state.infoLoadable = .loaded(data)
+                    
+                    dataClient.setInfoData(data)
+                    
                     return .none
                 case .setMediaList(let data):
-                    var infoTemp = state.infoLoadable.value
+                    let infoTemp = state.infoLoadable.value
                     if var infoTemp {
                         infoTemp.mediaList = data
+                        
+                        dataClient.setInfoData(infoTemp)
+                        
                         withAnimation(.easeInOut) {
                             state.infoLoadable = .loaded(infoTemp)
                         }
                     }
                     return .none
-                case .episodeTap(let item):
-                    dataClient.setVideoUrl(item.url)
+                case .episodeTap(let item, let index):
+                    dataClient.setVideoUrl(item.url, index)
                     return .none
                 }
             case let .internal(internalAction):

@@ -9,5 +9,6 @@ struct DataClient: Client {
     var dependencies: any Dependencies {
         ComposableArchitecture()
         Architecture()
+        SharedModels()
     }
 }

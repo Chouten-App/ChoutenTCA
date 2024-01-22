@@ -13,6 +13,84 @@ import ViewComponents
 import Webview
 import SharedModels
 import Shimmer
+import NukeUI
+
+public struct ColorTheme: Equatable {
+    public let averageColor: Color
+    public let contrastingTone: Color
+    public let accentColor: Color
+    public let accentText: Color
+    public let dark: Bool
+}
+
+enum ColorThemeError: Error {
+    case averageColorFailed
+}
+
+extension ColorTheme {
+    static func generate(from image: UIImage) throws -> ColorTheme {
+        guard let baseColor = image.averageColor else { throw ColorThemeError.averageColorFailed }
+        
+        var hue: CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha: CGFloat = 0
+        
+        baseColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+        
+        let contrastingTone = isLight(baseColor) ?
+            UIColor(
+                hue: hue,
+                saturation: 0.9,
+                brightness: 0.1,
+                alpha: alpha
+            ) :
+            UIColor(
+                hue: hue,
+                saturation: min(saturation, 0.15),
+                brightness: 0.95,
+                alpha: alpha
+            )
+        
+        let accentColor = UIColor(
+            hue: (hue + 0.05).truncatingRemainder(dividingBy: 1),
+            saturation: min(saturation * 2, 0.4),
+            brightness: min(brightness * 3, 0.9),
+            alpha: alpha
+        )
+        
+        var accentHue: CGFloat = 0
+        var accentSaturation: CGFloat = 0
+        var accentBrightness: CGFloat = 0
+        var accentAlpha: CGFloat = 0
+        
+        accentColor.getHue(&accentHue, saturation: &accentSaturation, brightness: &accentBrightness, alpha: &accentAlpha)
+        
+        let accentText = UIColor(
+            hue: accentHue,
+            saturation: min(accentSaturation, 0.1),
+            brightness: isLight(accentColor) ? 0.05 : 0.95,
+            alpha: accentAlpha
+        )
+        
+        return ColorTheme(
+            averageColor: Color(baseColor),
+            contrastingTone: Color(contrastingTone),
+            accentColor: Color(accentColor),
+            accentText: Color(accentText),
+            dark: !isLight(baseColor)
+        )
+    }
+    
+    private static func isLight(_ color: UIColor) -> Bool {
+        var white: CGFloat = 0
+        var alpha: CGFloat = 0
+        
+        color.getWhite(&white, alpha: &alpha)
+        
+        return white >= 0.5
+    }
+}
 
 extension UIImage {
     var averageColor: UIColor? {
@@ -30,91 +108,190 @@ extension UIImage {
     }
 }
 
-extension Color {
-    var components: (red: CGFloat, green: CGFloat, blue: CGFloat, opacity: CGFloat) {
-        typealias NativeColor = UIColor
-        
-        var r: CGFloat = 0
-        var g: CGFloat = 0
-        var b: CGFloat = 0
-        var o: CGFloat = 0
-        
-        guard NativeColor(self).getRed(&r, green: &g, blue: &b, alpha: &o) else {
-            // You can handle the failure here as you want
-            return (0, 0, 0, 0)
-        }
-        
-        return (r, g, b, o)
-    }
-}
-
-extension UIColor {
-    static var dynamicGreen: UIColor {
-        return UIColor { (traitCollection) -> UIColor in
-            let c = Color(uiColor: .systemIndigo).components
-            print(c)
-            if traitCollection.userInterfaceStyle == .dark {
-                let c = Color(uiColor: .systemIndigo).components
-                
-                return UIColor(red: 14/255, green: 64/255, blue: 26/255, alpha: c.opacity)
-            } else {
-                return .systemIndigo
-            }
-        }
-    }
-    
-    // Define light and dark versions of your colors
-    static var darkGreen: UIColor = UIColor(red: 0.6, green: 0.8, blue: 0.4, alpha: 1.0)
-    static var lightIndigo: UIColor = UIColor(red: 0.3, green: 0.6, blue: 0.84, alpha: 1.0)
-}
-
-extension UIColor {
-    func complementaryColor() -> UIColor {
-        var brightness: CGFloat = 0.0
-        self.getWhite(&brightness, alpha: nil)
-        
-        // Compare brightness to determine text color
-        return brightness > 0.5 ? .black : .white
-    }
-}
-
 extension InfoFeature.View: View {
     @MainActor
     public var body: some View {
         WithViewStore(store, observe: \.`self`) { viewStore in
             GeometryReader { proxy in
                 LoadableView(loadable: viewStore.infoLoadable) { infoData in
-                    ScrollView {
-                        VStack {
-                            Header(proxy: proxy, viewStore: viewStore, infoData: infoData)
+                    if proxy.size.width > 900 {
+                        HStack {
+                            ScrollView {
+                                VStack {
+                                    Header(proxy: proxy, viewStore: viewStore, infoData: infoData)
+                                    
+                                    ExtraInfo(proxy: proxy, viewStore: viewStore, infoData: infoData)
+                                }
+                            }
+                            .frame(maxWidth: proxy.size.width - 360, maxHeight: .infinity, alignment: .top)
                             
-                            ExtraInfo(viewStore: viewStore, infoData: infoData)
-                            
-                            EpisodeList(viewStore: viewStore, infoData: infoData, proxy: proxy)
+                            ScrollView {
+                                VStack(alignment: .leading) {
+                                    if infoData.mediaList.isEmpty {
+                                        VStack(alignment: .leading, spacing: 6) {
+                                            HStack {
+                                                RoundedRectangle(cornerRadius: 6)
+                                                    .frame(width: 80, height: 20)
+                                                    .redacted(reason: .placeholder)
+                                                    .shimmering()
+                                                
+                                                Spacer()
+                                                
+                                                Image(systemName: "chevron.right")
+                                                    .padding(6)
+                                                    .foregroundColor(.primary)
+                                                    .background {
+                                                        Circle()
+                                                            .fill(.regularMaterial)
+                                                    }
+                                            }
+                                            .contentShape(Rectangle())
+                                            
+                                            HStack {
+                                                RoundedRectangle(cornerRadius: 6)
+                                                    .frame(width: 60, height: 15)
+                                                    .redacted(reason: .placeholder)
+                                                    .shimmering()
+                                                    .opacity(0.7)
+                                                
+                                                Spacer()
+                                                
+                                                /*
+                                                 Image("arrow.down.filter")
+                                                 .resizable()
+                                                 .aspectRatio(contentMode: .fit)
+                                                 .frame(width: 16, height: 16)
+                                                 .foregroundColor(.white)
+                                                 .opacity(1.0)
+                                                 .contentShape(Rectangle())
+                                                 
+                                                 Image("arrow.down.filter")
+                                                 .resizable()
+                                                 .aspectRatio(contentMode: .fit)
+                                                 .frame(width: 16, height: 16)
+                                                 .scaleEffect(CGSize(width: 1.0, height: -1.0))
+                                                 .foregroundColor(.white)
+                                                 .opacity(0.7)
+                                                 .contentShape(Rectangle())
+                                                 */
+                                            }
+                                        }
+                                        .padding(.vertical, 6)
+                                    } else {
+                                        VStack(alignment: .leading, spacing: 6) {
+                                            HStack {
+                                                Text(infoData.mediaList[0].title)
+                                                    .font(.title3)
+                                                    .fontWeight(.bold)
+                                                
+                                                Spacer()
+                                                
+                                                Image(systemName: "chevron.right")
+                                                    .padding(6)
+                                                    .foregroundColor(.primary)
+                                                    .background {
+                                                        Circle()
+                                                            .fill(.regularMaterial)
+                                                    }
+                                            }
+                                            .contentShape(Rectangle())
+                                            
+                                            HStack {
+                                                Text("\(infoData.totalMediaCount ?? 0) \(infoData.mediaType)")
+                                                    .font(.subheadline)
+                                                    .fontWeight(.semibold)
+                                                    .opacity(0.7)
+                                                
+                                                Spacer()
+                                                
+                                                /*
+                                                 Image("arrow.down.filter")
+                                                 .resizable()
+                                                 .aspectRatio(contentMode: .fit)
+                                                 .frame(width: 16, height: 16)
+                                                 .foregroundColor(.white)
+                                                 .opacity(1.0)
+                                                 .contentShape(Rectangle())
+                                                 
+                                                 Image("arrow.down.filter")
+                                                 .resizable()
+                                                 .aspectRatio(contentMode: .fit)
+                                                 .frame(width: 16, height: 16)
+                                                 .scaleEffect(CGSize(width: 1.0, height: -1.0))
+                                                 .foregroundColor(.white)
+                                                 .opacity(0.7)
+                                                 .contentShape(Rectangle())
+                                                 */
+                                            }
+                                        }
+                                        .padding(.vertical, 6)
+                                        .padding(.trailing, 24)
+                                        .padding(.leading, 20)
+                                        .padding(.top, 20)
+                                    }
+                                    
+                                    EpisodeList(viewStore: viewStore, infoData: infoData, proxy: proxy)
+                                }
+                            }
+                            .frame(minWidth: 360, maxWidth: 360, maxHeight: .infinity, alignment: .topLeading)
                         }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                        .background(viewStore.colorTheme.averageColor)
+                        .foregroundColor(viewStore.colorTheme.contrastingTone)
+                        .ignoresSafeArea()
+                    } else {
+                        ScrollView {
+                            VStack {
+                                Header(proxy: proxy, viewStore: viewStore, infoData: infoData)
+                                
+                                ExtraInfo(proxy: proxy, viewStore: viewStore, infoData: infoData)
+                                
+                                EpisodeList(viewStore: viewStore, infoData: infoData, proxy: proxy)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                        .background(viewStore.colorTheme.averageColor)
+                        .foregroundColor(viewStore.colorTheme.contrastingTone)
+                        .ignoresSafeArea()
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                    .background(Color(uiColor: viewStore.backgroundColor))
-                    .foregroundColor(Color(uiColor: viewStore.textColor))
-                    .ignoresSafeArea()
                 } failedView: { error in
                     Text("\(error.localizedDescription)")
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                        .background(Color(uiColor: viewStore.backgroundColor))
-                        .foregroundColor(Color(uiColor: viewStore.textColor))
+                        .background(viewStore.colorTheme.averageColor)
+                        .foregroundColor(viewStore.colorTheme.contrastingTone)
                         .ignoresSafeArea()
                 } loadingView: {
-                    Text("Loading")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                        .background(Color(uiColor: viewStore.backgroundColor))
-                        .foregroundColor(Color(uiColor: viewStore.textColor))
-                        .ignoresSafeArea()
+                    ScrollView {
+                        VStack {
+                            ShimmerHeader(proxy: proxy, viewStore: viewStore)
+                            
+                            ShimmerExtraInfo(viewStore: viewStore)
+                            
+                            ShimmerEpisodeList(viewStore: viewStore, proxy: proxy)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .background(viewStore.colorTheme.averageColor)
+                    .foregroundColor(viewStore.colorTheme.contrastingTone)
+                    .ignoresSafeArea()
                 } pendingView: {
-                    Text("not started")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                        .background(Color(uiColor: viewStore.backgroundColor))
-                        .foregroundColor(Color(uiColor: viewStore.textColor))
-                        .ignoresSafeArea()
+                    ScrollView {
+                        VStack {
+                            ShimmerHeader(proxy: proxy, viewStore: viewStore)
+                            
+                            ShimmerExtraInfo(viewStore: viewStore)
+                            
+                            ShimmerEpisodeList(viewStore: viewStore, proxy: proxy)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .background(viewStore.colorTheme.averageColor)
+                    .foregroundColor(viewStore.colorTheme.contrastingTone)
+                    .ignoresSafeArea()
+                }
+                .overlay(alignment: .topLeading) {
+                    Navbar(viewStore: viewStore)
+                        .frame(maxWidth: proxy.size.width > 900 ? proxy.size.width - 410 : .infinity)
                 }
             }
             .background {
@@ -152,28 +329,106 @@ extension InfoFeature.View: View {
             .offset(x: isVisible ? dragState.width : UIScreen.main.bounds.width)
             .onAppear {
                 print("onAppear")
-                viewStore.send(.view(.info))
+                if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+                    viewStore.send(.view(.setInfoData(data: InfoData.sample)))
+                } else {
+                    viewStore.send(.view(.info))
+                }
             }
-            .gesture(
-                DragGesture()
-                    .onChanged { value in
-                        dragState = value.translation
-                    }
-                    .onEnded { value in
-                        print(value.translation.width)
-                        if value.translation.width > UIScreen.main.bounds.width - 100 {
-                            // Swipe to the left, dismiss the second view
-                            withAnimation(.easeInOut) {
-                                isVisible = false
+            .overlay(alignment: .leading) {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .frame(maxWidth: 30)
+                    .ignoresSafeArea()
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                dragState = value.translation
                             }
-                        }
-                        // Reset dragState
-                        withAnimation(.easeInOut) {
-                            dragState = .zero
-                        }
-                    }
-            )
+                            .onEnded { value in
+                                print(value.translation.width)
+                                if value.translation.width > UIScreen.main.bounds.width - 100 {
+                                    // Swipe to the left, dismiss the second view
+                                    withAnimation(.easeInOut) {
+                                        isVisible = false
+                                    }
+                                }
+                                // Reset dragState
+                                withAnimation(.easeInOut) {
+                                    dragState = .zero
+                                }
+                            }
+                    )
+            }
         }
+    }
+}
+
+extension InfoFeature.View {
+    @MainActor
+    func Navbar(viewStore: ViewStoreOf<InfoFeature>) -> some View {
+        HStack {
+            Button {
+                viewStore.send(.view(.navigateBack))
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.caption)
+                    .foregroundColor(
+                        viewStore.colorTheme.accentText
+                    )
+                    .padding(8)
+                    .background {
+                        Circle()
+                            .fill(
+                                viewStore.colorTheme.accentColor
+                            )
+                    }
+                    .contentShape(Rectangle())
+                    .foregroundColor(.white)
+            }
+            
+            Spacer()
+            
+            Button {
+                
+            } label: {
+                Image(systemName: "bookmark")
+                    .font(.caption)
+                    .foregroundColor(
+                        viewStore.colorTheme.accentText
+                    )
+                    .padding(8)
+                    .background {
+                        Circle()
+                            .fill(
+                                viewStore.colorTheme.accentColor
+                            )
+                    }
+                    .contentShape(Rectangle())
+                    .foregroundColor(.white)
+            }
+            
+            Button {
+                
+            } label: {
+                Image(systemName: "square.and.arrow.down")
+                    .font(.caption)
+                    .foregroundColor(
+                        viewStore.colorTheme.accentText
+                    )
+                    .padding(8)
+                    .background {
+                        Circle()
+                            .fill(
+                                viewStore.colorTheme.accentColor
+                            )
+                    }
+                    .contentShape(Rectangle())
+                    .foregroundColor(.white)
+            }
+        }
+        .padding(.horizontal)
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -186,17 +441,135 @@ extension InfoFeature.View {
                 FillAspectImage(
                     url: URL(string: infoData.banner ?? infoData.poster)
                 ) { image in
-                    let averageColor = image.averageColor
-                    
-                    viewStore.send(.view(.setBackgroundColor(color: averageColor ?? .systemBackground)))
+                    if viewStore.dynamicInfo {
+                        do {
+                            let theme = try ColorTheme.generate(from: image)
+                            viewStore.send(
+                                .view(
+                                    .setColorTheme(theme)
+                                )
+                            )
+                        } catch {
+                            print(error.localizedDescription)
+                        }
+                    }
                 }
                 .blur(radius: 6.0)
                 .overlay {
                     LinearGradient(stops: [
                         Gradient.Stop(
-                            color: Color(uiColor: viewStore.backgroundColor).opacity(0.9),
+                            color: viewStore.colorTheme.averageColor.opacity(0.9),
                             location: 0.0),
-                        Gradient.Stop(color: Color(uiColor: viewStore.backgroundColor).opacity(0.4), location: 1.0),
+                        Gradient.Stop(color: viewStore.colorTheme.averageColor.opacity(0.4), location: 1.0),
+                    ], startPoint: .bottom, endPoint: .top)
+                }
+                .frame(
+                    width: reader.size.width,
+                    height: reader.size.height + (reader.frame(in: .global).minY > 0 ? reader.frame(in: .global).minY : 0),
+                    alignment: .top
+                )
+                .contentShape(Rectangle())
+                .clipped()
+                .offset(y: reader.frame(in: .global).minY <= 0 ? 0 : -reader.frame(in: .global).minY)
+            }
+            .frame(height: 360)
+            .frame(maxWidth: .infinity)
+            
+            // Info
+            HStack(alignment: .bottom) {
+                LazyImage(
+                    url: URL(string: infoData.poster),
+                    transaction: .init(animation: .easeInOut(duration: 0.4))
+                ) { state in
+                    if let image = state.image {
+                      image
+                        .resizable()
+                    } else {
+                        let anim = Animation.linear(duration: 2.0).delay(0.25).repeatForever(autoreverses: false)
+                        
+                        RoundedRectangle(cornerRadius: 12)
+                            .frame(width: 120, height: 180)
+                            .shimmering(
+                                active: true,
+                                animation: anim
+                            )
+                            .opacity(0.3)
+                    }
+                }
+                .scaledToFill()
+                .frame(maxWidth: 120, maxHeight: 180)
+                .cornerRadius(12)
+                
+                VStack(alignment: .leading) {
+                    if let secondary = infoData.titles.secondary {
+                        Text(secondary)
+                            .font(.caption)
+                            .fontWeight(.heavy)
+                            .lineLimit(2)
+                            .opacity(0.7)
+                    }
+                    
+                    Text(infoData.titles.primary)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .lineLimit(2)
+                    
+                    HStack(spacing: 8) {
+                        if let status = infoData.status {
+                            Text(status)
+                                .foregroundColor(viewStore.colorTheme.accentColor)
+                                .fontWeight(.bold)
+                        }
+                        
+                        Spacer()
+                        
+                        if let rating = infoData.rating {
+                            let formatted = String(format: "%.1f", rating)
+                            HStack {
+                                Text(formatted)
+                                    .font(.subheadline)
+                                    .fontWeight(.bold)
+                                Image(systemName: "heart.fill")
+                                    .foregroundColor(.red)
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, 8)
+                    .padding(.top, 4)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, -36)
+            .frame(maxWidth: .infinity)
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    @MainActor
+    public func ShimmerHeader(proxy: GeometryProxy, viewStore: ViewStoreOf<InfoFeature>) -> some View {
+        ZStack(alignment: .bottomLeading) {
+            // Background image
+            GeometryReader {reader in
+                GeometryReader { inner_proxy in
+                    Rectangle()
+                        .frame(
+                            width: inner_proxy.size.width,
+                            height: inner_proxy.size.height,
+                            alignment: .center
+                        )
+                        .redacted(reason: .placeholder)
+                        .shimmering()
+                        .opacity(0.4)
+                }
+                .blur(radius: 6.0)
+                .overlay {
+                    LinearGradient(stops: [
+                        Gradient.Stop(
+                            color: viewStore.colorTheme.averageColor.opacity(0.9),
+                            location: 0.0),
+                        Gradient.Stop(color: viewStore.colorTheme.averageColor.opacity(0.4), location: 1.0),
                     ], startPoint: .bottom, endPoint: .top)
                 }
                 .frame(
@@ -213,31 +586,46 @@ extension InfoFeature.View {
             
             // Info
             HStack(alignment: .bottom) {
-                KFImage(URL(string: infoData.poster))
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
+                RoundedRectangle(cornerRadius: 12)
                     .frame(maxWidth: 120, maxHeight: 180)
-                    .cornerRadius(12)
+                    .redacted(reason: .placeholder)
+                    .shimmering()
+                    .opacity(0.3)
                 
                 VStack(alignment: .leading) {
-                    if let secondary = infoData.titles.secondary {
-                        Text(secondary)
-                            .font(.caption)
-                            .fontWeight(.heavy)
-                            .lineLimit(2)
-                            .opacity(0.7)
-                    }
+                    RoundedRectangle(cornerRadius: 6)
+                        .frame(maxWidth: 60, maxHeight: 12)
+                        .redacted(reason: .placeholder)
+                        .shimmering()
+                        .opacity(0.2)
                     
-                    Text(infoData.titles.primary)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .lineLimit(2)
+                    RoundedRectangle(cornerRadius: 6)
+                        .frame(maxWidth: 80, maxHeight: 18)
+                        .redacted(reason: .placeholder)
+                        .shimmering()
+                        .opacity(0.4)
                     
-                    VStack(alignment: .leading, spacing: 8) {
-                        if let status = infoData.status {
-                            Text(status)
-                                .foregroundColor(Color(uiColor: viewStore.textColor == .white ? .lightIndigo : .systemIndigo))
-                                .fontWeight(.bold)
+                    HStack(spacing: 8) {
+                        RoundedRectangle(cornerRadius: 6)
+                            .frame(maxWidth: 40, maxHeight: 12)
+                            .redacted(reason: .placeholder)
+                            .shimmering()
+                            .opacity(0.2)
+                        
+                        Spacer()
+                        
+                        HStack {
+                            RoundedRectangle(cornerRadius: 6)
+                                .frame(maxWidth: 40, maxHeight: 15)
+                                .redacted(reason: .placeholder)
+                                .shimmering()
+                                .opacity(0.2)
+                            
+                            Circle()
+                                .frame(maxWidth: 22, maxHeight: 22)
+                                .redacted(reason: .placeholder)
+                                .shimmering()
+                                .opacity(0.2)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -252,12 +640,33 @@ extension InfoFeature.View {
         }
         .frame(minWidth: proxy.size.width, maxWidth: proxy.size.width)
     }
+    
+    
 }
 
 extension InfoFeature.View {
     @MainActor
-    public func ExtraInfo(viewStore: ViewStoreOf<InfoFeature>, infoData: InfoData) -> some View {
+    public func ExtraInfo(proxy: GeometryProxy, viewStore: ViewStoreOf<InfoFeature>, infoData: InfoData) -> some View {
         VStack(alignment: .leading) {
+            // Tags
+            if infoData.altTitles.count > 0 {
+                ScrollView(.horizontal) {
+                    HStack {
+                        ForEach(infoData.altTitles, id: \.self) { tag in
+                            Text(tag)
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .padding(.vertical, 4)
+                                .padding(.horizontal, 8)
+                                .background(.regularMaterial)
+                                .cornerRadius(6)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                }
+                .padding(.horizontal, -20)
+                .preferredColorScheme(viewStore.colorTheme.dark ? .dark : .light)
+            }
             
             Text(infoData.description)
                 .font(.subheadline)
@@ -266,105 +675,228 @@ extension InfoFeature.View {
                 .padding(.vertical, 6)
                 .contentShape(Rectangle())
             
-            if infoData.mediaList.isEmpty {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        RoundedRectangle(cornerRadius: 6)
-                            .frame(width: 80, height: 20)
-                            .redacted(reason: .placeholder)
-                            .shimmering()
+            if proxy.size.width < 900 {
+                if infoData.mediaList.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            RoundedRectangle(cornerRadius: 6)
+                                .frame(width: 80, height: 20)
+                                .redacted(reason: .placeholder)
+                                .shimmering()
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .padding(6)
+                                .foregroundColor(.primary)
+                                .background {
+                                    Circle()
+                                        .fill(.regularMaterial)
+                                }
+                        }
+                        .contentShape(Rectangle())
                         
-                        Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .padding(6)
-                            .foregroundColor(.primary)
-                            .background {
-                                Circle()
-                                    .fill(.regularMaterial)
-                            }
+                        HStack {
+                            RoundedRectangle(cornerRadius: 6)
+                                .frame(width: 60, height: 15)
+                                .redacted(reason: .placeholder)
+                                .shimmering()
+                                .opacity(0.7)
+                            
+                            Spacer()
+                            
+                            /*
+                             Image("arrow.down.filter")
+                             .resizable()
+                             .aspectRatio(contentMode: .fit)
+                             .frame(width: 16, height: 16)
+                             .foregroundColor(.white)
+                             .opacity(1.0)
+                             .contentShape(Rectangle())
+                             
+                             Image("arrow.down.filter")
+                             .resizable()
+                             .aspectRatio(contentMode: .fit)
+                             .frame(width: 16, height: 16)
+                             .scaleEffect(CGSize(width: 1.0, height: -1.0))
+                             .foregroundColor(.white)
+                             .opacity(0.7)
+                             .contentShape(Rectangle())
+                             */
+                        }
                     }
-                    .contentShape(Rectangle())
-                    
-                    HStack {
-                        RoundedRectangle(cornerRadius: 6)
-                            .frame(width: 60, height: 15)
-                            .redacted(reason: .placeholder)
-                            .shimmering()
-                            .opacity(0.7)
+                    .padding(.vertical, 6)
+                } else {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text(infoData.mediaList[0].title)
+                                .font(.title3)
+                                .fontWeight(.bold)
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .padding(6)
+                                .foregroundColor(.primary)
+                                .background {
+                                    Circle()
+                                        .fill(.regularMaterial)
+                                }
+                        }
+                        .contentShape(Rectangle())
                         
-                        Spacer()
-                        
-                        /*
-                         Image("arrow.down.filter")
-                         .resizable()
-                         .aspectRatio(contentMode: .fit)
-                         .frame(width: 16, height: 16)
-                         .foregroundColor(.white)
-                         .opacity(1.0)
-                         .contentShape(Rectangle())
-                         
-                         Image("arrow.down.filter")
-                         .resizable()
-                         .aspectRatio(contentMode: .fit)
-                         .frame(width: 16, height: 16)
-                         .scaleEffect(CGSize(width: 1.0, height: -1.0))
-                         .foregroundColor(.white)
-                         .opacity(0.7)
-                         .contentShape(Rectangle())
-                         */
+                        HStack {
+                            Text("\(infoData.totalMediaCount ?? 0) \(infoData.mediaType)")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .opacity(0.7)
+                            
+                            Spacer()
+                            
+                            /*
+                             Image("arrow.down.filter")
+                             .resizable()
+                             .aspectRatio(contentMode: .fit)
+                             .frame(width: 16, height: 16)
+                             .foregroundColor(.white)
+                             .opacity(1.0)
+                             .contentShape(Rectangle())
+                             
+                             Image("arrow.down.filter")
+                             .resizable()
+                             .aspectRatio(contentMode: .fit)
+                             .frame(width: 16, height: 16)
+                             .scaleEffect(CGSize(width: 1.0, height: -1.0))
+                             .foregroundColor(.white)
+                             .opacity(0.7)
+                             .contentShape(Rectangle())
+                             */
+                        }
                     }
+                    .padding(.vertical, 6)
                 }
-                .padding(.vertical, 6)
-            } else {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Text(infoData.mediaList[0].title)
-                            .font(.title3)
-                            .fontWeight(.bold)
-                        
-                        Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .padding(6)
-                            .foregroundColor(.primary)
-                            .background {
-                                Circle()
-                                    .fill(.regularMaterial)
-                            }
-                    }
-                    .contentShape(Rectangle())
-                    
-                    HStack {
-                        Text("\(infoData.totalMediaCount ?? 0) \(infoData.mediaType)")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .opacity(0.7)
-                        
-                        Spacer()
-                        
-                        /*
-                         Image("arrow.down.filter")
-                         .resizable()
-                         .aspectRatio(contentMode: .fit)
-                         .frame(width: 16, height: 16)
-                         .foregroundColor(.white)
-                         .opacity(1.0)
-                         .contentShape(Rectangle())
-                         
-                         Image("arrow.down.filter")
-                         .resizable()
-                         .aspectRatio(contentMode: .fit)
-                         .frame(width: 16, height: 16)
-                         .scaleEffect(CGSize(width: 1.0, height: -1.0))
-                         .foregroundColor(.white)
-                         .opacity(0.7)
-                         .contentShape(Rectangle())
-                         */
-                    }
-                }
-                .padding(.vertical, 6)
             }
+        }
+        .padding(.top, 44)
+        .padding(.horizontal, 20)
+    }
+    
+    @MainActor
+    public func ShimmerExtraInfo(viewStore: ViewStoreOf<InfoFeature>) -> some View {
+        VStack(alignment: .leading) {
+            // Tags
+            ScrollView(.horizontal) {
+                HStack {
+                    ForEach(0..<10, id: \.self) { index in
+                        RoundedRectangle(cornerRadius: 6)
+                            .frame(width: 32, height: 12)
+                            .redacted(reason: .placeholder)
+                            .shimmering()
+                            .opacity(0.0)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .background(.regularMaterial)
+                            .cornerRadius(8)
+                            .redacted(reason: .placeholder)
+                            .shimmering()
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+            .padding(.horizontal, -20)
+            .padding(.bottom, 12)
+            .preferredColorScheme(viewStore.colorTheme.dark ? .dark : .light)
+            
+            VStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(maxWidth: .infinity, minHeight: 15, maxHeight: 15)
+                    .redacted(reason: .placeholder)
+                    .shimmering()
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(maxWidth: .infinity, minHeight: 15, maxHeight: 15)
+                    .redacted(reason: .placeholder)
+                    .shimmering()
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(maxWidth: .infinity, minHeight: 15, maxHeight: 15)
+                    .redacted(reason: .placeholder)
+                    .shimmering()
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(maxWidth: .infinity, minHeight: 15, maxHeight: 15)
+                    .redacted(reason: .placeholder)
+                    .shimmering()
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(maxWidth: .infinity, minHeight: 15, maxHeight: 15)
+                    .redacted(reason: .placeholder)
+                    .shimmering()
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(maxWidth: .infinity, minHeight: 15, maxHeight: 15)
+                    .redacted(reason: .placeholder)
+                    .shimmering()
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(maxWidth: .infinity, minHeight: 15, maxHeight: 15)
+                    .redacted(reason: .placeholder)
+                    .shimmering()
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(maxWidth: .infinity, minHeight: 15, maxHeight: 15)
+                    .redacted(reason: .placeholder)
+                    .shimmering()
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(maxWidth: 200, minHeight: 15, maxHeight: 15)
+                    .redacted(reason: .placeholder)
+                    .shimmering()
+            }
+            .opacity(0.3)
+            
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    RoundedRectangle(cornerRadius: 6)
+                        .frame(width: 80, height: 20)
+                        .redacted(reason: .placeholder)
+                        .shimmering()
+                        .opacity(0.4)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .padding(6)
+                        .foregroundColor(.primary)
+                        .background {
+                            Circle()
+                                .fill(.regularMaterial)
+                        }
+                }
+                .contentShape(Rectangle())
+                
+                HStack {
+                    RoundedRectangle(cornerRadius: 6)
+                        .frame(width: 60, height: 15)
+                        .redacted(reason: .placeholder)
+                        .shimmering()
+                        .opacity(0.2)
+                    
+                    Spacer()
+                    
+                    /*
+                     Image("arrow.down.filter")
+                     .resizable()
+                     .aspectRatio(contentMode: .fit)
+                     .frame(width: 16, height: 16)
+                     .foregroundColor(.white)
+                     .opacity(1.0)
+                     .contentShape(Rectangle())
+                     
+                     Image("arrow.down.filter")
+                     .resizable()
+                     .aspectRatio(contentMode: .fit)
+                     .frame(width: 16, height: 16)
+                     .scaleEffect(CGSize(width: 1.0, height: -1.0))
+                     .foregroundColor(.white)
+                     .opacity(0.7)
+                     .contentShape(Rectangle())
+                     */
+                }
+            }
+            .padding(.vertical, 6)
         }
         .padding(.top, 44)
         .padding(.horizontal, 20)
@@ -420,30 +952,32 @@ extension InfoFeature.View {
                     .transition(.opacity)
                 } else {
                     // pagination
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ForEach(1 ..< pageCount(infoData: infoData) + 1, id: \.self) { page in
-                                Button(action: {
-                                    //viewStore.send(.setCurrentPage(page: page))
-                                }) {
-                                    Text("\(episodeRange(forPage: page, infoData: infoData, mediaIncrease: true))")
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .padding(.vertical, 6)
-                                        .padding(.horizontal, 12)
-                                        .foregroundColor(.primary)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 6)
-                                                .fill(.regularMaterial)
-                                        )
+                    if infoData.mediaList[0].list.count > 12 {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack {
+                                ForEach(1 ..< pageCount(infoData: infoData) + 1, id: \.self) { page in
+                                    Button(action: {
+                                        //viewStore.send(.setCurrentPage(page: page))
+                                    }) {
+                                        Text("\(episodeRange(forPage: page, infoData: infoData, mediaIncrease: true))")
+                                            .font(.subheadline)
+                                            .fontWeight(.semibold)
+                                            .padding(.vertical, 6)
+                                            .padding(.horizontal, 12)
+                                            .foregroundColor(.primary)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 6)
+                                                    .fill(.regularMaterial)
+                                            )
+                                    }
                                 }
                             }
+                            .padding(.horizontal)
                         }
-                        .padding(.horizontal)
+                        .padding(.bottom, 6)
+                        .padding(.top, 8)
+                        .transition(.opacity)
                     }
-                    .padding(.bottom, 6)
-                    .padding(.top, 8)
-                    .transition(.opacity)
                 }
             }
             
@@ -459,30 +993,87 @@ extension InfoFeature.View {
                 : max(infoData.mediaList[0].list.count - viewStore.currentPage * mediaPerPage - 1, 0)
                 let episodeList = true ? Array(infoData.mediaList[0].list[startIndex..<endIndex]) : Array(infoData.mediaList[0].list[endIndex..<startIndex])
                 
-                ScrollView(.horizontal) {
-                    HStack {
-                        if true {
-                            ForEach(episodeList, id: \.self) { episode in
-                                EpisodeCard(item: episode, infoData: infoData, proxy: proxy)
-                                    .frame(maxWidth: proxy.size.width - 140)
-                                    .onTapGesture {
-                                        viewStore.send(.view(.episodeTap(item: episode)), animation: .easeInOut)
-                                    }
-                            }
-                        } else {
-                            ForEach(episodeList.reversed(), id: \.self) { episode in
-                                EpisodeCard(item: episode, infoData: infoData, proxy: proxy)
-                                    .frame(maxWidth: proxy.size.width - 140)
-                                    .onTapGesture {
-                                        viewStore.send(.view(.episodeTap(item: episode)), animation: .easeInOut)
-                                    }
+                ScrollView(proxy.size.width > 900 ? .vertical : .horizontal) {
+                    if proxy.size.width > 900 {
+                        VStack {
+                            if true {
+                                ForEach(episodeList, id: \.self) { episode in
+                                    EpisodeCard(item: episode, infoData: infoData, viewStore: viewStore, proxy: proxy)
+                                        .frame(maxWidth: 320)
+                                        .onTapGesture {
+                                            viewStore.send(.view(.episodeTap(item: episode, index: episodeList.firstIndex { $0 == episode } ?? 0)), animation: .easeInOut)
+                                        }
+                                }
+                            } else {
+                                ForEach(episodeList.reversed(), id: \.self) { episode in
+                                    EpisodeCard(item: episode, infoData: infoData, viewStore: viewStore, proxy: proxy)
+                                        .frame(maxWidth: 320)
+                                        .onTapGesture {
+                                            viewStore.send(.view(.episodeTap(item: episode, index: episodeList.firstIndex { $0 == episode } ?? 0)), animation: .easeInOut)
+                                        }
+                                }
                             }
                         }
+                        .padding(.horizontal, 20)
+                    } else {
+                        HStack {
+                            if true {
+                                ForEach(episodeList, id: \.self) { episode in
+                                    EpisodeCard(item: episode, infoData: infoData, viewStore: viewStore, proxy: proxy)
+                                        .frame(width: proxy.size.width - 140)
+                                        .onTapGesture {
+                                            viewStore.send(.view(.episodeTap(item: episode, index: episodeList.firstIndex { $0 == episode } ?? 0)), animation: .easeInOut)
+                                        }
+                                }
+                            } else {
+                                ForEach(episodeList.reversed(), id: \.self) { episode in
+                                    EpisodeCard(item: episode, infoData: infoData, viewStore: viewStore, proxy: proxy)
+                                        .frame(maxWidth: proxy.size.width - 140)
+                                        .onTapGesture {
+                                            viewStore.send(.view(.episodeTap(item: episode, index: episodeList.firstIndex { $0 == episode } ?? 0)), animation: .easeInOut)
+                                        }
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 20)
                     }
-                    .padding(.horizontal, 20)
                 }
                 .padding(.bottom, 40)
             }
+        }
+    }
+    
+    
+    @MainActor
+    func ShimmerEpisodeList(viewStore: ViewStoreOf<InfoFeature>, proxy: GeometryProxy) -> some View {
+        VStack {
+            // PAGINATION
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack {
+                    ForEach(0 ..< 6, id: \.self) { page in
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(.regularMaterial)
+                            .frame(width: 70, height: 27)
+                            .redacted(reason: .placeholder)
+                            .shimmering()
+                            .opacity(0.4)
+                    }
+                }
+                .padding(.horizontal)
+            }
+            .padding(.bottom, 6)
+            .padding(.top, 8)
+            
+            ScrollView(.horizontal) {
+                HStack {
+                    ForEach(0..<12, id: \.self) { index in
+                        ShimmerEpisodeCard(viewStore: viewStore, proxy: proxy)
+                            .frame(maxWidth: proxy.size.width - 140, maxHeight: (proxy.size.width - 140) / 16 * 9)
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+            .padding(.bottom, 40)
         }
     }
 }
@@ -500,13 +1091,46 @@ extension InfoFeature.View {
     }
     
     @MainActor
-    func EpisodeCard(item: MediaItem, infoData: InfoData, proxy: GeometryProxy) -> some View {
+    func EpisodeCard(item: MediaItem, infoData: InfoData, viewStore: ViewStoreOf<InfoFeature>, proxy: GeometryProxy) -> some View {
         VStack {
-            KFImage(URL(string: item.image ?? infoData.poster))
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(minWidth: proxy.size.width - 140, maxWidth: proxy.size.width - 140, minHeight: (proxy.size.width - 140) / 16 * 9, maxHeight: (proxy.size.width - 140) / 16 * 9)
-                .cornerRadius(12)
+            LazyImage(
+                url: URL(string: item.image ?? infoData.poster),
+                transaction: .init(animation: .easeInOut(duration: 0.4))
+            ) { state in
+                if let image = state.image {
+                  image
+                    .resizable()
+                } else {
+                    let anim = Animation.linear(duration: 2.0).delay(0.25).repeatForever(autoreverses: false)
+                    
+                    RoundedRectangle(cornerRadius: 12)
+                        .frame(width: 320, height: 320 / 16 * 9)
+                        .shimmering(
+                            active: true,
+                            animation: anim
+                        )
+                        .opacity(0.3)
+                }
+            }
+            .scaledToFill()
+            .frame(width: 320, height: 320 / 16 * 9)
+            .cornerRadius(12)
+            .overlay(alignment: .topTrailing) {
+                Text(forTrailingZero(temp: item.number))
+                    .fontWeight(.semibold)
+                    .foregroundColor(
+                        viewStore.colorTheme.accentText
+                    )
+                    .padding(.vertical, 2)
+                    .padding(.horizontal, 8)
+                    .background {
+                        Capsule()
+                            .fill(
+                                viewStore.colorTheme.accentColor
+                            )
+                    }
+                    .padding()
+            }
             /*
                 .overlay(alignment: .topTrailing) {
                     HStack {
@@ -622,6 +1246,66 @@ extension InfoFeature.View {
                         .multilineTextAlignment(.leading)
                         .opacity(0.7)
                         .frame(height: 50)
+                }
+            }
+            .padding(.horizontal, 12)
+        }
+    }
+    
+    
+    @MainActor
+    func ShimmerEpisodeCard(viewStore: ViewStoreOf<InfoFeature>, proxy: GeometryProxy) -> some View {
+        VStack {
+            RoundedRectangle(cornerRadius: 12)
+                .frame(minWidth: proxy.size.width - 140, maxWidth: proxy.size.width - 140, minHeight: (proxy.size.width - 140) / 16 * 9, maxHeight: (proxy.size.width - 140) / 16 * 9)
+                .redacted(reason: .placeholder)
+                .shimmering()
+                .opacity(0.3)
+                .overlay(alignment: .topTrailing) {
+                    RoundedRectangle(cornerRadius: 12)
+                        .frame(width: 16, height: 16)
+                        .opacity(0.0)
+                        .foregroundColor(
+                            viewStore.colorTheme.accentText
+                        )
+                        .padding(.vertical, 2)
+                        .padding(.horizontal, 8)
+                        .background {
+                            Capsule()
+                                .fill(
+                                    viewStore.colorTheme.accentColor
+                                )
+                                .redacted(reason: .placeholder)
+                                .shimmering()
+                                .opacity(0.3)
+                        }
+                        .padding()
+                }
+            
+            VStack(spacing: 4) {
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(width: 44, height: 16)
+                    .redacted(reason: .placeholder)
+                    .shimmering()
+                    .opacity(0.4)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                VStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 6)
+                        .frame(width: proxy.size.width - 140 - 24, height: 14)
+                        .redacted(reason: .placeholder)
+                        .shimmering()
+                        .opacity(0.2)
+                    RoundedRectangle(cornerRadius: 6)
+                        .frame(width: proxy.size.width - 140 - 24, height: 14)
+                        .redacted(reason: .placeholder)
+                        .shimmering()
+                        .opacity(0.2)
+                    RoundedRectangle(cornerRadius: 6)
+                        .frame(width: 60, height: 14)
+                        .redacted(reason: .placeholder)
+                        .shimmering()
+                        .opacity(0.2)
                 }
             }
             .padding(.horizontal, 12)
