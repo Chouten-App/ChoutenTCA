@@ -1,5 +1,5 @@
 //
-//  Package.swift
+//  Project.swift
 //  ProjectDescriptionHelpers
 //
 //  Created by ErrorErrorError on 1/30/24.
@@ -24,9 +24,10 @@ let project = Project(
       sources: ["Sources/**"],
       resources: [.folderReference(path: "../Shared/Resources/**")],
       entitlements: .file(path: "Resources/ChoutenApp.entitlements"),
+      scripts: [.swiftLint, .swiftFormat],
       dependencies: [
         .externalDependencies.composableArchitecture.target,
-        .features.app.project,
+        .features.app.project
       ],
       settings: .settings(base: ["GENERATE_INFOPLIST_FILE": true])
     )

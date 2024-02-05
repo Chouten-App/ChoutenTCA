@@ -14,20 +14,21 @@ extension Notification.Name {
   static let sharedJson = Notification.Name("com.inumaki.chouten.module")
 }
 
+// MARK: - SceneDelegate
+
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   var window: UIWindow?
   let dataController = DataController()
-    
-  @Dependency(\.moduleClient)
-  var moduleClient
-    
-  func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+
+  @Dependency(\.moduleClient) var moduleClient
+
+  func scene(_ scene: UIScene, willConnectTo _: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
     NotificationCenter.default.addObserver(self, selector: #selector(handleSharedJson(_:)), name: .sharedJson, object: nil)
-        
+
     if let urlContext = connectionOptions.urlContexts.first {
       handleOpenURL(urlContext.url)
     }
-        
+
     if let windowScene = scene as? UIWindowScene {
       let window = UIWindow(windowScene: windowScene)
       window.rootViewController = HostingController(
@@ -35,7 +36,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         AppFeature.View(
           store: .init(
             initialState: .init(
-              versionString: "\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "x.x")(\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "x"))"
+              versionString: """
+              \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "x.x")\
+              (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "x"))
+              """
             ),
             reducer: { AppFeature() }
           )
@@ -47,15 +51,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
       window.makeKeyAndVisible()
     }
   }
-    
-  func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+
+  func scene(_: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
     guard let url = URLContexts.first?.url, url.isFileURL else {
       return
     }
-        
+
     if url.pathExtension == "module" {
       print("importing.")
-            
+
       // Handle the file here
       // For example, you could use FileManager to copy the file to your app's documents directory:
       let fileManager = FileManager.default
@@ -63,7 +67,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let documentsURL = try fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
         let destinationURL = documentsURL.appendingPathComponent("Modules").appendingPathComponent(url.lastPathComponent)
         try fileManager.copyItem(at: url, to: destinationURL)
-                
+
         try moduleClient.importFromFile(destinationURL)
         // Update globalData.availableModules here
         do {
@@ -72,7 +76,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         } catch {
           print("Error: \(error)")
         }
-                
+
       } catch {
         print("Error: \(error)")
       }
@@ -89,12 +93,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
       }
     }
   }
-    
+
   func handleOpenURL(_ url: URL) {
     NotificationCenter.default.post(name: .sharedJson, object: nil, userInfo: ["url": url])
   }
-    
-  @objc func handleSharedJson(_ notification: Notification) {
+
+  @objc
+  func handleSharedJson(_ notification: Notification) {
     guard notification.userInfo?["url"] is URL else { return }
     if let shouldOpenApp = notification.userInfo?["openApp"] as? Bool, shouldOpenApp {
       // Open the app
@@ -104,14 +109,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
       } catch {
         print(error.localizedDescription)
       }
-            
+
       if let window {
         let hostingController = HostingController(
           wrappedView:
           AppFeature.View(
             store: .init(
               initialState: .init(
-                versionString: "\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "x.x")(\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "x"))"
+                versionString:
+                """
+                \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "x.x")\
+                (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "x"))
+                """
               ),
               reducer: { AppFeature() }
             )

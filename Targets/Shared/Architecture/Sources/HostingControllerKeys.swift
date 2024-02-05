@@ -1,40 +1,44 @@
 //
-//  File.swift
-//  
+//  HostingControllerKeys.swift
+//
 //
 //  Created by Inumaki on 05.11.23.
 //
 
 import SwiftUI
 
-public struct HomeIndicatorAutoHiddenPreferenceKey: PreferenceKey {
-    public static var defaultValue: Bool = false
+// MARK: - HomeIndicatorAutoHiddenPreferenceKey
 
-    public static func reduce(
-        value: inout Bool,
-        nextValue: () -> Bool
-    ) {
-        value = nextValue()
-    }
+public struct HomeIndicatorAutoHiddenPreferenceKey: PreferenceKey {
+  public static var defaultValue = false
+
+  public static func reduce(
+    value: inout Bool,
+    nextValue: () -> Bool
+  ) {
+    value = nextValue()
+  }
 }
+
+// MARK: - SupportedOrientationPreferenceKey
 
 public struct SupportedOrientationPreferenceKey: PreferenceKey {
-    public static var defaultValue: UIInterfaceOrientationMask = .portrait
+  public static var defaultValue: UIInterfaceOrientationMask = .portrait
 
-    public static func reduce(
-        value: inout UIInterfaceOrientationMask,
-        nextValue: () -> UIInterfaceOrientationMask
-    ) {
-        value = nextValue()
-    }
+  public static func reduce(
+    value: inout UIInterfaceOrientationMask,
+    nextValue: () -> UIInterfaceOrientationMask
+  ) {
+    value = nextValue()
+  }
 }
 
-public extension View {
-    func prefersHomeIndicatorAutoHidden(_ value: Bool) -> some View {
-        preference(key: HomeIndicatorAutoHiddenPreferenceKey.self, value: value)
-    }
+extension View {
+  public func prefersHomeIndicatorAutoHidden(_ value: Bool) -> some View {
+    preference(key: HomeIndicatorAutoHiddenPreferenceKey.self, value: value)
+  }
 
-    func supportedOrientation(_ orientation: UIInterfaceOrientationMask) -> some View {
-        preference(key: SupportedOrientationPreferenceKey.self, value: orientation)
-    }
+  public func supportedOrientation(_ orientation: UIInterfaceOrientationMask) -> some View {
+    preference(key: SupportedOrientationPreferenceKey.self, value: orientation)
+  }
 }

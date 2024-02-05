@@ -3,18 +3,20 @@
 //  DependencyPlugin
 //
 //  Created by ErrorErrorError on 1/31/24.
-//  
+//
 //
 
 import Foundation
 import ProjectDescription
 
-public extension TargetDependency {
-  static let features = Features.self
-  static let clients = Clients.self
-  static let shared = Shared.self
-  static let externalDependencies = ExternalDependencies.self
+extension TargetDependency {
+  public static let features = Features.self
+  public static let clients = Clients.self
+  public static let shared = Shared.self
+  public static let externalDependencies = ExternalDependencies.self
 }
+
+// MARK: - Features
 
 public enum Features: String, CaseIterable, QualifiedName {
   case app
@@ -34,6 +36,8 @@ public enum Features: String, CaseIterable, QualifiedName {
   }
 }
 
+// MARK: - Clients
+
 public enum Clients: String, CaseIterable, QualifiedName {
   case dataClient
   case fileClient
@@ -43,6 +47,8 @@ public enum Clients: String, CaseIterable, QualifiedName {
     .project(target: name, path: .relativeToRoot("Targets/Clients/\(name)"))
   }
 }
+
+// MARK: - Shared
 
 public enum Shared: String, CaseIterable, QualifiedName {
   case architecture
@@ -56,20 +62,10 @@ public enum Shared: String, CaseIterable, QualifiedName {
 }
 
 extension ExternalDependencies {
-//  public static let allCases: [ExternalDependencies] = [
-//    ascollectionView,
-//    composableArchitecture,
-//    grdb,
-//    kingfisher,
-//    nukeUI,
-//    swiftSoup,
-//    shimmer,
-//    texture,
-//    zipFoundation
-//  ]
-
   public static let ascollectionView = Self(.external(name: "ASCollectionView"))
+  public static let casePaths = Self(.external(name: "CasePaths"))
   public static let composableArchitecture = Self(.external(name: "ComposableArchitecture"))
+  public static let dependenciesMacros = Self(.external(name: "DependenciesMacros"))
   public static let grdb = Self(.external(name: "GRDB"))
   public static let kingfisher = Self(.external(name: "Kingfisher"))
   public static let nuke = Self(.external(name: "Nuke"))

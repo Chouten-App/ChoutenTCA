@@ -2,7 +2,6 @@ import DependencyPlugin
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-
 let project = Project.feature(
   .info,
   dependencies: [

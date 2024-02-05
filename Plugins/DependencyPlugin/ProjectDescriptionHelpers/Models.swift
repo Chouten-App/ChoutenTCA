@@ -3,11 +3,13 @@
 //  DependencyPlugin
 //
 //  Created by ErrorErrorError on 1/31/24.
-//  
+//
 //
 
 import Foundation
 import ProjectDescription
+
+// MARK: - QualifiedName
 
 public protocol QualifiedName {
   var name: String { get }
@@ -17,11 +19,13 @@ extension QualifiedName where Self: RawRepresentable, Self.RawValue == String {
   public var name: String { rawValue.pascalCase }
 }
 
+// MARK: - ExternalDependencies
+
 public struct ExternalDependencies {
   init(_ target: TargetDependency) {
     self.target = target
   }
-  
+
   public let target: TargetDependency
 }
 

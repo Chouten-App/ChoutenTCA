@@ -9,6 +9,8 @@ import Architecture
 import Foundation
 import SwiftUI
 
+// MARK: - HostingController
+
 class HostingController<Content: View>: UIHostingController<Content> {
   override var prefersHomeIndicatorAutoHidden: Bool { _prefersHomeIndicatorAutoHidden }
 
@@ -48,14 +50,19 @@ class HostingController<Content: View>: UIHostingController<Content> {
     boxed.delegate = self
   }
 
-  @objc dynamic required init?(coder aDecoder: NSCoder) {
+  @objc
+  dynamic required init?(coder aDecoder: NSCoder) {
     super.init(coder: aDecoder)
   }
 }
 
+// MARK: - Boxed
+
 private class Boxed<Inner: View> {
   weak var delegate: HostingController<HostingBox<Inner>>?
 }
+
+// MARK: - HostingBox
 
 struct HostingBox<Inner: View>: View {
   let content: Inner
