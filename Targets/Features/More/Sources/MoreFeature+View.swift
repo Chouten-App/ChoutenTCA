@@ -12,7 +12,7 @@ import SwiftUI
 
 extension MoreFeature.View: View {
   @MainActor public var body: some View {
-    WithViewStore(store, observe: \.`self`) { viewStore in
+    WithPerceptionTracking {
       VStack(spacing: 12) {
         Text("頂点")
           .font(.largeTitle)
@@ -34,7 +34,7 @@ extension MoreFeature.View: View {
             Spacer()
 
             Toggle(
-              isOn: viewStore.$isDownloadedOnly,
+              isOn: $store.isDownloadedOnly,
               label: {}
             )
           }
@@ -51,7 +51,7 @@ extension MoreFeature.View: View {
 
             Spacer()
 
-            Toggle(isOn: viewStore.$isIncognito, label: {})
+            Toggle(isOn: $store.isIncognito, label: {})
           }
         }
         .padding(12)
@@ -64,7 +64,7 @@ extension MoreFeature.View: View {
 
         VStack {
           Button {
-            viewStore.send(.setPageState(to: .appearance), animation: .easeInOut)
+            send(.setPageState(to: .appearance), animation: .easeInOut)
           } label: {
             HStack {
               Image(systemName: "swatchpalette.fill")
@@ -105,7 +105,7 @@ extension MoreFeature.View: View {
           }
 
           Button {
-            viewStore.send(.setPageState(to: .developer), animation: .easeInOut)
+            send(.setPageState(to: .developer), animation: .easeInOut)
           } label: {
             HStack {
               Image(systemName: "laptopcomputer")
@@ -135,22 +135,22 @@ extension MoreFeature.View: View {
             )
         }
 
-        Text("Version \(viewStore.versionString)")
+        Text("Version \(store.versionString)")
           .font(.caption)
           .padding(.top, 12)
       }
       .padding(.horizontal, 20)
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
       .overlay {
-        if viewStore.pageState == .appearance {
+        if store.pageState == .appearance {
           AppearanceFeature.View(
-            store: self.store.scope(
+            store: store.scope(
               state: \.appearance,
-              action: Action.InternalAction.appearance
+              action: \.internal.appearance
             )
           )
           .transition(.move(edge: .trailing))
-        } else if viewStore.pageState == .developer {
+        } else if store.pageState == .developer {
           // Logs
           VStack {
             ScrollView {

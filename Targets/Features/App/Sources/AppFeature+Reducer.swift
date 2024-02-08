@@ -15,21 +15,21 @@ import Player
 import SharedModels
 import SwiftUI
 
-extension AppFeature: Reducer {
-  public var body: some ReducerOf<Self> {
-    Scope(state: \.more, action: /Action.InternalAction.more) {
+extension AppFeature {
+  @ReducerBuilder<State, Action> public var body: some ReducerOf<Self> {
+    Scope(state: \.more, action: \.internal.more) {
       MoreFeature()
     }
 
-    Scope(state: \.discover, action: /Action.InternalAction.discover) {
+    Scope(state: \.discover, action: \.internal.discover) {
       DiscoverFeature()
     }
 
-    Scope(state: \.player, action: /Action.InternalAction.player) {
+    Scope(state: \.player, action: \.internal.player) {
       PlayerFeature()
     }
 
-    Scope(state: \.sheet, action: /Action.InternalAction.sheet) {
+    Scope(state: \.sheet, action: \.internal.sheet) {
       ModuleSheetFeature()
     }
 
@@ -59,6 +59,7 @@ extension AppFeature: Reducer {
             print("Couldnt find commonCode.js")
           }
 
+          // TODO: Move this to a database client
           // Database
           if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             var isDirectory: ObjCBool = false

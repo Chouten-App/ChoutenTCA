@@ -6,6 +6,7 @@
 //
 
 import Architecture
+import Combine
 import Dependencies
 import Foundation
 import OSLog
@@ -15,10 +16,10 @@ import ZIPFoundation
 extension ModuleClient: DependencyKey {
   public static let liveValue: Self = {
     let moduleFolderNames = LockIsolated([String]())
-    let selectedModule = LockIsolated(Module?.none)
+    let selectedModule = CurrentValueSubject<Module?, Never>(Module?.none)
     let moduleIds = LockIsolated([String]())
     let selectedModuleName = LockIsolated("")
-    let minimumFormatVersion: Int = 1
+    let minimumFormatVersion = 1
 
     let logger = Logger(subsystem: "com.inumaki.Chouten", category: "ModuleClient")
 
@@ -153,7 +154,7 @@ extension ModuleClient: DependencyKey {
         }
       },
       getCurrentModule: { selectedModule.value },
-      setCurrentModule: { selectedModule.setValue($0) },
+      setCurrentModule: { selectedModule.send($0) },
       getModules: {
         try moduleFolderNames.setValue(getModules())
         var list: [Module] = []
@@ -210,7 +211,8 @@ extension ModuleClient: DependencyKey {
         if let index, moduleFolderNames.count > index {
           selectedModuleName.setValue(moduleFolderNames[index])
         }
-      }
+      },
+      currentModuleStream: { selectedModule.values.eraseToStream() }
     )
   }()
 }

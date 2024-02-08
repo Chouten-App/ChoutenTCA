@@ -9,13 +9,13 @@ import Appearance
 import Architecture
 import ComposableArchitecture
 
-extension MoreFeature: Reducer {
-  public var body: some ReducerOf<Self> {
-    Scope(state: /State.self, action: /Action.view) {
+extension MoreFeature {
+  @ReducerBuilder<State, Action> public var body: some ReducerOf<Self> {
+    Scope(\.view) {
       BindingReducer()
     }
 
-    Scope(state: \.appearance, action: /Action.InternalAction.appearance) {
+    Scope(state: \.appearance, action: \.internal.appearance) {
       AppearanceFeature()
     }
 

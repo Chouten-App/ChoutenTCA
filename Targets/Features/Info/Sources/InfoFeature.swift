@@ -13,34 +13,26 @@ import SharedModels
 import SwiftUI
 import Webview
 
+@Reducer
 public struct InfoFeature: Feature {
   @Dependency(\.moduleClient) var moduleClient
   @Dependency(\.dataClient) var dataClient
 
+  @ObservableState
   public struct State: FeatureState {
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-      // Compare all properties for equality
-      lhs.url == rhs.url &&
-        lhs.webviewState == rhs.webviewState &&
-        lhs.state == rhs.state &&
-        lhs.colorTheme == rhs.colorTheme &&
-        lhs.dynamicInfo == rhs.dynamicInfo &&
-        lhs.infoData == rhs.infoData &&
-        lhs.infoLoadable == rhs.infoLoadable &&
-        lhs.currentPage == rhs.currentPage
-    }
-
     public let url: String
     public var webviewState: WebviewFeature.State
-
     public var state: LoadingStatus = .notStarted
-
-    public var colorTheme: ColorTheme = .init(averageColor: .black, contrastingTone: .white, accentColor: .indigo, accentText: .white, dark: true)
-    @AppStorage("dynamicInfo") public var dynamicInfo = true
-
+    public var colorTheme = ColorTheme(
+      averageColor: .black,
+      contrastingTone: .white,
+      accentColor: .indigo,
+      accentText: .white,
+      dark: true
+    )
+    public var dynamicInfo = true
     public var infoData: InfoData = .sample
     public var infoLoadable: Loadable<InfoData> = .pending
-
     public var currentPage: Int = 1
 
     public init(url: String) {
@@ -56,7 +48,11 @@ public struct InfoFeature: Feature {
     case error
   }
 
+  @CasePathable
+  @dynamicMemberLookup
   public enum Action: FeatureAction {
+    @CasePathable
+    @dynamicMemberLookup
     public enum ViewAction: SendableAction {
       case setColorTheme(_ theme: ColorTheme)
 
@@ -71,7 +67,12 @@ public struct InfoFeature: Feature {
       case episodeTap(item: MediaItem, index: Int)
     }
 
+    @CasePathable
+    @dynamicMemberLookup
     public enum DelegateAction: SendableAction {}
+
+    @CasePathable
+    @dynamicMemberLookup
     public enum InternalAction: SendableAction {
       case webview(WebviewFeature.Action)
     }
@@ -89,13 +90,13 @@ public struct InfoFeature: Feature {
 
     let mediaPerPage = 50
 
-    public nonisolated init(store: StoreOf<InfoFeature>, isVisible: Binding<Bool>, dragState: Binding<CGSize>) {
+    public init(store: StoreOf<InfoFeature>, isVisible: Binding<Bool>, dragState: Binding<CGSize>) {
       self.store = store
       self._isVisible = isVisible
       self._dragState = dragState
     }
 
-    public nonisolated init(store: StoreOf<InfoFeature>) {
+    public init(store: StoreOf<InfoFeature>) {
       self.store = store
       self._dragState = .constant(.zero)
       self._isVisible = .constant(true)

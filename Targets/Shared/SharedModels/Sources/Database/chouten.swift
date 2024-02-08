@@ -11,7 +11,7 @@ import SwiftUI
 
 // MARK: - Media
 
-public struct Media: Codable, Equatable, FetchableRecord, PersistableRecord {
+public struct Media: Codable, Equatable, FetchableRecord, PersistableRecord, Sendable {
   public var id: String = UUID().uuidString
 
   public var moduleID: String
@@ -37,7 +37,7 @@ public struct Media: Codable, Equatable, FetchableRecord, PersistableRecord {
 
 // MARK: - FLAGS
 
-public enum FLAGS: String, Codable, Equatable, CaseIterable {
+public enum FLAGS: String, Codable, Equatable, CaseIterable, Sendable {
   case none // 0
   case planned // 1
   case finished // 2

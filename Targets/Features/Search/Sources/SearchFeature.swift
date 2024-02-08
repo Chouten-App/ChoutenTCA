@@ -14,32 +14,16 @@ import SwiftUI
 import ViewComponents
 import Webview
 
+@Reducer
 public struct SearchFeature: Feature {
   let logger = Logger(subsystem: "com.inumaki.Chouten", category: "Search")
 
+  @ObservableState
   public struct State: FeatureState {
-    public static func == (lhs: SearchFeature.State, rhs: SearchFeature.State) -> Bool {
-      lhs.webviewState == rhs.webviewState &&
-        lhs.info == rhs.info &&
-        lhs.query == rhs.query &&
-        lhs.lastQuery == rhs.lastQuery &&
-        lhs.htmlString == rhs.htmlString &&
-        lhs.jsString == rhs.jsString &&
-        lhs.searchResults == rhs.searchResults &&
-        lhs.searchLoadable == rhs.searchLoadable &&
-        lhs.state == rhs.state &&
-        lhs.itemOpacity == rhs.itemOpacity &&
-        lhs.scrollPosition == rhs.scrollPosition &&
-        lhs.infoVisible == rhs.infoVisible &&
-        lhs.dragState == rhs.dragState &&
-        lhs.searchFocused == rhs.searchFocused &&
-        lhs.headerOpacity == rhs.headerOpacity
-    }
-
     public var webviewState: WebviewFeature.State
     public var info: InfoFeature.State
 
-    @BindingState var query: String
+    public var query: String
     public var lastQuery: String = ""
     public var page = 1
     public var wasLastPage = false
@@ -69,14 +53,18 @@ public struct SearchFeature: Feature {
 
   @Dependency(\.moduleClient) var moduleClient
 
-  public enum LoadingStatus: Sendable {
+  public enum LoadingStatus: Sendable, Equatable {
     case notStarted
     case loading
     case success
     case error
   }
 
+  @CasePathable
+  @dynamicMemberLookup
   public enum Action: FeatureAction {
+    @CasePathable
+    @dynamicMemberLookup
     public enum ViewAction: SendableAction, BindableAction {
       case search
       case resetWebview
@@ -99,7 +87,12 @@ public struct SearchFeature: Feature {
       case binding(BindingAction<State>)
     }
 
+    @CasePathable
+    @dynamicMemberLookup
     public enum DelegateAction: SendableAction {}
+
+    @CasePathable
+    @dynamicMemberLookup
     public enum InternalAction: SendableAction {
       case webview(WebviewFeature.Action)
       case info(InfoFeature.Action)
@@ -112,7 +105,7 @@ public struct SearchFeature: Feature {
 
   @MainActor
   public struct View: FeatureView {
-    public let store: StoreOf<SearchFeature>
+    @Perception.Bindable public var store: StoreOf<SearchFeature>
     // @Environment(\.namespace) var animation
     let animation: Namespace.ID
     @FocusState public var searchbarFocused: Bool
@@ -124,7 +117,7 @@ public struct SearchFeature: Feature {
       self.animation = animation
     }
 
-    public nonisolated init(store: StoreOf<SearchFeature>) {
+    public init(store: StoreOf<SearchFeature>) {
       self.store = store
       self.animation = Namespace().wrappedValue
     }

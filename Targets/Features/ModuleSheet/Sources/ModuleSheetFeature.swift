@@ -16,13 +16,11 @@ import SwiftUI
 public struct ModuleSheetFeature: Feature {
   let logger = Logger(subsystem: "com.inumaki.Chouten", category: "ModuleSheet")
 
+  @ObservableState
   public struct State: FeatureState {
-    public var offset: Double = 0.0
-    public var tempOffset: Double = 0.0
-    public var contentHeight: Double = 0.0
-    public var animate = false
     public var selectedModuleId: String = ""
     public var availableModules: [Module] = []
+    public var selectedModule: Module?
 
     public init() {}
   }
@@ -41,15 +39,7 @@ public struct ModuleSheetFeature: Feature {
   public enum Action: FeatureAction {
     @CasePathable
     public enum ViewAction: SendableAction {
-      case setContentHeight(newHeight: Double)
-      case setOffset(value: Double)
-      case setOffsetAndTemp(value: Double)
-      case updateOffset(value: Double)
-      case setTempOffset(value: Double)
-      case updateTempOffset(value: Double)
-      case setAnimate(_ value: Bool)
-      case setModule(module: Module)
-
+      case selectModule(module: Module)
       case onAppear
     }
 
@@ -57,7 +47,9 @@ public struct ModuleSheetFeature: Feature {
     public enum DelegateAction: SendableAction {}
 
     @CasePathable
-    public enum InternalAction: SendableAction {}
+    public enum InternalAction: SendableAction {
+      case setCurrentModule(Module?)
+    }
 
     case view(ViewAction)
     case delegate(DelegateAction)
@@ -68,16 +60,11 @@ public struct ModuleSheetFeature: Feature {
   public struct View: FeatureView {
     public let store: StoreOf<ModuleSheetFeature>
 
-    @GestureState var gestureOffset: CGFloat = 0
-    let minimum: CGFloat = 50
+    @SwiftUI.State var offset = CGFloat.zero
+    @SwiftUI.State var lastOffset = CGFloat.zero
+    @SwiftUI.State var animateScroll = false
 
-    @MainActor
-    func onChange(offset: Double, lastOffset: Double) -> Double? {
-      if offset < 32 {
-        return gestureOffset + lastOffset
-      }
-      return nil
-    }
+    let minimum: CGFloat = 50
 
     public nonisolated init(store: StoreOf<ModuleSheetFeature>) {
       self.store = store

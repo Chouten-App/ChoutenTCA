@@ -13,35 +13,35 @@ import ViewComponents
 
 extension AppearanceFeature.View {
   @MainActor public var body: some View {
-    WithViewStore(self.store, observe: \.`self`) { viewStore in
+    WithPerceptionTracking {
       SettingsPage("Appearance") {
         SettingsGroup(title: "Appearance", icon: "circle.bottomhalf.filled") {
           HStack {
             Spacer()
 
-            ColorSchemeDisplay("Light", selected: viewStore.colorScheme == 0) {
+            ColorSchemeDisplay("Light", selected: store.colorScheme == 0) {
               RoundedRectangle(cornerRadius: 6)
                 .fill(.white)
                 .frame(width: 80, height: 140)
             }
             .onTapGesture {
-              viewStore.send(.setColorScheme(to: .light))
+              send(.setColorScheme(to: .light))
             }
 
             Spacer()
 
-            ColorSchemeDisplay("Dark", selected: viewStore.colorScheme == 1) {
+            ColorSchemeDisplay("Dark", selected: store.colorScheme == 1) {
               RoundedRectangle(cornerRadius: 6)
                 .fill(.black)
                 .frame(width: 80, height: 140)
             }
             .onTapGesture {
-              viewStore.send(.setColorScheme(to: .dark))
+              send(.setColorScheme(to: .dark))
             }
 
             Spacer()
 
-            ColorSchemeDisplay("System", selected: viewStore.colorScheme == 2) {
+            ColorSchemeDisplay("System", selected: store.colorScheme == 2) {
               RoundedRectangle(cornerRadius: 6)
                 .fill(
                   LinearGradient(
@@ -70,7 +70,7 @@ extension AppearanceFeature.View {
                 .frame(width: 80, height: 140)
             }
             .onTapGesture {
-              viewStore.send(.setColorScheme(to: .system))
+              send(.setColorScheme(to: .system))
             }
 
             Spacer()
@@ -96,7 +96,7 @@ extension AppearanceFeature.View {
 
               Spacer()
 
-              Toggle("", isOn: viewStore.$ambientMode)
+              Toggle("", isOn: $store.ambientMode)
                 .tint(.indigo)
             }
 
@@ -105,7 +105,7 @@ extension AppearanceFeature.View {
 
               Spacer()
 
-              Toggle("", isOn: viewStore.$dynamicInfo)
+              Toggle("", isOn: $store.dynamicInfo)
                 .tint(.indigo)
                 .fixedSize()
             }

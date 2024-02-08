@@ -14,28 +14,13 @@ import SharedModels
 import SwiftUI
 import Webview
 
+@Reducer
 public struct PlayerFeature: Feature {
   @Dependency(\.dataClient) var dataClient
   @Dependency(\.moduleClient) var moduleClient
 
+  @ObservableState
   public struct State: FeatureState {
-    public static func == (lhs: PlayerFeature.State, rhs: PlayerFeature.State) -> Bool {
-      lhs.url == rhs.url &&
-        lhs.infoData == rhs.infoData &&
-        lhs.fullscreen == rhs.fullscreen &&
-        lhs.showUI == rhs.showUI &&
-        lhs.ambientMode == rhs.ambientMode &&
-        lhs.webviewState == rhs.webviewState &&
-        lhs.videoLoadable == rhs.videoLoadable &&
-        lhs.speed == rhs.speed &&
-        lhs.server == rhs.server &&
-        lhs.quality == rhs.quality &&
-        lhs.servers == rhs.servers &&
-        lhs.item == rhs.item &&
-        lhs.qualities == rhs.qualities &&
-        lhs.showMenu == rhs.showMenu
-    }
-
     public let url: String
     public let index: Int
     public var infoData: InfoData?
@@ -44,7 +29,7 @@ public struct PlayerFeature: Feature {
     public var fullscreen: Bool = (UIScreen.main.bounds.width / UIScreen.main.bounds.height) > 1
     public var showUI = true
 
-    @AppStorage("ambientMode") public var ambientMode = true
+    public var ambientMode = true
 
     public var webviewState: WebviewFeature.State
 
@@ -78,7 +63,11 @@ public struct PlayerFeature: Feature {
     }
   }
 
+  @CasePathable
+  @dynamicMemberLookup
   public enum Action: FeatureAction {
+    @CasePathable
+    @dynamicMemberLookup
     public enum ViewAction: SendableAction {
       case setPiP(_ value: Bool)
       case setSpeed(value: Float)
@@ -103,7 +92,12 @@ public struct PlayerFeature: Feature {
       case setInfoData(data: InfoData)
     }
 
+    @CasePathable
+    @dynamicMemberLookup
     public enum DelegateAction: SendableAction {}
+
+    @CasePathable
+    @dynamicMemberLookup
     public enum InternalAction: SendableAction {
       case webview(WebviewFeature.Action)
     }
@@ -115,7 +109,7 @@ public struct PlayerFeature: Feature {
 
   @MainActor
   public struct View: FeatureView {
-    public let store: StoreOf<PlayerFeature>
+    @Perception.Bindable public var store: StoreOf<PlayerFeature>
 
     @StateObject var playerVM = PlayerViewModel()
 
@@ -208,7 +202,8 @@ public struct PlayerFeature: Feature {
       return (hours > 0 ? hourString + ":" : "") + minuteString + ":" + secondsString
     }
 
-    public nonisolated init(store: StoreOf<PlayerFeature>) {
+    @MainActor
+    public init(store: StoreOf<PlayerFeature>) {
       self.store = store
     }
   }

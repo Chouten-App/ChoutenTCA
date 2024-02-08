@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - SearchData
 
-public struct SearchData: Codable, Hashable, Equatable {
+public struct SearchData: Codable, Hashable, Equatable, Sendable {
   public let url: String
   public let img: String
   public let title: String

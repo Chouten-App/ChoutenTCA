@@ -96,6 +96,7 @@ extension LoadableView {
 
 // MARK: - LoadableStore
 
+@available(*, deprecated, message: "Use native switch case instead.")
 public struct LoadableStore<T, Action, Loaded: View, Failed: View, Loading: View, Pending: View>: View {
   let store: Store<Loadable<T>, Action>
   let loadedView: (Store<T, Action>) -> Loaded

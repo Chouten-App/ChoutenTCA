@@ -21,17 +21,17 @@ private enum Cancellables: Hashable {
 
 // MARK: - SearchFeature + Reducer
 
-extension SearchFeature: Reducer {
-  public var body: some ReducerOf<Self> {
-    Scope(state: /State.self, action: /Action.view) {
+extension SearchFeature {
+  @ReducerBuilder<State, Action> public var body: some ReducerOf<Self> {
+    Scope(\.view) {
       BindingReducer()
     }
 
-    Scope(state: \.webviewState, action: /Action.InternalAction.webview) {
+    Scope(state: \.webviewState, action: \.internal.webview) {
       WebviewFeature()
     }
 
-    Scope(state: \.info, action: /Action.InternalAction.info) {
+    Scope(state: \.info, action: \.internal.info) {
       InfoFeature()
     }
 
@@ -138,8 +138,8 @@ extension SearchFeature: Reducer {
         case let .setDragState(value):
           state.dragState = value
           return .none
-        case .binding(\.$query):
-          return .none
+//        case .binding(\.$query):
+//          return .none
         // let searchQuery = state.query
         //
         // guard !searchQuery.isEmpty else {
@@ -153,7 +153,7 @@ extension SearchFeature: Reducer {
         //    await send(.view(.search), animation: .easeInOut)
         // }
         // .debounce(id: Cancellables.fetchingItemsDebounce, for: 0.5, scheduler: DispatchQueue.main)
-        // 
+        //
         case .binding:
           return .none
         case let .setLoadable(new_state):

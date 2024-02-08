@@ -14,12 +14,12 @@ let project = Project(
   name: Environments.appName,
   organizationName: Environments.organizationName,
   targets: [
-    .init(
+    .target(
       name: Environments.appName,
-      destinations: .iOS,
+      destinations: Environments.iosDestination,
       product: .app,
       bundleId: Environments.bundleId,
-      deploymentTargets: .iOS("15.0"),
+      deploymentTargets: Environments.iosDeploymentTarget,
       infoPlist: .file(path: "Resources/ChoutenApp-Info.plist"),
       sources: ["Sources/**"],
       resources: [.folderReference(path: "../Shared/Resources/**")],

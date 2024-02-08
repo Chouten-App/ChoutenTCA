@@ -17,101 +17,94 @@ import SwiftUI
 
 extension ModuleSheetFeature.View: View {
   public var body: some View {
-    WithViewStore(store, observe: \.`self`) { viewStore in
-      GeometryReader { proxy -> AnyView in
+    WithPerceptionTracking {
+      GeometryReader { proxy in
         let height = proxy.frame(in: .global).height
 
-        return AnyView(
-          VStack {
-            // Title bar
-            HStack {
-              let module = ModuleClient.selectedModule
-
-              if let module {
-                Text(module.name)
-                  .font(.title2)
-                  .fontWeight(.bold)
-              } else {
-                Text("No Module Selected")
-                  .font(.title2)
-                  .fontWeight(.bold)
-              }
-
-              Spacer()
+        VStack {
+          // Title bar
+          HStack {
+            if let module = store.selectedModule {
+              Text(module.name)
+                .font(.title2)
+                .fontWeight(.bold)
+            } else {
+              Text("No Module Selected")
+                .font(.title2)
+                .fontWeight(.bold)
             }
-            .padding()
-            .background(.regularMaterial)
 
-            ScrollView {
-              VStack {
-                ModuleList(type: "Video", viewStore.availableModules, viewStore: viewStore)
-
-                ModuleList(type: "Book", viewStore.availableModules, viewStore: viewStore)
-
-                ModuleList(type: "Text", viewStore.availableModules, viewStore: viewStore)
-              }
-            }
-            .padding(.top, 20)
+            Spacer()
           }
-          .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+          .padding()
           .background(.regularMaterial)
-          .cornerRadius(20, corners: [.topLeft, .topRight])
-          .overlay(alignment: .top) {
-            ZStack {
-              Color.clear
 
-              RoundedRectangle(cornerRadius: 4)
-                .frame(
-                  maxWidth: 40,
-                  maxHeight: 6
-                )
-                .padding(.top, 4)
-                .padding(.leading, 0)
+          ScrollView {
+            VStack {
+              ModuleList(type: "Video", store.availableModules)
+              ModuleList(type: "Book", store.availableModules)
+              ModuleList(type: "Text", store.availableModules)
             }
-            .frame(
-              maxWidth: .infinity,
-              maxHeight: 20
-            )
-            .contentShape(Rectangle())
           }
-          .offset(y: height - minimum)
-          .offset(y: viewStore.offset)
-          // .animation(.easeInOut, value: viewStore.animate)
-          .gesture(
-            DragGesture()
-              .updating($gestureOffset) { value, out, _ in
-                out = value.translation.height
+          .padding(.top, 20)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(.regularMaterial)
+        .cornerRadius(20, corners: [.topLeft, .topRight])
+        .overlay(alignment: .top) {
+          ZStack {
+            Color.clear
 
-                let ret = onChange(offset: viewStore.offset, lastOffset: viewStore.tempOffset)
-                if let ret {
-                  viewStore.send(.view(.setOffset(value: ret)))
-                }
-              }
-              .onEnded { _ in
-                // viewStore.send(.setAnimate(true))
-                let maxHeight = height - minimum
-
-                if -viewStore.offset > minimum, -viewStore.offset < maxHeight / 2 {
-                  // MID
-                  viewStore.send(.view(.setOffset(value: -(maxHeight / 3))), animation: .easeInOut)
-                } else if -viewStore.offset > maxHeight / 2 {
-                  viewStore.send(.view(.setOffset(value: -maxHeight)), animation: .easeInOut)
-                } else {
-                  viewStore.send(.view(.setOffset(value: 0)), animation: .easeInOut)
-                }
-
-                // viewStore.send(.setAnimate(false))
-
-                viewStore.send(.view(.setTempOffset(value: viewStore.offset)))
-              }
+            RoundedRectangle(cornerRadius: 4)
+              .frame(
+                maxWidth: 40,
+                maxHeight: 6
+              )
+              .padding(.top, 4)
+              .padding(.leading, 0)
+          }
+          .frame(
+            maxWidth: .infinity,
+            maxHeight: 20
           )
+          .contentShape(Rectangle())
+        }
+        .animation(.spring(), value: animateScroll)
+        .offset(y: height - minimum)
+        .offset(y: offset)
+        .gesture(
+          DragGesture(minimumDistance: 0.01)
+            .onChanged { value in
+              // suppress overscroll and underscroll
+              animateScroll = false
+              offset = lastOffset + value.translation.height
+            }
+            .onEnded { _ in
+              let maxHeight = height - minimum
+              let actualOffset = -offset
+
+              // FIXME: improve drag gesture based on velocity (predictedEndTranslation)
+
+              if actualOffset < 0 {
+                offset = 0
+              } else if actualOffset > maxHeight {
+                offset = -maxHeight
+              } else if actualOffset < maxHeight / 2 {
+                offset = -maxHeight / 3
+              } else {
+                offset = -maxHeight
+              }
+
+              lastOffset = offset
+              animateScroll = true
+            }
         )
       }
       .frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height - 64, alignment: .bottom)
       .clipped()
       .ignoresSafeArea(.all, edges: .bottom)
       .onAppear {
-        viewStore.send(.view(.onAppear))
+        send(.onAppear)
       }
     }
   }
@@ -119,7 +112,7 @@ extension ModuleSheetFeature.View: View {
 
 extension ModuleSheetFeature.View {
   @MainActor
-  func ModuleList(type: String, _ availableModules: [Module], viewStore: ViewStoreOf<ModuleSheetFeature>) -> some View {
+  func ModuleList(type: String, _ availableModules: [Module]) -> some View {
     VStack {
       let filteredModules = availableModules.filter { $0.type == type }
       Text(type)
@@ -132,7 +125,7 @@ extension ModuleSheetFeature.View {
           ForEach(0..<filteredModules.count, id: \.self) { index in
             let module = filteredModules[index]
 
-            ModuleButton(module: module, viewStore: viewStore)
+            ModuleButton(module: module)
 
             // ModuleSelectorButton(
             // store: Store(
@@ -160,21 +153,9 @@ extension ModuleSheetFeature.View {
   }
 
   @MainActor
-  func ModuleButton(module: Module, viewStore: ViewStoreOf<ModuleSheetFeature>) -> some View {
+  func ModuleButton(module: Module) -> some View {
     Button {
-      viewStore.send(.view(.setModule(module: module)))
-      // viewStore.send(.loadModule)
-      // viewStore.send(.resetData)
-      // if userInfo.count > 0 {
-      // userInfo[0].selectedModuleId = viewStore.module.id
-      // try! moc.save()
-      // print("saved")
-      // } else {
-      // let info = UserInfo(context: moc)
-      // info.selectedModuleId = viewStore.module.id
-      // try! moc.save()
-      // print("saved2")
-      // }
+      send(.selectModule(module: module))
     } label: {
       HStack(alignment: .center) {
         if let icon = module.icon.flatMap({ URL(string: $0) }) {

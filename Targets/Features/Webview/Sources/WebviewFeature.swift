@@ -12,7 +12,9 @@ import SwiftUI
 
 // MARK: - WebviewFeature
 
+@Reducer
 public struct WebviewFeature: Feature {
+  @ObservableState
   public struct State: FeatureState {
     public var htmlString: String = ""
     public var javaScript: String = ""
@@ -28,7 +30,11 @@ public struct WebviewFeature: Feature {
     }
   }
 
+  @CasePathable
+  @dynamicMemberLookup
   public enum Action: FeatureAction {
+    @CasePathable
+    @dynamicMemberLookup
     public enum ViewAction: SendableAction {
       case setNextUrl(newUrl: String)
       case setHtmlString(newString: String)
@@ -36,7 +42,12 @@ public struct WebviewFeature: Feature {
       case setRequestType(type: String)
     }
 
+    @CasePathable
+    @dynamicMemberLookup
     public enum DelegateAction: SendableAction {}
+
+    @CasePathable
+    @dynamicMemberLookup
     public enum InternalAction: SendableAction {}
 
     case view(ViewAction)
@@ -81,21 +92,19 @@ public struct WebviewFeature: Feature {
       self.completionHandler = completionHandler
     }
 
-    public nonisolated init(store: StoreOf<WebviewFeature>) {
+    public init(store: StoreOf<WebviewFeature>) {
       self.store = store
       self.payload = ""
       self.action = ""
       self.completionHandler = nil
     }
+
+    @MainActor public var body: some SwiftUI.View {
+      WithPerceptionTracking {
+        WebView(store: store, payload: payload, completionHandler: completionHandler, action: action)
+      }
+    }
   }
 
   public init() {}
-}
-
-extension WebviewFeature.View {
-  @MainActor public var body: some View {
-    WithViewStore(store, observe: \.`self`) { viewStore in
-      WebView(viewStore: viewStore, payload: payload, completionHandler: completionHandler, action: action)
-    }
-  }
 }

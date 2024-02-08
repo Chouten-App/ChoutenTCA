@@ -18,7 +18,7 @@ import Webview
 
 // MARK: - ColorTheme
 
-public struct ColorTheme: Equatable {
+public struct ColorTheme: Equatable, Sendable {
   public let averageColor: Color
   public let contrastingTone: Color
   public let accentColor: Color
@@ -117,16 +117,16 @@ extension UIImage {
 
 extension InfoFeature.View: View {
   @MainActor public var body: some View {
-    WithViewStore(store, observe: \.`self`) { viewStore in
+    WithPerceptionTracking {
       GeometryReader { proxy in
-        LoadableView(loadable: viewStore.infoLoadable) { infoData in
+        LoadableView(loadable: store.infoLoadable) { infoData in
           if proxy.size.width > 900 {
             HStack {
               ScrollView {
                 VStack {
-                  Header(proxy: proxy, viewStore: viewStore, infoData: infoData)
+                  Header(proxy: proxy, infoData: infoData)
 
-                  ExtraInfo(proxy: proxy, viewStore: viewStore, infoData: infoData)
+                  ExtraInfo(proxy: proxy, infoData: infoData)
                 }
               }
               .frame(maxWidth: proxy.size.width - 360, maxHeight: .infinity, alignment: .top)
@@ -232,83 +232,83 @@ extension InfoFeature.View: View {
                     .padding(.top, 20)
                   }
 
-                  EpisodeList(viewStore: viewStore, infoData: infoData, proxy: proxy)
+                  EpisodeList(infoData: infoData, proxy: proxy)
                 }
               }
               .frame(minWidth: 360, maxWidth: 360, maxHeight: .infinity, alignment: .topLeading)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(viewStore.colorTheme.averageColor)
-            .foregroundColor(viewStore.colorTheme.contrastingTone)
+            .background(store.colorTheme.averageColor)
+            .foregroundColor(store.colorTheme.contrastingTone)
             .ignoresSafeArea()
           } else {
             ScrollView {
               VStack {
-                Header(proxy: proxy, viewStore: viewStore, infoData: infoData)
+                Header(proxy: proxy, infoData: infoData)
 
-                ExtraInfo(proxy: proxy, viewStore: viewStore, infoData: infoData)
+                ExtraInfo(proxy: proxy, infoData: infoData)
 
-                EpisodeList(viewStore: viewStore, infoData: infoData, proxy: proxy)
+                EpisodeList(infoData: infoData, proxy: proxy)
               }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(viewStore.colorTheme.averageColor)
-            .foregroundColor(viewStore.colorTheme.contrastingTone)
+            .background(store.colorTheme.averageColor)
+            .foregroundColor(store.colorTheme.contrastingTone)
             .ignoresSafeArea()
           }
         } failedView: { error in
           Text("\(error.localizedDescription)")
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(viewStore.colorTheme.averageColor)
-            .foregroundColor(viewStore.colorTheme.contrastingTone)
+            .background(store.colorTheme.averageColor)
+            .foregroundColor(store.colorTheme.contrastingTone)
             .ignoresSafeArea()
         } loadingView: {
           ScrollView {
             VStack {
-              ShimmerHeader(proxy: proxy, viewStore: viewStore)
+              ShimmerHeader(proxy: proxy)
 
-              ShimmerExtraInfo(viewStore: viewStore)
+              ShimmerExtraInfo()
 
-              ShimmerEpisodeList(viewStore: viewStore, proxy: proxy)
+              ShimmerEpisodeList(proxy: proxy)
             }
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-          .background(viewStore.colorTheme.averageColor)
-          .foregroundColor(viewStore.colorTheme.contrastingTone)
+          .background(store.colorTheme.averageColor)
+          .foregroundColor(store.colorTheme.contrastingTone)
           .ignoresSafeArea()
         } pendingView: {
           ScrollView {
             VStack {
-              ShimmerHeader(proxy: proxy, viewStore: viewStore)
+              ShimmerHeader(proxy: proxy)
 
-              ShimmerExtraInfo(viewStore: viewStore)
+              ShimmerExtraInfo()
 
-              ShimmerEpisodeList(viewStore: viewStore, proxy: proxy)
+              ShimmerEpisodeList(proxy: proxy)
             }
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-          .background(viewStore.colorTheme.averageColor)
-          .foregroundColor(viewStore.colorTheme.contrastingTone)
+          .background(store.colorTheme.averageColor)
+          .foregroundColor(store.colorTheme.contrastingTone)
           .ignoresSafeArea()
         }
         .overlay(alignment: .topLeading) {
-          Navbar(viewStore: viewStore)
+          Navbar()
             .frame(maxWidth: proxy.size.width > 900 ? proxy.size.width - 410 : .infinity)
         }
       }
       .background {
-        if !viewStore.webviewState.htmlString.isEmpty, !viewStore.webviewState.javaScript.isEmpty {
-          if let info = viewStore.infoLoadable.value, let episodes = info.epListURLs.first, !episodes.isEmpty {
+        if !store.webviewState.htmlString.isEmpty, !store.webviewState.javaScript.isEmpty {
+          if let info = store.infoLoadable.value, let episodes = info.epListURLs.first, !episodes.isEmpty {
             WebviewFeature.View(
               store: self.store.scope(
                 state: \.webviewState,
-                action: Action.InternalAction.webview
+                action: \.internal.webview
               ),
               payload: episodes,
               action: "eplist"
             ) { result in
               print(result)
-              viewStore.send(.view(.parseMediaResult(data: result)))
+              store.send(.view(.parseMediaResult(data: result)))
             }
             .hidden()
             .frame(maxWidth: 0, maxHeight: 0)
@@ -316,12 +316,12 @@ extension InfoFeature.View: View {
             WebviewFeature.View(
               store: self.store.scope(
                 state: \.webviewState,
-                action: Action.InternalAction.webview
+                action: \.internal.webview
               ),
-              payload: viewStore.url
+              payload: store.url
             ) { result in
               print(result)
-              viewStore.send(.view(.parseResult(data: result)))
+              store.send(.view(.parseResult(data: result)))
             }
             .hidden()
             .frame(maxWidth: 0, maxHeight: 0)
@@ -332,9 +332,9 @@ extension InfoFeature.View: View {
       .onAppear {
         print("onAppear")
         if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
-          viewStore.send(.view(.setInfoData(data: InfoData.sample)))
+          store.send(.view(.setInfoData(data: InfoData.sample)))
         } else {
-          viewStore.send(.view(.info))
+          store.send(.view(.info))
         }
       }
       .overlay(alignment: .leading) {
@@ -368,21 +368,21 @@ extension InfoFeature.View: View {
 
 extension InfoFeature.View {
   @MainActor
-  func Navbar(viewStore: ViewStoreOf<InfoFeature>) -> some View {
+  func Navbar() -> some View {
     HStack {
       Button {
-        viewStore.send(.view(.navigateBack))
+        store.send(.view(.navigateBack))
       } label: {
         Image(systemName: "chevron.left")
           .font(.caption)
           .foregroundColor(
-            viewStore.colorTheme.accentText
+            store.colorTheme.accentText
           )
           .padding(8)
           .background {
             Circle()
               .fill(
-                viewStore.colorTheme.accentColor
+                store.colorTheme.accentColor
               )
           }
           .contentShape(Rectangle())
@@ -395,13 +395,13 @@ extension InfoFeature.View {
         Image(systemName: "bookmark")
           .font(.caption)
           .foregroundColor(
-            viewStore.colorTheme.accentText
+            store.colorTheme.accentText
           )
           .padding(8)
           .background {
             Circle()
               .fill(
-                viewStore.colorTheme.accentColor
+                store.colorTheme.accentColor
               )
           }
           .contentShape(Rectangle())
@@ -412,13 +412,13 @@ extension InfoFeature.View {
         Image(systemName: "square.and.arrow.down")
           .font(.caption)
           .foregroundColor(
-            viewStore.colorTheme.accentText
+            store.colorTheme.accentText
           )
           .padding(8)
           .background {
             Circle()
               .fill(
-                viewStore.colorTheme.accentColor
+                store.colorTheme.accentColor
               )
           }
           .contentShape(Rectangle())
@@ -432,17 +432,17 @@ extension InfoFeature.View {
 
 extension InfoFeature.View {
   @MainActor
-  public func Header(proxy _: GeometryProxy, viewStore: ViewStoreOf<InfoFeature>, infoData: InfoData) -> some View {
+  public func Header(proxy _: GeometryProxy, infoData: InfoData) -> some View {
     ZStack(alignment: .bottomLeading) {
       // Background image
       GeometryReader { reader in
         FillAspectImage(
           url: URL(string: infoData.banner ?? infoData.poster)
         ) { image in
-          if viewStore.dynamicInfo {
+          if store.dynamicInfo {
             do {
               let theme = try ColorTheme.generate(from: image)
-              viewStore.send(
+              store.send(
                 .view(
                   .setColorTheme(theme)
                 )
@@ -456,10 +456,10 @@ extension InfoFeature.View {
         .overlay {
           LinearGradient(stops: [
             Gradient.Stop(
-              color: viewStore.colorTheme.averageColor.opacity(0.9),
+              color: store.colorTheme.averageColor.opacity(0.9),
               location: 0.0
             ),
-            Gradient.Stop(color: viewStore.colorTheme.averageColor.opacity(0.4), location: 1.0)
+            Gradient.Stop(color: store.colorTheme.averageColor.opacity(0.4), location: 1.0)
           ], startPoint: .bottom, endPoint: .top)
         }
         .frame(
@@ -516,7 +516,7 @@ extension InfoFeature.View {
           HStack(spacing: 8) {
             if let status = infoData.status {
               Text(status)
-                .foregroundColor(viewStore.colorTheme.accentColor)
+                .foregroundColor(store.colorTheme.accentColor)
                 .fontWeight(.bold)
             }
 
@@ -547,7 +547,7 @@ extension InfoFeature.View {
   }
 
   @MainActor
-  public func ShimmerHeader(proxy: GeometryProxy, viewStore: ViewStoreOf<InfoFeature>) -> some View {
+  public func ShimmerHeader(proxy: GeometryProxy) -> some View {
     ZStack(alignment: .bottomLeading) {
       // Background image
       GeometryReader { reader in
@@ -566,10 +566,10 @@ extension InfoFeature.View {
         .overlay {
           LinearGradient(stops: [
             Gradient.Stop(
-              color: viewStore.colorTheme.averageColor.opacity(0.9),
+              color: store.colorTheme.averageColor.opacity(0.9),
               location: 0.0
             ),
-            Gradient.Stop(color: viewStore.colorTheme.averageColor.opacity(0.4), location: 1.0)
+            Gradient.Stop(color: store.colorTheme.averageColor.opacity(0.4), location: 1.0)
           ], startPoint: .bottom, endPoint: .top)
         }
         .frame(
@@ -644,7 +644,7 @@ extension InfoFeature.View {
 
 extension InfoFeature.View {
   @MainActor
-  public func ExtraInfo(proxy: GeometryProxy, viewStore: ViewStoreOf<InfoFeature>, infoData: InfoData) -> some View {
+  public func ExtraInfo(proxy: GeometryProxy, infoData: InfoData) -> some View {
     VStack(alignment: .leading) {
       // Tags
       if !infoData.altTitles.isEmpty {
@@ -663,7 +663,7 @@ extension InfoFeature.View {
           .padding(.horizontal, 20)
         }
         .padding(.horizontal, -20)
-        .preferredColorScheme(viewStore.colorTheme.dark ? .dark : .light)
+        .preferredColorScheme(store.colorTheme.dark ? .dark : .light)
       }
 
       Text(infoData.description)
@@ -776,7 +776,7 @@ extension InfoFeature.View {
   }
 
   @MainActor
-  public func ShimmerExtraInfo(viewStore: ViewStoreOf<InfoFeature>) -> some View {
+  public func ShimmerExtraInfo() -> some View {
     VStack(alignment: .leading) {
       // Tags
       ScrollView(.horizontal) {
@@ -799,7 +799,7 @@ extension InfoFeature.View {
       }
       .padding(.horizontal, -20)
       .padding(.bottom, 12)
-      .preferredColorScheme(viewStore.colorTheme.dark ? .dark : .light)
+      .preferredColorScheme(store.colorTheme.dark ? .dark : .light)
 
       VStack(alignment: .leading) {
         RoundedRectangle(cornerRadius: 6)
@@ -922,7 +922,7 @@ extension InfoFeature.View {
   }
 
   @MainActor
-  func EpisodeList(viewStore: ViewStoreOf<InfoFeature>, infoData: InfoData, proxy: GeometryProxy) -> some View {
+  func EpisodeList(infoData: InfoData, proxy: GeometryProxy) -> some View {
     VStack {
       // PAGINATION
       Group {
@@ -949,7 +949,7 @@ extension InfoFeature.View {
               HStack {
                 ForEach(1..<pageCount(infoData: infoData) + 1, id: \.self) { page in
                   Button(action: {
-                    // viewStore.send(.setCurrentPage(page: page))
+                    // store.send(.setCurrentPage(page: page))
                   }) {
                     Text("\(episodeRange(forPage: page, infoData: infoData, mediaIncrease: true))")
                       .font(.subheadline)
@@ -977,12 +977,12 @@ extension InfoFeature.View {
       // TODO: add seasons value here
       if !infoData.mediaList.isEmpty {
         let startIndex = true ?
-          (viewStore.currentPage - 1) * mediaPerPage
-          : infoData.mediaList[0].list.count - (viewStore.currentPage - 1) * mediaPerPage - (viewStore.currentPage == 1 ? 0 : 1)
+          (store.currentPage - 1) * mediaPerPage
+          : infoData.mediaList[0].list.count - (store.currentPage - 1) * mediaPerPage - (store.currentPage == 1 ? 0 : 1)
 
         let endIndex = true ?
-          min(viewStore.currentPage * mediaPerPage, infoData.mediaList[0].list.count)
-          : max(infoData.mediaList[0].list.count - viewStore.currentPage * mediaPerPage - 1, 0)
+          min(store.currentPage * mediaPerPage, infoData.mediaList[0].list.count)
+          : max(infoData.mediaList[0].list.count - store.currentPage * mediaPerPage - 1, 0)
         let episodeList = true ? Array(infoData.mediaList[0].list[startIndex..<endIndex]) : Array(infoData.mediaList[0].list[endIndex..<startIndex])
 
         ScrollView(proxy.size.width > 900 ? .vertical : .horizontal) {
@@ -990,18 +990,18 @@ extension InfoFeature.View {
             VStack {
               if true {
                 ForEach(episodeList, id: \.self) { episode in
-                  EpisodeCard(item: episode, infoData: infoData, viewStore: viewStore, proxy: proxy)
+                  EpisodeCard(item: episode, infoData: infoData, proxy: proxy)
                     .frame(maxWidth: 320)
                     .onTapGesture {
-                      viewStore.send(.view(.episodeTap(item: episode, index: episodeList.firstIndex { $0 == episode } ?? 0)), animation: .easeInOut)
+                      store.send(.view(.episodeTap(item: episode, index: episodeList.firstIndex { $0 == episode } ?? 0)), animation: .easeInOut)
                     }
                 }
               } else {
                 ForEach(episodeList.reversed(), id: \.self) { episode in
-                  EpisodeCard(item: episode, infoData: infoData, viewStore: viewStore, proxy: proxy)
+                  EpisodeCard(item: episode, infoData: infoData, proxy: proxy)
                     .frame(maxWidth: 320)
                     .onTapGesture {
-                      viewStore.send(.view(.episodeTap(item: episode, index: episodeList.firstIndex { $0 == episode } ?? 0)), animation: .easeInOut)
+                      store.send(.view(.episodeTap(item: episode, index: episodeList.firstIndex { $0 == episode } ?? 0)), animation: .easeInOut)
                     }
                 }
               }
@@ -1011,18 +1011,18 @@ extension InfoFeature.View {
             HStack {
               if true {
                 ForEach(episodeList, id: \.self) { episode in
-                  EpisodeCard(item: episode, infoData: infoData, viewStore: viewStore, proxy: proxy)
+                  EpisodeCard(item: episode, infoData: infoData, proxy: proxy)
                     .frame(width: proxy.size.width - 140)
                     .onTapGesture {
-                      viewStore.send(.view(.episodeTap(item: episode, index: episodeList.firstIndex { $0 == episode } ?? 0)), animation: .easeInOut)
+                      store.send(.view(.episodeTap(item: episode, index: episodeList.firstIndex { $0 == episode } ?? 0)), animation: .easeInOut)
                     }
                 }
               } else {
                 ForEach(episodeList.reversed(), id: \.self) { episode in
-                  EpisodeCard(item: episode, infoData: infoData, viewStore: viewStore, proxy: proxy)
+                  EpisodeCard(item: episode, infoData: infoData, proxy: proxy)
                     .frame(maxWidth: proxy.size.width - 140)
                     .onTapGesture {
-                      viewStore.send(.view(.episodeTap(item: episode, index: episodeList.firstIndex { $0 == episode } ?? 0)), animation: .easeInOut)
+                      store.send(.view(.episodeTap(item: episode, index: episodeList.firstIndex { $0 == episode } ?? 0)), animation: .easeInOut)
                     }
                 }
               }
@@ -1036,7 +1036,7 @@ extension InfoFeature.View {
   }
 
   @MainActor
-  func ShimmerEpisodeList(viewStore: ViewStoreOf<InfoFeature>, proxy: GeometryProxy) -> some View {
+  func ShimmerEpisodeList(proxy: GeometryProxy) -> some View {
     VStack {
       // PAGINATION
       ScrollView(.horizontal, showsIndicators: false) {
@@ -1058,7 +1058,7 @@ extension InfoFeature.View {
       ScrollView(.horizontal) {
         HStack {
           ForEach(0..<12, id: \.self) { _ in
-            ShimmerEpisodeCard(viewStore: viewStore, proxy: proxy)
+            ShimmerEpisodeCard(proxy: proxy)
               .frame(maxWidth: proxy.size.width - 140, maxHeight: (proxy.size.width - 140) / 16 * 9)
           }
         }
@@ -1082,7 +1082,7 @@ extension InfoFeature.View {
   }
 
   @MainActor
-  func EpisodeCard(item: MediaItem, infoData: InfoData, viewStore: ViewStoreOf<InfoFeature>, proxy _: GeometryProxy) -> some View {
+  func EpisodeCard(item: MediaItem, infoData: InfoData, proxy _: GeometryProxy) -> some View {
     VStack {
       LazyImage(
         url: URL(string: item.image ?? infoData.poster),
@@ -1110,14 +1110,14 @@ extension InfoFeature.View {
         Text(forTrailingZero(temp: item.number))
           .fontWeight(.semibold)
           .foregroundColor(
-            viewStore.colorTheme.accentText
+            store.colorTheme.accentText
           )
           .padding(.vertical, 2)
           .padding(.horizontal, 8)
           .background {
             Capsule()
               .fill(
-                viewStore.colorTheme.accentColor
+                store.colorTheme.accentColor
               )
           }
           .padding()
@@ -1240,7 +1240,7 @@ extension InfoFeature.View {
   }
 
   @MainActor
-  func ShimmerEpisodeCard(viewStore: ViewStoreOf<InfoFeature>, proxy: GeometryProxy) -> some View {
+  func ShimmerEpisodeCard(proxy: GeometryProxy) -> some View {
     VStack {
       RoundedRectangle(cornerRadius: 12)
         .frame(minWidth: proxy.size.width - 140, maxWidth: proxy.size.width - 140, minHeight: (proxy.size.width - 140) / 16 * 9, maxHeight: (proxy.size.width - 140) / 16 * 9)
@@ -1252,14 +1252,14 @@ extension InfoFeature.View {
             .frame(width: 16, height: 16)
             .opacity(0.0)
             .foregroundColor(
-              viewStore.colorTheme.accentText
+              store.colorTheme.accentText
             )
             .padding(.vertical, 2)
             .padding(.horizontal, 8)
             .background {
               Capsule()
                 .fill(
-                  viewStore.colorTheme.accentColor
+                  store.colorTheme.accentColor
                 )
                 .redacted(reason: .placeholder)
                 .shimmering()

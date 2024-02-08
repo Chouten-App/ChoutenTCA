@@ -27,69 +27,63 @@ struct ScrollOffsetPreferenceKey: PreferenceKey {
 
 extension SearchFeature.View {
   @MainActor public var body: some View {
-    WithViewStore(store, observe: \.`self`) { viewStore in
+    WithPerceptionTracking {
       GeometryReader { proxy in
         ZStack {
-          LoadableView(loadable: viewStore.searchLoadable) { results in
+          LoadableView(loadable: store.searchLoadable) { results in
             SuccessView(
               results: results,
-              viewStore: viewStore,
               proxy: proxy
             )
           } failedView: { _ in
             ErrorView()
           } loadingView: {
-            LoadingView(viewStore: viewStore, proxy: proxy)
+            LoadingView(proxy: proxy)
           } pendingView: {
-            NotStartedView(viewStore: viewStore, proxy: proxy)
+            NotStartedView(proxy: proxy)
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity)
           .background(.black)
           .background {
-            if !viewStore.webviewState.htmlString.isEmpty, !viewStore.webviewState.javaScript.isEmpty {
+            if !store.webviewState.htmlString.isEmpty, !store.webviewState.javaScript.isEmpty {
               WebviewFeature.View(
                 store: self.store.scope(
                   state: \.webviewState,
-                  action: Action.InternalAction.webview
+                  action: \.internal.webview
                 ),
-                payload: "{\"query\": \"\(viewStore.query)\", \"page\": \(viewStore.page)}"
+                payload: "{\"query\": \"\(store.query)\", \"page\": \(store.page)}"
               ) { result in
-                viewStore.send(.parseResult(data: result))
+                send(.parseResult(data: result))
               }
               .hidden()
               .frame(maxWidth: 0, maxHeight: 0)
             }
           }
           .overlay(alignment: .top) {
-            Navbar(viewStore: viewStore, proxy: proxy)
+            Navbar(proxy: proxy)
           }
 
-          if viewStore.infoVisible {
+          if store.infoVisible {
             InfoFeature.View(
               store: self.store.scope(
                 state: \.info,
-                action: Action.InternalAction.info
+                action: \.internal.info
               ),
-              isVisible: viewStore.binding(
-                get: \.infoVisible,
-                send: { .setInfoVisible($0) }
-              ),
-              dragState: viewStore.binding(
-                get: \.dragState,
-                send: { .setDragState($0) }
-              )
+              isVisible: $store.infoVisible.sending(\.view.setInfoVisible),
+              dragState: $store.dragState.sending(\.view.setDragState)
             )
             .transition(.move(edge: .trailing))
           }
         }
         .onAppear {
+          // TODO: move to reducer
           if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
             // viewStore.send(.setLoadable(.loading))
-            viewStore.send(.setSearchData(SearchData.sampleList))
+            send(.setSearchData(SearchData.sampleList))
           }
         }
         .onChange(of: searchbarFocused) { newValue in
-          viewStore.send(.setSearchFocused(newValue))
+          send(.setSearchFocused(newValue))
         }
       }
     }
@@ -99,18 +93,18 @@ extension SearchFeature.View {
 // navbar
 extension SearchFeature.View {
   @MainActor
-  func Navbar(viewStore: ViewStore<SearchFeature.State, SearchFeature.Action.ViewAction>, proxy _: GeometryProxy) -> some View {
+  func Navbar(proxy _: GeometryProxy) -> some View {
     HStack {
-      if !viewStore.searchFocused {
+      if !store.searchFocused {
         NavigationBackButton {
-          viewStore.send(.backButtonPressed, animation: .easeInOut)
+          send(.backButtonPressed, animation: .easeInOut)
         }
-        .animation(.easeInOut, value: viewStore.searchFocused)
+        .animation(.easeInOut, value: store.searchFocused)
         .transition(.move(edge: .leading))
       }
 
       ZStack(alignment: .topLeading) {
-        RoundedRectangle(cornerRadius: viewStore.searchFocused ? 12 : 6)
+        RoundedRectangle(cornerRadius: store.searchFocused ? 12 : 6)
           .fill(.regularMaterial)
           .frame(maxWidth: .infinity, maxHeight: 32)
           .matchedGeometryEffect(id: "searchBG", in: animation)
@@ -122,8 +116,8 @@ extension SearchFeature.View {
               .foregroundColor(.primary)
               .matchedGeometryEffect(id: "searchIcon", in: animation)
 
-            TextField("Search for something", text: viewStore.$query) {
-              viewStore.send(.search)
+            TextField("Search for something", text: $store.query) {
+              send(.search)
             }
             .tint(.indigo)
             .focused($searchbarFocused)
@@ -132,14 +126,14 @@ extension SearchFeature.View {
         .padding(.horizontal, 8)
         .padding(.top, 5)
       }
-      .animation(.easeInOut, value: viewStore.searchFocused)
+      .animation(.easeInOut, value: store.searchFocused)
     }
     .clipped()
     .padding(.bottom)
     .padding(.horizontal)
     .background(
       .regularMaterial
-        .opacity(viewStore.headerOpacity)
+        .opacity(store.headerOpacity)
     )
     /// .overlay(alignment: .bottom) {
     //    if searchbarFocused {
@@ -180,14 +174,14 @@ extension SearchFeature.View {
     //        .transition(.scale(scale: 1.0, anchor: .top))
     //    }
     // }
-    .animation(.easeInOut, value: viewStore.searchFocused)
+    .animation(.easeInOut, value: store.searchFocused)
   }
 }
 
 // Not Started
 extension SearchFeature.View {
   @MainActor
-  public func NotStartedView(viewStore _: ViewStore<SearchFeature.State, SearchFeature.Action.ViewAction>, proxy _: GeometryProxy) -> some View {
+  public func NotStartedView(proxy _: GeometryProxy) -> some View {
     VStack(spacing: 24) {
       Text("(         ) ?")
         .font(.largeTitle)
@@ -217,7 +211,7 @@ extension SearchFeature.View {
 // Loading
 extension SearchFeature.View {
   @MainActor
-  public func LoadingView(viewStore: ViewStore<SearchFeature.State, SearchFeature.Action.ViewAction>, proxy: GeometryProxy) -> some View {
+  public func LoadingView(proxy: GeometryProxy) -> some View {
     VStack {
       let anim = Animation.linear(duration: 2.0).delay(0.25).repeatForever(autoreverses: false)
 
@@ -255,8 +249,8 @@ extension SearchFeature.View {
                   .opacity(0.3)
               }
             }
-            .opacity(viewStore.itemOpacity)
-            .animation(.easeInOut(duration: 2.0).repeatForever().delay(0.2 * Double(index)), value: viewStore.itemOpacity)
+            .opacity(store.itemOpacity)
+            .animation(.easeInOut(duration: 2.0).repeatForever().delay(0.2 * Double(index)), value: store.itemOpacity)
           }
         }
       }
@@ -264,9 +258,7 @@ extension SearchFeature.View {
     .padding(.horizontal)
     .padding(.top, proxy.safeAreaInsets.top)
     .onAppear {
-      viewStore.send(
-        .setItemOpacity(value: Double(0.0))
-      )
+      send(.setItemOpacity(value: Double(0.0)))
     }
   }
 }
@@ -274,10 +266,10 @@ extension SearchFeature.View {
 // Success
 extension SearchFeature.View {
   @MainActor
-  public func SuccessView(results: [SearchData], viewStore: ViewStore<SearchFeature.State, SearchFeature.Action.ViewAction>, proxy _: GeometryProxy) -> some View {
+  public func SuccessView(results: [SearchData], proxy _: GeometryProxy) -> some View {
     ASCollectionView(data: results, dataID: \.self) { result, _ in
       Button {
-        viewStore.send(.setInfo(result.url), animation: .easeInOut)
+        send(.setInfo(result.url), animation: .easeInOut)
       } label: {
         VStack {
           LazyImage(
@@ -331,20 +323,20 @@ extension SearchFeature.View {
       )
     }
     .onReachedBoundary { boundary in
-      if boundary == .bottom, !viewStore.isFetching {
+      if boundary == .bottom, !store.isFetching {
         print("Load next results")
         // Run search logic with page count + 1
-        viewStore.send(.increasePageNumber)
-        viewStore.send(.search)
+        send(.increasePageNumber)
+        send(.search)
       }
     }
     .onScroll { contentOffset, _ in
       if 50 + contentOffset.y > 90 {
-        if viewStore.headerOpacity < 1.0 {
-          viewStore.send(.setHeaderOpacity(1.0))
+        if store.headerOpacity < 1.0 {
+          send(.setHeaderOpacity(1.0))
         }
       } else {
-        viewStore.send(.setHeaderOpacity((50.0 + contentOffset.y) / CGFloat(90)))
+        send(.setHeaderOpacity((50.0 + contentOffset.y) / CGFloat(90)))
       }
     }
     .ignoresSafeArea()

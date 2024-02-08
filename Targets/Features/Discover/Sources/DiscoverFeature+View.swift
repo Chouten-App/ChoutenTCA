@@ -24,16 +24,16 @@ struct ScrollOffsetPreferenceKey: PreferenceKey {
 
 extension DiscoverFeature.View: View {
   @MainActor public var body: some View {
-    WithViewStore(store, observe: \.`self`) { viewStore in
+    WithPerceptionTracking {
       GeometryReader { proxy in
         Group {
-          switch viewStore.state.state {
+          switch store.state.state {
           case .notStarted:
             ScrollView {
               // Carousel
               ShimmerCarousel(proxy: proxy)
                 .onTapGesture {
-                  viewStore.send(.view(.setState(newState: .success)))
+                  send(.setState(newState: .success))
                 }
               // loop through HomeData
 
@@ -148,7 +148,7 @@ extension DiscoverFeature.View: View {
               // Carousel
               ShimmerCarousel(proxy: proxy)
                 .onTapGesture {
-                  viewStore.send(.view(.setState(newState: .success)))
+                  send(.setState(newState: .success))
                 }
               // loop through HomeData
 
@@ -263,7 +263,7 @@ extension DiscoverFeature.View: View {
           case .success:
             ZStack(alignment: .top) {
               Circle()
-                .trim(from: 0.0, to: refreshPercentage(scrollPosition: viewStore.scrollPosition))
+                .trim(from: 0.0, to: refreshPercentage(scrollPosition: store.scrollPosition))
                 .stroke(
                   .indigo,
                   style: StrokeStyle(
@@ -273,16 +273,13 @@ extension DiscoverFeature.View: View {
                 )
                 .frame(width: 32)
                 .rotationEffect(.degrees(-90))
-                .offset(y: viewStore.scrollPosition.y / 2)
+                .offset(y: store.scrollPosition.y / 2)
 
               ScrollView {
                 VStack {
                   Carousel(
                     count: 8,
-                    currentCellIndex: viewStore.binding(
-                      get: \.carouselIndex,
-                      send: { DiscoverFeature.Action.view(.setCarouselIndex(value: $0)) }
-                    )
+                    currentCellIndex: $store.carouselIndex.sending(\.view.setCarouselIndex)
                   )
                   .frame(height: 360)
                   .frame(minWidth: proxy.size.width, maxWidth: proxy.size.width)
@@ -291,7 +288,7 @@ extension DiscoverFeature.View: View {
                     RoundedRectangle(cornerRadius: 4)
                       .fill(.indigo)
                       .frame(width: width, height: 4)
-                      .offset(x: width * Double(viewStore.carouselIndex), y: 2)
+                      .offset(x: width * Double(store.carouselIndex), y: 2)
                       .padding(.horizontal)
                   }
 
@@ -353,10 +350,10 @@ extension DiscoverFeature.View: View {
                 )
                 .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
                   print(value)
-                  viewStore.send(.view(.setScrollPosition(value)))
+                  send(.setScrollPosition(value))
 
                   if value.y >= 170 {
-                    viewStore.send(.view(.refresh))
+                    send(.refresh)
                   }
                 }
               }
@@ -365,18 +362,13 @@ extension DiscoverFeature.View: View {
           }
         }
         .transition(.asymmetric(insertion: .opacity, removal: .opacity))
-        .animation(.spring, value: viewStore.state)
+        .animation(.spring, value: store.state)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea()
         .overlay(alignment: .topTrailing) {
-          if !viewStore.searchVisible {
+          if !store.searchVisible {
             Button {
-              viewStore.send(
-                .view(
-                  .setSearchVisible(newValue: true)
-                ),
-                animation: .easeInOut
-              )
+              send(.setSearchVisible(newValue: true), animation: .easeInOut)
             } label: {
               Image(systemName: "magnifyingglass")
                 .font(.subheadline)
@@ -394,11 +386,11 @@ extension DiscoverFeature.View: View {
           }
         }
         .overlay {
-          if viewStore.searchVisible {
+          if store.searchVisible {
             SearchFeature.View(
               store: store.scope(
                 state: \.search,
-                action: Action.InternalAction.search
+                action: \.internal.search
               ),
               animation: animation
             )
@@ -407,7 +399,7 @@ extension DiscoverFeature.View: View {
       }
       // .namespace(animation)
       .onAppear {
-        viewStore.send(.view(.onAppear))
+        send(.onAppear)
       }
     }
   }

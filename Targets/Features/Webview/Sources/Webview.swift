@@ -92,9 +92,11 @@ public struct Result: Codable, Sendable {
 
 // MARK: - WebView
 
+@MainActor
 public struct WebView: UIViewRepresentable {
-  // @ObservedObject var viewStore: ViewStore<WebviewDomain.State, WebviewDomain.Action>
-  public var viewStore: ViewStoreOf<WebviewFeature>
+//  // @ObservedObject var viewStore: ViewStore<WebviewDomain.State, WebviewDomain.Action>
+//  public var viewStore: ViewStoreOf<WebviewFeature>
+  public let store: StoreOf<WebviewFeature>
 
   var payload: String = ""
   var completionHandler: ((String) -> Void)? // Add completionHandler
@@ -152,7 +154,7 @@ public struct WebView: UIViewRepresentable {
 
     print(commonCode)
 
-    webView.loadHTMLString("<script>" + commonCode + viewStore.javaScript + "</script>", baseURL: URL(string: "http://localhost/").unsafelyUnwrapped)
+    webView.loadHTMLString("<script>" + commonCode + store.javaScript + "</script>", baseURL: URL(string: "http://localhost/").unsafelyUnwrapped)
 
     context.coordinator.webView = webView
 
@@ -164,9 +166,9 @@ public struct WebView: UIViewRepresentable {
 
   public func makeCoordinator() -> Coordinator {
     Coordinator(
-      javaScript: viewStore.javaScript,
-      requestType: viewStore.requestType,
-      viewStore: viewStore,
+      javaScript: store.javaScript,
+      requestType: store.requestType,
+      store: store,
       completionHandler: completionHandler
     )
   }
@@ -174,16 +176,16 @@ public struct WebView: UIViewRepresentable {
   public class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
     let javaScript: String
     let requestType: String
-    let viewStore: ViewStoreOf<WebviewFeature>
+    let store: StoreOf<WebviewFeature>
     var webView: WKWebView? // Store the WKWebView reference here
     var completionHandler: ((String) -> Void)? // Add completionHandler
 
     // @Dependency(\.globalData) var globalData
 
-    public init(javaScript: String, requestType: String, viewStore: ViewStoreOf<WebviewFeature>, completionHandler: ((String) -> Void)?) {
+    public init(javaScript: String, requestType: String, store: StoreOf<WebviewFeature>, completionHandler: ((String) -> Void)?) {
       self.javaScript = javaScript
       self.requestType = requestType
-      self.viewStore = viewStore
+      self.store = store
       self.webView = nil
       self.completionHandler = completionHandler
     }

@@ -8,8 +8,8 @@
 import Architecture
 import Foundation
 
-extension AppearanceFeature: Reducer {
-  public var body: some ReducerOf<Self> {
+extension AppearanceFeature {
+  @ReducerBuilder<State, Action> public var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case let .view(viewAction):
@@ -23,9 +23,11 @@ extension AppearanceFeature: Reducer {
           case .system:
             state.colorScheme = 2
           }
-          return .none
+        case .binding:
+          break
         }
       }
+      return .none
     }
   }
 }

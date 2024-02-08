@@ -19,7 +19,7 @@ extension Project {
     .init(
       name: feature.name,
       targets: [
-        .init(
+        .target(
           name: feature.name,
           destinations: destinations,
           product: .framework,
@@ -41,7 +41,7 @@ extension Project {
     .init(
       name: client.name,
       targets: [
-        .init(
+        .target(
           name: client.name,
           destinations: destinations,
           product: .framework,
@@ -63,7 +63,7 @@ extension Project {
     .init(
       name: shared.name,
       targets: [
-        .init(
+        .target(
           name: shared.name,
           destinations: destinations,
           product: .framework,

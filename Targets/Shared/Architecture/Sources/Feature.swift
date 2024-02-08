@@ -8,7 +8,7 @@
 
 import ComposableArchitecture
 import Foundation
-@_exported import FoundationHelpers
+import FoundationHelpers
 import SwiftUI
 
 // MARK: - Feature
@@ -19,7 +19,7 @@ public protocol Feature: Reducer where State: FeatureState, Action: FeatureActio
 
 // MARK: - SendableAction
 
-public protocol SendableAction: Equatable, Sendable {}
+public protocol SendableAction: Sendable {}
 
 // MARK: - FeatureState
 
@@ -27,7 +27,7 @@ public protocol FeatureState: Equatable, Sendable {}
 
 // MARK: - FeatureAction
 
-public protocol FeatureAction: Equatable, Sendable {
+public protocol FeatureAction: Sendable {
   associatedtype ViewAction: SendableAction
   associatedtype DelegateAction: SendableAction
   associatedtype InternalAction: SendableAction
@@ -58,7 +58,12 @@ public protocol FeatureView: View {
 
 extension FeatureView {
   @discardableResult
-  public func send(_ action: Action.ViewAction) -> StoreTask {
-    store.send(.view(action))
+  public func send(_ action: Action.ViewAction, animation: Animation? = nil) -> StoreTask {
+    store.send(.view(action), animation: animation)
+  }
+
+  @discardableResult
+  public func send(_ action: Action.ViewAction, transaction: Transaction) -> StoreTask {
+    store.send(.view(action), transaction: transaction)
   }
 }

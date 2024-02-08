@@ -21,11 +21,11 @@ import ViewComponents
 
 extension AppFeature.View: View {
   @MainActor public var body: some View {
-    WithViewStore(store, observe: \.`self`) { viewStore in
+    WithPerceptionTracking {
       GeometryReader { proxy in
         VStack(spacing: 0) {
           Group {
-            switch viewStore.state.selected {
+            switch store.selected {
             case .home:
               ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
@@ -91,10 +91,10 @@ extension AppFeature.View: View {
 
                   ScrollView(.horizontal) {
                     HStack {
-                      ForEach(0..<viewStore.mediaItems.count, id: \.self) { index in
-                        let item = viewStore.mediaItems[index]
+                      ForEach(0..<store.mediaItems.count, id: \.self) { index in
+                        let item = store.mediaItems[index]
 
-                        let module = viewStore.modules.first { m in
+                        let module = store.modules.first { m in
                           m.id == item.moduleID
                         }
 
@@ -106,8 +106,7 @@ extension AppFeature.View: View {
                           hoveredIndex: $hoveredIndex,
                           index: index,
                           changeMediaData: $changeMediaData,
-                          showAlert: $showAlert,
-                          viewStore: viewStore
+                          showAlert: $showAlert
                         )
                         .blur(radius: (showContextMenu || press) && hoveredIndex != index ? 4.0 : 0.0)
                         .zIndex((showContextMenu || press) && hoveredIndex == index ? 10.0 : 1.0)
@@ -204,7 +203,7 @@ extension AppFeature.View: View {
                             print(error.localizedDescription)
                           }
 
-                          viewStore.send(.view(.updateMediaItems(items)))
+                          send(.updateMediaItems(items))
                         }
 
                       } else {
@@ -225,14 +224,14 @@ extension AppFeature.View: View {
               MoreFeature.View(
                 store: store.scope(
                   state: \.more,
-                  action: Action.InternalAction.more
+                  action: \.internal.more
                 )
               )
             case .discover:
               DiscoverFeature.View(
                 store: store.scope(
                   state: \.discover,
-                  action: Action.InternalAction.discover
+                  action: \.internal.discover
                 )
               )
             }
@@ -245,36 +244,36 @@ extension AppFeature.View: View {
             ModuleSheetFeature.View(
               store: store.scope(
                 state: \.sheet,
-                action: Action.InternalAction.sheet
+                action: \.internal.sheet
               )
             )
-            NavBar(viewStore.selected)
+            NavBar(store.selected)
           }
-          .offset(y: viewStore.showTabbar ? 0 : proxy.safeAreaInsets.bottom + 120)
-          .allowsHitTesting(viewStore.showTabbar)
+          .offset(y: store.showTabbar ? 0 : proxy.safeAreaInsets.bottom + 120)
+          .allowsHitTesting(store.showTabbar)
         }
         .overlay {
-          if viewStore.videoUrl != nil, viewStore.videoIndex != nil {
+          if store.videoUrl != nil, store.videoIndex != nil {
             PlayerFeature.View(
               store: store.scope(
                 state: \.player,
-                action: Action.InternalAction.player
+                action: \.internal.player
               )
             )
             // .frame(width: proxy.size.width, height: proxy.size.height)
-            .offset(y: viewStore.showPlayer ? 0 : proxy.size.height + 60)
+            .offset(y: store.showPlayer ? 0 : proxy.size.height + 60)
             .transition(.move(edge: .bottom))
-            .animation(.easeInOut, value: viewStore.showPlayer)
-            .animation(.easeInOut, value: viewStore.videoUrl)
-            .animation(.easeInOut, value: viewStore.videoIndex)
+            .animation(.easeInOut, value: store.showPlayer)
+            .animation(.easeInOut, value: store.videoUrl)
+            .animation(.easeInOut, value: store.videoIndex)
           }
         }
         .onAppear {
-          viewStore.send(.view(.onAppear))
+          send(.onAppear)
         }
       }
-      .supportedOrientation(viewStore.fullscreen ? .landscape : .portrait)
-      .prefersHomeIndicatorAutoHidden(viewStore.fullscreen)
+      .supportedOrientation(store.fullscreen ? .landscape : .portrait)
+      .prefersHomeIndicatorAutoHidden(store.fullscreen)
       .preferredColorScheme(
         colorScheme == 0 ? .light :
           colorScheme == 1 ? .dark :
@@ -484,7 +483,6 @@ struct ContinueCard: View {
   let index: Int
   @Binding var changeMediaData: Media?
   @Binding var showAlert: Bool
-  var viewStore: ViewStoreOf<AppFeature>
   let frame: String
 
   var formattedValue: String {
@@ -503,8 +501,7 @@ struct ContinueCard: View {
     hoveredIndex: Binding<Int>,
     index: Int,
     changeMediaData: Binding<Media?>,
-    showAlert: Binding<Bool>,
-    viewStore: ViewStoreOf<AppFeature>
+    showAlert: Binding<Bool>
   ) {
     self.item = item
     self.module = module
@@ -514,7 +511,6 @@ struct ContinueCard: View {
     self.index = index
     self._changeMediaData = changeMediaData
     self._showAlert = showAlert
-    self.viewStore = viewStore
 
     if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first, let module {
       let fileURL = documentsDirectory

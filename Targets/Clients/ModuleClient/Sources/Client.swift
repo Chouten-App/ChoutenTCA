@@ -23,6 +23,7 @@ public struct ModuleClient: Sendable {
   public var getJs: @Sendable (_ for: String) throws -> String?
   public var deleteModule: @Sendable (_ module: Module) throws -> Bool
   public var setSelectedModuleName: @Sendable (_ module: Module) -> Void
+  public var currentModuleStream: @Sendable () -> AsyncStream<Module?> = { .finished }
 }
 
 extension DependencyValues {

@@ -11,14 +11,15 @@ import ModuleClient
 import Search
 import SwiftUI
 
+@Reducer
 public struct DiscoverFeature: Feature {
+  @ObservableState
   public struct State: FeatureState {
     public var search: SearchFeature.State
 
     public var state: LoadingStatus = .notStarted
     public var searchVisible = false
 
-    // @BindingState
     public var carouselIndex: Int = 0
     public var scrollPosition: CGPoint = .zero
 
@@ -36,7 +37,11 @@ public struct DiscoverFeature: Feature {
 
   @Dependency(\.moduleClient) var moduleClient
 
+  @CasePathable
+  @dynamicMemberLookup
   public enum Action: FeatureAction {
+    @CasePathable
+    @dynamicMemberLookup
     public enum ViewAction: SendableAction, BindableAction {
       case onAppear
       case setState(newState: LoadingStatus)
@@ -48,7 +53,12 @@ public struct DiscoverFeature: Feature {
       case binding(BindingAction<State>)
     }
 
+    @CasePathable
+    @dynamicMemberLookup
     public enum DelegateAction: SendableAction {}
+
+    @CasePathable
+    @dynamicMemberLookup
     public enum InternalAction: SendableAction {
       case search(SearchFeature.Action)
     }
@@ -60,7 +70,7 @@ public struct DiscoverFeature: Feature {
 
   @MainActor
   public struct View: FeatureView {
-    public let store: StoreOf<DiscoverFeature>
+    @Perception.Bindable public var store: StoreOf<DiscoverFeature>
     @Namespace var animation
 
     public func refreshPercentage(scrollPosition: CGPoint) -> CGFloat {
@@ -69,7 +79,7 @@ public struct DiscoverFeature: Feature {
       return scrollPosition.y / CGFloat(170)
     }
 
-    public nonisolated init(store: StoreOf<DiscoverFeature>) {
+    public init(store: StoreOf<DiscoverFeature>) {
       self.store = store
     }
   }

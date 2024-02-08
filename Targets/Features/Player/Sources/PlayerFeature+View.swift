@@ -279,15 +279,15 @@ struct CustomVideoPlayer: UIViewRepresentable {
 
 extension PlayerFeature.View {
   @MainActor public var body: some View {
-    WithViewStore(store, observe: \.`self`) { viewStore in
+    WithPerceptionTracking {
       GeometryReader { proxy in
         ZStack(alignment: .top) {
           Color.black
             .ignoresSafeArea()
 
-          LoadableView(loadable: viewStore.videoLoadable) { _ in
+          LoadableView(loadable: store.videoLoadable) { _ in
             ZStack {
-              if !viewStore.fullscreen, !viewStore.ambientMode {
+              if !store.fullscreen, !store.ambientMode {
                 CustomVideoPlayer(playerVM: playerVM)
                   .frame(width: proxy.size.width, height: proxy.size.width / 16 * 9)
                   .ignoresSafeArea(.all, edges: .bottom)
@@ -298,10 +298,10 @@ extension PlayerFeature.View {
               }
 
               CustomVideoPlayer(playerVM: playerVM)
-                .frame(width: viewStore.fullscreen ? .infinity : proxy.size.width, height: viewStore.fullscreen ? .infinity : proxy.size.width / 16 * 9)
+                .frame(width: store.fullscreen ? .infinity : proxy.size.width, height: store.fullscreen ? .infinity : proxy.size.width / 16 * 9)
                 .ignoresSafeArea(.all, edges: .bottom)
                 .onTapGesture {
-                  viewStore.send(.view(.toggleUI))
+                  store.send(.view(.toggleUI))
                 }
             }
           } failedView: { error in
@@ -310,27 +310,27 @@ extension PlayerFeature.View {
 
               HStack {
                 Image(systemName: "exclamationmark.triangle.fill")
-                  .font(.system(size: viewStore.fullscreen ? 46 : 32))
+                  .font(.system(size: store.fullscreen ? 46 : 32))
                   .foregroundColor(.red)
 
                 VStack(alignment: .leading, spacing: 8) {
                   Text("Error")
-                    .font(viewStore.fullscreen ? .title2 : .callout)
+                    .font(store.fullscreen ? .title2 : .callout)
                     .fontWeight(.bold)
 
                   Text("\((error as? VideoLoadingError)?.localizedDescription ?? "")")
-                    .font(viewStore.fullscreen ? .subheadline : .caption)
+                    .font(store.fullscreen ? .subheadline : .caption)
                     .opacity(0.7)
                 }
               }
-              .padding(viewStore.fullscreen ? 16 : 12)
-              .frame(maxWidth: viewStore.fullscreen ? 360 : 280)
+              .padding(store.fullscreen ? 16 : 12)
+              .frame(maxWidth: store.fullscreen ? 360 : 280)
               .background(.regularMaterial)
               .cornerRadius(20)
 
               Spacer()
             }
-            .frame(width: viewStore.fullscreen ? .infinity : proxy.size.width, height: viewStore.fullscreen ? .infinity : proxy.size.width / 16 * 9)
+            .frame(width: store.fullscreen ? .infinity : proxy.size.width, height: store.fullscreen ? .infinity : proxy.size.width / 16 * 9)
           } loadingView: {
             Rectangle()
               .fill(.black)
@@ -348,27 +348,27 @@ extension PlayerFeature.View {
           }
 
           Group {
-            if viewStore.fullscreen {
-              FullscreenUI(viewStore: viewStore, playerVM: playerVM)
+            if store.fullscreen {
+              FullscreenUI(playerVM: playerVM)
             } else {
-              PortraitUI(viewStore: viewStore, playerVM: playerVM, proxy: proxy)
+              PortraitUI(playerVM: playerVM, proxy: proxy)
             }
           }
         }
       }
       .background {
-        if !viewStore.webviewState.htmlString.isEmpty, !viewStore.webviewState.javaScript.isEmpty {
-          if !viewStore.servers.isEmpty {
+        if !store.webviewState.htmlString.isEmpty, !store.webviewState.javaScript.isEmpty {
+          if !store.servers.isEmpty {
             WebviewFeature.View(
               store: self.store.scope(
                 state: \.webviewState,
-                action: Action.InternalAction.webview
+                action: \.internal.webview
               ),
-              payload: viewStore.servers[0].list[0].url,
+              payload: store.servers[0].list[0].url,
               action: "video"
             ) { result in
               print(result)
-              viewStore.send(.view(.parseVideoResult(data: result)))
+              store.send(.view(.parseVideoResult(data: result)))
             }
             .hidden()
             .frame(maxWidth: 0, maxHeight: 0)
@@ -376,52 +376,52 @@ extension PlayerFeature.View {
             WebviewFeature.View(
               store: self.store.scope(
                 state: \.webviewState,
-                action: Action.InternalAction.webview
+                action: \.internal.webview
               ),
-              payload: viewStore.url
+              payload: store.url
             ) { result in
               print(result)
-              viewStore.send(.view(.parseResult(data: result)))
-              viewStore.send(.view(.resetWebviewChange))
+              store.send(.view(.parseResult(data: result)))
+              store.send(.view(.resetWebviewChange))
             }
             .hidden()
             .frame(maxWidth: 0, maxHeight: 0)
           }
         }
       }
-      .onChange(of: viewStore.speed) { newValue in
+      .onChange(of: store.speed) { newValue in
         playerVM.player.rate = newValue
       }
-      .onChange(of: viewStore.videoLoadable) { loadable in
+      .onChange(of: store.videoLoadable) { loadable in
 
         // TODO: Refactor
         switch loadable {
         case let .loaded(data):
-          viewStore.send(.view(.setCurrentItem(data: data)))
-          if let item = viewStore.item {
+          store.send(.view(.setCurrentItem(data: data)))
+          if let item = store.item {
             playerVM.setCurrentItem(item)
             playerVM.player.play()
           } else {
-            viewStore.send(.view(.setLoadable(.failed(VideoLoadingError.dataParsingError("Couldnt create the PlayerItem")))))
+            store.send(.view(.setLoadable(.failed(VideoLoadingError.dataParsingError("Couldnt create the PlayerItem")))))
           }
         case _:
           break
         }
       }
-      .onChange(of: viewStore.quality) { _ in
-        switch viewStore.videoLoadable {
+      .onChange(of: store.quality) { _ in
+        switch store.videoLoadable {
         case let .loaded(data):
           let storeTime = playerVM.currentTime
 
-          viewStore.send(.view(.setCurrentItem(data: data)))
-          if let item = viewStore.item {
+          store.send(.view(.setCurrentItem(data: data)))
+          if let item = store.item {
             playerVM.setCurrentItem(item)
 
             playerVM.player.seek(to: CMTime(seconds: storeTime, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
 
             playerVM.player.play()
           } else {
-            viewStore.send(.view(.setLoadable(.failed(VideoLoadingError.dataParsingError("Couldnt create the PlayerItem")))))
+            store.send(.view(.setLoadable(.failed(VideoLoadingError.dataParsingError("Couldnt create the PlayerItem")))))
           }
         case _:
           break
@@ -429,7 +429,7 @@ extension PlayerFeature.View {
       }
       .onChange(of: playerVM.isInPipMode) { isPiP in
         if !isPiP {
-          viewStore.send(.view(.setPiP(false)))
+          store.send(.view(.setPiP(false)))
         }
       }
       .onChange(of: playerVM.currentTime) { currentTime in
@@ -450,7 +450,7 @@ extension PlayerFeature.View {
 
             try dbQueue.write { db in
               // Fetch the Media item using moduleID from the database
-              if var mediaItem = try Media.filter(Column("mediaUrl") == viewStore.url).fetchOne(db) {
+              if var mediaItem = try Media.filter(Column("mediaUrl") == store.url).fetchOne(db) {
                 // Update the current time
                 mediaItem.current = currentTime
 
@@ -459,18 +459,18 @@ extension PlayerFeature.View {
               } else {
                 // If the Media item doesn't exist, you may choose to create it here
                 // For example:
-                if let infoData = viewStore.infoData {
+                if let infoData = store.infoData {
                   print(infoData)
 
                   if !infoData.mediaList.isEmpty {
-                    let item = infoData.mediaList[0].list[viewStore.index]
+                    let item = infoData.mediaList[0].list[store.index]
                     let newMediaItem = Media(
-                      moduleID: viewStore.module?.id ?? "",
+                      moduleID: store.module?.id ?? "",
                       image: item.image ?? infoData.poster,
                       current: currentTime,
                       duration: playerVM.duration ?? 1.0,
                       title: item.title ?? "Episode \(item.number)",
-                      mediaUrl: viewStore.url,
+                      mediaUrl: store.url,
                       number: item.number
                     )
 
@@ -500,10 +500,10 @@ extension PlayerFeature.View {
             skips: [],
             headers: nil
           )
-          viewStore.send(.view(.setVideoData(data: videoData)))
-          viewStore.send(.view(.setInfoData(data: InfoData.sample)))
+          store.send(.view(.setVideoData(data: videoData)))
+          store.send(.view(.setInfoData(data: InfoData.sample)))
         } else {
-          viewStore.send(.view(.onAppear))
+          store.send(.view(.onAppear))
         }
       }
     }
@@ -512,23 +512,23 @@ extension PlayerFeature.View {
 
 extension PlayerFeature.View {
   @MainActor
-  func FullscreenUI(viewStore: ViewStoreOf<PlayerFeature>, playerVM: PlayerViewModel) -> some View {
+  func FullscreenUI(playerVM: PlayerViewModel) -> some View {
     VStack {
       // Top Bar
       HStack(alignment: .top) {
-        if let infoData = viewStore.infoData {
+        if let infoData = store.infoData {
           VStack(alignment: .leading) {
             if let list = infoData.mediaList.first {
-              var formattedValue: String {
-                if list.list[viewStore.index].number.truncatingRemainder(dividingBy: 1) == 0 {
-                  String(format: "%.0f", list.list[viewStore.index].number)
-                } else {
-                  String(list.list[viewStore.index].number)
-                }
-              }
-
-              Text("\(formattedValue): \(list.list[viewStore.index].title ?? "Episode \(formattedValue)")")
-                .fontWeight(.bold)
+//              var formattedValue: String {
+//                if list.list[store.index].number.truncatingRemainder(dividingBy: 1) == 0 {
+//                  String(format: "%.0f", list.list[store.index].number)
+//                } else {
+//                  String(list.list[store.index].number)
+//                }
+//              }
+//
+//              Text("\(formattedValue): \(list.list[store.index].title ?? "Episode \(formattedValue)")")
+//                .fontWeight(.bold)
             }
             Text(infoData.titles.primary)
               .font(.subheadline)
@@ -572,7 +572,7 @@ extension PlayerFeature.View {
           Spacer()
 
           Button {
-            viewStore.send(.view(.setShowMenu(true)))
+            store.send(.view(.setShowMenu(true)))
           } label: {
             Image(systemName: "gear")
               .font(.title3)
@@ -580,7 +580,7 @@ extension PlayerFeature.View {
           }
 
           Button {
-            viewStore.send(.view(.setFullscreen(false)))
+            store.send(.view(.setFullscreen(false)))
           } label: {
             Image(systemName: "arrow.down.right.and.arrow.up.left")
               .contentShape(Rectangle())
@@ -593,31 +593,22 @@ extension PlayerFeature.View {
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .overlay {
       Color.black
-        .opacity(viewStore.showMenu ? 0.3 : 0.0)
+        .opacity(store.showMenu ? 0.3 : 0.0)
         .ignoresSafeArea()
         .contentShape(Rectangle())
-        .allowsHitTesting(viewStore.showMenu)
+        .allowsHitTesting(store.showMenu)
         .onTapGesture {
-          viewStore.send(.view(.setShowMenu(false)))
+          store.send(.view(.setShowMenu(false)))
         }
-        .animation(.spring(response: 0.3), value: viewStore.showMenu)
+        .animation(.spring(response: 0.3), value: store.showMenu)
     }
     .overlay(alignment: .bottomTrailing) {
-      if viewStore.showMenu {
+      if store.showMenu {
         PlayerMenu(
-          selectedQuality: viewStore.binding(
-            get: \.quality,
-            send: { PlayerFeature.Action.view(.setQuality(value: $0)) }
-          ),
-          selectedServer: viewStore.binding(
-            get: \.server,
-            send: { PlayerFeature.Action.view(.setServer(value: $0)) }
-          ),
-          selectedSpeed: viewStore.binding(
-            get: \.speed,
-            send: { PlayerFeature.Action.view(.setSpeed(value: $0)) }
-          ),
-          qualities: Array(viewStore.qualities.keys),
+          selectedQuality: $store.quality.sending(\.view.setQuality),
+          selectedServer: $store.server.sending(\.view.setServer),
+          selectedSpeed: $store.speed.sending(\.view.setSpeed),
+          qualities: Array(store.qualities.keys),
           servers: [],
           speeds: [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
         )
@@ -632,7 +623,7 @@ extension PlayerFeature.View {
       }
     }
     .background {
-      if case .failed = viewStore.videoLoadable {
+      if case .failed = store.videoLoadable {
         // TODO: Fix to not need an else
       } else {
         HStack(spacing: 120) {
@@ -652,7 +643,7 @@ extension PlayerFeature.View {
           .contentShape(Rectangle())
           .opacity(0.7)
 
-          if case .loaded = viewStore.videoLoadable {
+          if case .loaded = store.videoLoadable {
             Button {
               // play/pause
               if playerVM.isPlaying {
@@ -688,7 +679,7 @@ extension PlayerFeature.View {
       }
     }
     .background {
-      if case .failed = viewStore.videoLoadable {
+      if case .failed = store.videoLoadable {
         // TODO: Fix to not need an else
       } else {
         LinearGradient(
@@ -703,7 +694,7 @@ extension PlayerFeature.View {
         )
         .ignoresSafeArea()
         .onTapGesture {
-          viewStore.send(.view(.toggleUI))
+          store.send(.view(.toggleUI))
         }
       }
     }
@@ -712,19 +703,18 @@ extension PlayerFeature.View {
       DragGesture()
         .onEnded { value in
           if value.translation.height > 60 {
-            viewStore.send(.view(.setFullscreen(false)))
+            store.send(.view(.setFullscreen(false)))
           }
         }
     )
-    .opacity(viewStore.showUI ? 1.0 : 0.0)
-    .animation(.easeInOut, value: viewStore.showUI)
+    .opacity(store.showUI ? 1.0 : 0.0)
+    .animation(.easeInOut, value: store.showUI)
   }
 }
 
 extension PlayerFeature.View {
   @MainActor
   func PortraitUI(
-    viewStore: ViewStoreOf<PlayerFeature>,
     playerVM: PlayerViewModel,
     proxy: GeometryProxy
   ) -> some View {
@@ -735,7 +725,7 @@ extension PlayerFeature.View {
             playerVM.player.pause()
             playerVM.player.replaceCurrentItem(with: nil)
 
-            viewStore.send(.view(.navigateBack))
+            store.send(.view(.navigateBack))
           } label: {
             Image(systemName: "chevron.left")
               .font(.caption)
@@ -766,7 +756,7 @@ extension PlayerFeature.View {
 
           Button {
             playerVM.isInPipMode = true
-            viewStore.send(.view(.setPiP(true)))
+            store.send(.view(.setPiP(true)))
           } label: {
             Image(systemName: playerVM.isInPipMode ? "pip.exit" : "pip.enter")
               .contentShape(Rectangle())
@@ -774,9 +764,9 @@ extension PlayerFeature.View {
           }
 
           Button {
-            if let playerItem = viewStore.item, let module = viewStore.module {
+            if let playerItem = store.item, let module = store.module {
               print("capturing frame")
-              captureFrame(of: playerItem, at: playerVM.player.currentTime(), module: module, url: viewStore.url)
+              captureFrame(of: playerItem, at: playerVM.player.currentTime(), module: module, url: store.url)
             } else {
               print("no player item found")
             }
@@ -804,7 +794,7 @@ extension PlayerFeature.View {
           Spacer()
 
           Button {
-            viewStore.send(.view(.setFullscreen(true)))
+            store.send(.view(.setFullscreen(true)))
           } label: {
             Image(systemName: "arrow.up.left.and.arrow.down.right")
               .contentShape(Rectangle())
@@ -823,10 +813,10 @@ extension PlayerFeature.View {
       }
       .padding()
       .background {
-        if case .failed = viewStore.videoLoadable {
+        if case .failed = store.videoLoadable {
           // TODO: Fix to not need an else
         } else {
-          if viewStore.videoLoadable != .loading {
+          if store.videoLoadable != .loading {
             Button {
               // play/pause
               if playerVM.isPlaying {
@@ -856,7 +846,7 @@ extension PlayerFeature.View {
           endPoint: .bottom
         )
         .onTapGesture {
-          viewStore.send(.view(.toggleUI))
+          store.send(.view(.toggleUI))
         }
       }
       .frame(width: proxy.size.width, height: proxy.size.width / 16 * 9)
@@ -867,17 +857,17 @@ extension PlayerFeature.View {
             if value.translation.height > 60 {
               // PiP
               playerVM.isInPipMode = true
-              viewStore.send(.view(.setPiP(true)))
+              store.send(.view(.setPiP(true)))
             } else if value.translation.height < -60 {
               // fullscreen
-              viewStore.send(.view(.setFullscreen(true)))
+              store.send(.view(.setFullscreen(true)))
             }
           }
       )
-      .opacity(viewStore.showUI ? 1.0 : 0.0)
-      .animation(.easeInOut, value: viewStore.showUI)
+      .opacity(store.showUI ? 1.0 : 0.0)
+      .animation(.easeInOut, value: store.showUI)
 
-      if let infoData = viewStore.infoData {
+      if let infoData = store.infoData {
         ScrollView {
           VStack(alignment: .leading, spacing: 12) {
             // Info

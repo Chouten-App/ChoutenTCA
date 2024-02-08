@@ -13,9 +13,9 @@ import ModuleClient
 import SharedModels
 import Webview
 
-extension PlayerFeature: Reducer {
-  public var body: some ReducerOf<Self> {
-    Scope(state: \.webviewState, action: /Action.InternalAction.webview) {
+extension PlayerFeature {
+  @ReducerBuilder<State, Action> public var body: some ReducerOf<Self> {
+    Scope(state: \.webviewState, action: \.internal.webview) {
       WebviewFeature()
     }
 

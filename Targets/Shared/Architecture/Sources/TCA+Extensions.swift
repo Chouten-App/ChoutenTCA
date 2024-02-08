@@ -10,76 +10,6 @@ import ComposableArchitecture
 import Foundation
 import SwiftUI
 
-extension Store where Action: FeatureAction {
-  public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (State) -> ChildState,
-    action fromChildAction: @escaping (ChildAction) -> Action.ViewAction
-  ) -> Store<ChildState, ChildAction> {
-    scope(state: toChildState) { .view(fromChildAction($0)) }
-  }
-
-  public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (State) -> ChildState,
-    action fromChildAction: @escaping (ChildAction) -> Action.InternalAction
-  ) -> Store<ChildState, ChildAction> {
-    scope(state: toChildState) { .internal(fromChildAction($0)) }
-  }
-}
-
-extension Scope where ParentAction: FeatureAction {
-  public init<ChildState, ChildAction>(
-    state toChildState: AnyCasePath<ParentState, ChildState>,
-    action toChildAction: AnyCasePath<ParentAction.InternalAction, ChildAction>,
-    @ReducerBuilder<ChildState, ChildAction> child: () -> Child
-  ) where ChildState == Child.State, ChildAction == Child.Action {
-    self.init(
-      state: toChildState,
-      action: /ParentAction.internal .. toChildAction,
-      child: child
-    )
-  }
-}
-
-extension Scope where ParentAction: FeatureAction {
-  public init<ChildState, ChildAction>(
-    state toChildState: WritableKeyPath<ParentState, ChildState>,
-    action toChildAction: AnyCasePath<ParentAction.InternalAction, ChildAction>,
-    @ReducerBuilder<ChildState, ChildAction> child: () -> Child
-  ) where ChildState == Child.State, ChildAction == Child.Action {
-    self.init(
-      state: toChildState,
-      action: /ParentAction.internal .. toChildAction,
-      child: child
-    )
-  }
-}
-
-extension Reducer where Action: FeatureAction {
-  public func ifLet<DestinationState, DestinationAction, Destination: Reducer>(
-    _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
-    action toPresentationAction: AnyCasePath<Action.InternalAction, PresentationAction<DestinationAction>>,
-    @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination
-  ) -> _PresentationReducer<Self, Destination> where Destination.State == DestinationState, Destination.Action == DestinationAction {
-    ifLet(
-      toPresentationState,
-      action: /Action.internal .. toPresentationAction,
-      destination: destination
-    )
-  }
-
-  public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer>(
-    _ toWrappedState: WritableKeyPath<State, WrappedState?>,
-    action toWrappedAction: AnyCasePath<Action.InternalAction, WrappedAction>,
-    @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped
-  ) -> _IfLetReducer<Self, Wrapped> where WrappedState == Wrapped.State, WrappedAction == Wrapped.Action {
-    ifLet(
-      toWrappedState,
-      action: /Action.internal .. toWrappedAction,
-      then: wrapped
-    )
-  }
-}
-
 extension Effect {
   public static func run(
     animation: Animation? = nil,
@@ -96,77 +26,54 @@ extension Effect {
   }
 }
 
-// MARK: - Case
-
-/// Case reducer for handling view, internal, and delegate actions
-/// in a reducer, specifically pullback
-///
-public struct Case<ParentState, ParentAction, Child: Reducer>: Reducer where Child.State == ParentState {
-  public let toChildAction: AnyCasePath<ParentAction, Child.Action>
-  public let child: Child
-
-  // swiftformat:disable opaqueGenericParameters
-  @inlinable
+extension Scope {
   public init<ChildAction>(
-    _ toChildAction: AnyCasePath<ParentAction, ChildAction>,
-    @ReducerBuilder<Child.State, Child.Action> _ child: () -> Child
-  ) where ChildAction == Child.Action {
-    self.toChildAction = toChildAction
-    self.child = child()
+    _ action: CaseKeyPath<ParentAction, ChildAction>,
+    child: () -> Child
+  ) where Child.Action == ChildAction, Child.State == ParentState, ParentState: Equatable {
+    self.init(state: \.`self`, action: action, child: child)
   }
+}
 
-  @inlinable
-  public func reduce(
-    into state: inout ParentState, action: ParentAction
-  ) -> Effect<ParentAction> {
-    guard let childAction = toChildAction.extract(from: action) else {
-      return .none
+// MARK: Allows to use bindings from subscripts via features
+
+extension Perception.Bindable {
+  public subscript<State: ObservableState, Action: FeatureAction & CasePathable, Member: Equatable>(
+    dynamicMember keyPath: WritableKeyPath<State, Member>
+  ) -> Binding<Member> where Value == Store<State, Action>, Action.ViewAction: BindableAction, Action.ViewAction.State == State {
+    (self[dynamicMember: keyPath] as _StoreBindable_Perception<State, Action, Member>)
+      .sending(\Action.Cases.view.binding[member: keyPath])
+  }
+}
+
+extension CasePaths.Case where Value: FeatureAction & CasePathable {
+  fileprivate var view: CasePaths.Case<Value.ViewAction> {
+    .init { action in
+      Value.view(action)
+    } extract: { root in
+      AnyCasePath(unsafe: Value.view).extract(from: root)
     }
-    return child
-      .reduce(into: &state, action: childAction)
-      .map(toChildAction.embed)
   }
 }
 
-extension WithViewStore where ViewState: Equatable, Content: View {
-  public init<State, Action: FeatureAction>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: State) -> ViewState,
-    @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content
-  ) where ViewAction == Action.ViewAction {
-    self.init(
-      store,
-      observe: toViewState,
-      send: Action.view,
-      content: content
-    )
-  }
-
-  public init<State, Action: FeatureAction>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
-    @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content
-  ) where ViewAction == Action.ViewAction, ViewAction: BindableAction, ViewAction.State == State {
-    self.init(
-      store,
-      observe: toViewState,
-      send: Action.view,
-      removeDuplicates: ==,
-      content: content
-    )
+extension CasePaths.Case where Value: BindableAction {
+  fileprivate var binding: CasePaths.Case<BindingAction<Value.State>> {
+    .init { value in
+      Value.binding(value)
+    } extract: { root in
+      root.binding
+    }
   }
 }
 
-extension ViewStore where ViewState: Equatable {
-  public convenience init<State, Action: FeatureAction>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: State) -> ViewState
-  ) where ViewAction == Action.ViewAction {
-    self.init(
-      store,
-      observe: toViewState,
-      send: Action.view,
-      removeDuplicates: ==
-    )
+extension CasePaths.Case {
+  fileprivate subscript<Root: ObservableState, Member: Equatable & Sendable>(
+    member keyPath: WritableKeyPath<Root, Member>
+  ) -> CasePaths.Case<Member> where Value == BindingAction<Root> {
+    .init { (member: Member) in
+      Value.set(keyPath, member)
+    } extract: { (root: Value) in
+      Value.allCasePaths[dynamicMember: keyPath].extract(from: root)
+    }
   }
 }

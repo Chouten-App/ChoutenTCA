@@ -10,13 +10,13 @@ import ComposableArchitecture
 import Search
 import SwiftUI
 
-extension DiscoverFeature: Reducer {
-  public var body: some ReducerOf<Self> {
-    Scope(state: /State.self, action: /Action.view) {
+extension DiscoverFeature {
+  @ReducerBuilder<State, Action> public var body: some ReducerOf<Self> {
+    Scope(\.view) {
       BindingReducer()
     }
 
-    Scope(state: \.search, action: /Action.InternalAction.search) {
+    Scope(state: \.search, action: \.internal.search) {
       SearchFeature()
     }
 

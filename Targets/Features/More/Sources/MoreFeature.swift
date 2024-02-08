@@ -10,18 +10,12 @@ import Architecture
 import ComposableArchitecture
 import SwiftUI
 
+@Reducer
 public struct MoreFeature: Feature {
+  @ObservableState
   public struct State: FeatureState {
-    public static func == (lhs: MoreFeature.State, rhs: MoreFeature.State) -> Bool {
-      lhs.isDownloadedOnly == rhs.isDownloadedOnly &&
-        lhs.isIncognito == rhs.isIncognito &&
-        lhs.pageState == rhs.pageState &&
-        lhs.versionString == rhs.versionString
-    }
-
-    @AppStorage("downloadedOnly") public var isDownloadedOnly = false
-    @AppStorage("incognito") public var isIncognito = false
-
+    public var isDownloadedOnly = false
+    public var isIncognito = false
     public var pageState: PageState = .developer
 
     let versionString: String
@@ -39,13 +33,22 @@ public struct MoreFeature: Feature {
     case developer
   }
 
+  @CasePathable
+  @dynamicMemberLookup
   public enum Action: FeatureAction {
+    @CasePathable
+    @dynamicMemberLookup
     public enum ViewAction: SendableAction, BindableAction {
       case setPageState(to: PageState)
       case binding(BindingAction<State>)
     }
 
+    @CasePathable
+    @dynamicMemberLookup
     public enum DelegateAction: SendableAction {}
+
+    @CasePathable
+    @dynamicMemberLookup
     public enum InternalAction: SendableAction {
       case appearance(AppearanceFeature.Action)
     }
@@ -57,9 +60,9 @@ public struct MoreFeature: Feature {
 
   @MainActor
   public struct View: FeatureView {
-    public let store: StoreOf<MoreFeature>
+    @Perception.Bindable public var store: StoreOf<MoreFeature>
 
-    public nonisolated init(store: StoreOf<MoreFeature>) {
+    public init(store: StoreOf<MoreFeature>) {
       self.store = store
     }
   }

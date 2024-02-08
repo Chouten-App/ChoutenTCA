@@ -14,28 +14,13 @@ import Player
 import SharedModels
 import SwiftUI
 
+@Reducer
 public struct AppFeature: Feature {
   @Dependency(\.dataClient) var dataClient
   @Dependency(\.moduleClient) var moduleClient
 
+  @ObservableState
   public struct State: FeatureState {
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-      lhs.versionString == rhs.versionString &&
-        lhs.more == rhs.more &&
-        lhs.discover == rhs.discover &&
-        lhs.player == rhs.player &&
-        lhs.sheet == rhs.sheet &&
-        lhs.selected == rhs.selected &&
-        lhs.showTabbar == rhs.showTabbar &&
-        lhs.showPlayer == rhs.showPlayer &&
-        lhs.fullscreen == rhs.fullscreen &&
-        lhs.videoUrl == rhs.videoUrl &&
-        lhs.videoIndex == rhs.videoIndex &&
-        lhs.selectedModuleId == rhs.selectedModuleId &&
-        lhs.mediaItems == rhs.mediaItems &&
-        lhs.modules == rhs.modules
-    }
-
     let versionString: String
     public var more: MoreFeature.State
     public var discover: DiscoverFeature.State
@@ -52,7 +37,7 @@ public struct AppFeature: Feature {
     public var mediaItems: [Media] = []
     public var modules: [Module] = []
 
-    @AppStorage("selectedModuleId") public var selectedModuleId: String = ""
+    public var selectedModuleId: String = ""
 
     public init(versionString: String = "x.x.x(x)") {
       self.versionString = versionString
@@ -98,7 +83,11 @@ public struct AppFeature: Feature {
     }
   }
 
+  @CasePathable
+  @dynamicMemberLookup
   public enum Action: FeatureAction {
+    @CasePathable
+    @dynamicMemberLookup
     public enum ViewAction: SendableAction {
       case changeTab(_ tab: State.Tab)
       case toggleTabbar
@@ -107,8 +96,12 @@ public struct AppFeature: Feature {
       case updateMediaItems(_ items: [Media])
     }
 
+    @CasePathable
+    @dynamicMemberLookup
     public enum DelegateAction: SendableAction {}
 
+    @CasePathable
+    @dynamicMemberLookup
     public enum InternalAction: SendableAction {
       case more(MoreFeature.Action)
       case discover(DiscoverFeature.Action)
@@ -135,7 +128,7 @@ public struct AppFeature: Feature {
     @SwiftUI.State var showAlert = false
     @SwiftUI.State var changeMediaData: Media?
 
-    public nonisolated init(store: StoreOf<AppFeature>) {
+    public init(store: StoreOf<AppFeature>) {
       self.store = store
     }
   }

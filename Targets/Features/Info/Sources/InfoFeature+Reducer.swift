@@ -14,9 +14,9 @@ import SharedModels
 import SwiftUI
 import Webview
 
-extension InfoFeature: Reducer {
-  public var body: some ReducerOf<Self> {
-    Scope(state: \.webviewState, action: /Action.InternalAction.webview) {
+extension InfoFeature {
+  @ReducerBuilder<State, Action> public var body: some ReducerOf<Self> {
+    Scope(state: \.webviewState, action: \.internal.webview) {
       WebviewFeature()
     }
 
