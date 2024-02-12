@@ -6,23 +6,40 @@
 //
 
 import Foundation
+@preconcurrency
+import Semver
+import Tagged
 
 // MARK: - Module
 
-public struct Module: Hashable, Equatable, Codable, Sendable {
-  public let id: String
+public struct Module: Hashable, Equatable, Codable, Sendable, Identifiable {
+  public typealias FormatVersion = Tagged<(Self, formatVersion: ()), Int>
+  public typealias Version = Tagged<(Self, version: ()), Semver>
+
+  public let id: Tagged<Self, String>
+  // TODO: Make this type enum specific?
   public let type: String
+  // TODO: Make this type enum specific
   public let subtypes: [String]
+  // TODO: Decide if icon should be a URL-specific variable
   public var icon: String?
   public let name: String
-  public let version: String
-  public let formatVersion: Int
-  public let updateUrl: String
-  public let general: GeneralMetadata
-  // public var updateStatus: ModuleVersionStatus = .upToDate
+  public let version: Version
+  public let formatVersion: FormatVersion
+  public let updateUrl: URL
+  public let metadata: Metadata
 
-  public init(id: String, type: String, subtypes: [String], icon: String? = nil, name: String, version: String, formatVersion: Int, updateUrl: String, general: GeneralMetadata) {
-    // , updateStatus: ModuleVersionStatus = .upToDate) {
+  public init(
+    id: ID,
+    type: String,
+    subtypes: [String],
+    icon: String? = nil,
+    name: String,
+    version: Version,
+    formatVersion: FormatVersion,
+    updateUrl: URL,
+    metadata: Metadata
+  ) {
     self.id = id
     self.type = type
     self.subtypes = subtypes
@@ -31,24 +48,68 @@ public struct Module: Hashable, Equatable, Codable, Sendable {
     self.version = version
     self.formatVersion = formatVersion
     self.updateUrl = updateUrl
-    self.general = general
-    // self.updateStatus = updateStatus
+    self.metadata = metadata
   }
+}
 
+// MARK: Module + VersionStatus
+
+extension Module {
+  public enum VersionStatus: Hashable, Equatable, Codable, Sendable {
+    case upToDate
+    case uninstalled
+    case updateAvailable
+  }
+}
+
+// MARK: Module + Metadata
+
+extension Module {
+  public struct Metadata: Hashable, Equatable, Codable, Sendable {
+    public let author: String
+    // TODO: make description optional and change name to avoid clashing with `CustomStringConvertible`
+    public let description: String
+    // TODO: Make lang a enum type strict language
+    public let lang: [String]
+    public let baseURL: URL
+    // TODO: Make this optional and specific hex-string
+    public let bgColor: String
+    // TODO: <ake this optional and specific hex-string
+    public let fgColor: String
+
+    public init(
+      author: String,
+      description: String,
+      lang: [String],
+      baseURL: URL,
+      bgColor: String,
+      fgColor: String
+    ) {
+      self.author = author
+      self.description = description
+      self.lang = lang
+      self.baseURL = baseURL
+      self.bgColor = bgColor
+      self.fgColor = fgColor
+    }
+  }
+}
+
+extension Module {
   public static let sample = Self(
     id: "whatever",
     type: "source",
     subtypes: ["Anime", "Manga"],
     icon: "https://raw.githubusercontent.com/laynH/Anime-Girls-Holding-Programming-Books/master/C%2B%2B/Sakura_Nene_CPP.jpg",
     name: "Module Name",
-    version: "v1.0.0",
+    version: .init(.init(1, 0, 0)),
     formatVersion: 2,
-    updateUrl: "",
-    general: GeneralMetadata(
+    updateUrl: .init(string: "/").unsafelyUnwrapped,
+    metadata: Metadata(
       author: "Chouten",
       description: "This is a description for the module.",
       lang: ["en"],
-      baseURL: "",
+      baseURL: .init(string: "/").unsafelyUnwrapped,
       bgColor: "",
       fgColor: ""
     )
@@ -60,14 +121,14 @@ public struct Module: Hashable, Equatable, Codable, Sendable {
     subtypes: ["Anime", "Manga"],
     icon: "https://raw.githubusercontent.com/laynH/Anime-Girls-Holding-Programming-Books/master/C%2B%2B/Sakura_Nene_CPP.jpg",
     name: "Module Name",
-    version: "v1.0.0",
+    version: .init(.init(1, 0, 0)),
     formatVersion: 2,
-    updateUrl: "",
-    general: GeneralMetadata(
+    updateUrl: .init(string: "/").unsafelyUnwrapped,
+    metadata: Metadata(
       author: "Chouten",
       description: "This is a description for the module.",
       lang: ["en"],
-      baseURL: "",
+      baseURL: .init(string: "/").unsafelyUnwrapped,
       bgColor: "",
       fgColor: ""
     )
@@ -79,45 +140,16 @@ public struct Module: Hashable, Equatable, Codable, Sendable {
     subtypes: ["Comics"],
     icon: "https://raw.githubusercontent.com/laynH/Anime-Girls-Holding-Programming-Books/master/C%2B%2B/Sakura_Nene_CPP.jpg",
     name: "Module Name (Update)",
-    version: "v1.0.0",
+    version: .init(.init(1, 0, 0)),
     formatVersion: 2,
-    updateUrl: "",
-    general: GeneralMetadata(
+    updateUrl: .init(string: "/").unsafelyUnwrapped,
+    metadata: Metadata(
       author: "Chouten",
       description: "This is a description for the module.",
       lang: ["en"],
-      baseURL: "",
+      baseURL: .init(string: "/").unsafelyUnwrapped,
       bgColor: "",
       fgColor: ""
-    ) // ,
-    // updateStatus: .updateAvailable
+    )
   )
-}
-
-// MARK: - ModuleVersionStatus
-
-public enum ModuleVersionStatus: Hashable, Equatable, Codable, Sendable {
-  case upToDate
-  case uninstalled
-  case updateAvailable
-}
-
-// MARK: - GeneralMetadata
-
-public struct GeneralMetadata: Hashable, Equatable, Codable, Sendable {
-  public let author: String
-  public let description: String
-  public let lang: [String]
-  public let baseURL: String
-  public let bgColor: String
-  public let fgColor: String
-
-  public init(author: String, description: String, lang: [String], baseURL: String, bgColor: String, fgColor: String) {
-    self.author = author
-    self.description = description
-    self.lang = lang
-    self.baseURL = baseURL
-    self.bgColor = bgColor
-    self.fgColor = fgColor
-  }
 }

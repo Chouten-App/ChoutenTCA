@@ -184,7 +184,7 @@ extension ModuleSheetFeature.View {
             .lineLimit(1)
 
           HStack {
-            Text(module.general.author)
+            Text(module.metadata.author)
               .opacity(0.7)
               .font(.system(size: 12, weight: .semibold))
               .lineLimit(1)

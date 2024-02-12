@@ -25,8 +25,7 @@ class HostingController<Content: View>: UIHostingController<Content> {
   fileprivate var _supportedInterfaceOrientations = UIInterfaceOrientationMask.all {
     didSet {
       if #available(iOS 16, *) {
-        #if targetEnvironment(macCatalyst)
-        #else
+        #if !targetEnvironment(macCatalyst)
         setNeedsUpdateOfSupportedInterfaceOrientations()
         #endif
       } else {

@@ -23,6 +23,8 @@ let package = Package(
     .package(url: "https://github.com/scinfu/SwiftSoup.git", exact: "2.6.1"),
     .package(url: "https://github.com/markiv/SwiftUI-Shimmer.git", exact: "1.4.0"),
     .package(url: "https://github.com/Suwatte/Texture.git", exact: "3.1.1"),
-    .package(url: "https://github.com/weichsel/ZIPFoundation.git", exact: "0.9.18")
+    .package(url: "https://github.com/weichsel/ZIPFoundation.git", exact: "0.9.18"),
+    .package(url: "https://github.com/kutchie-pelaez/Semver.git", exact: "1.0.0"),
+    .package(url: "https://github.com/pointfreeco/swift-tagged.git", exact: "0.10.0")
   ]
 )

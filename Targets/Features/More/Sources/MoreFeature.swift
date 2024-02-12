@@ -7,6 +7,7 @@
 
 import Appearance
 import Architecture
+import BuildClient
 import ComposableArchitecture
 import SwiftUI
 
@@ -16,13 +17,14 @@ public struct MoreFeature: Feature {
   public struct State: FeatureState {
     public var isDownloadedOnly = false
     public var isIncognito = false
-    public var pageState: PageState = .developer
+    public var pageState: PageState = .more
 
-    let versionString: String
+    public let versionString: String
     public var appearance: AppearanceFeature.State
 
-    public init(versionString: String) {
-      self.versionString = versionString
+    public init() {
+      @Dependency(\.build) var buildClient
+      self.versionString = buildClient.description
       self.appearance = AppearanceFeature.State()
     }
   }

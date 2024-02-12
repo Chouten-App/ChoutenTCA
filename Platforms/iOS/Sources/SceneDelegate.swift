@@ -18,7 +18,6 @@ extension Notification.Name {
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   var window: UIWindow?
-  let dataController = DataController()
 
   @Dependency(\.moduleClient) var moduleClient
 
@@ -35,17 +34,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         wrappedView:
         AppFeature.View(
           store: .init(
-            initialState: .init(
-              versionString: """
-              \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "x.x")\
-              (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "x"))
-              """
-            ),
+            initialState: .init(),
             reducer: { AppFeature() }
           )
         )
-        .environment(\.managedObjectContext, dataController.container.viewContext)
-        // .supportedOrientation(.all)
       )
       self.window = window
       window.makeKeyAndVisible()
@@ -115,18 +107,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
           wrappedView:
           AppFeature.View(
             store: .init(
-              initialState: .init(
-                versionString:
-                """
-                \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "x.x")\
-                (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "x"))
-                """
-              ),
+              initialState: .init(),
               reducer: { AppFeature() }
             )
           )
-          .environment(\.managedObjectContext, dataController.container.viewContext)
-          // .supportedOrientation(.all)
         )
         window.rootViewController = hostingController
         window.makeKeyAndVisible()

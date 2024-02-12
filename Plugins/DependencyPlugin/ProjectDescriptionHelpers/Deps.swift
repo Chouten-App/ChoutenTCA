@@ -39,6 +39,7 @@ public enum Features: String, CaseIterable, QualifiedName {
 // MARK: - Clients
 
 public enum Clients: String, CaseIterable, QualifiedName {
+  case buildClient
   case dataClient
   case fileClient
   case moduleClient
@@ -71,7 +72,9 @@ extension ExternalDependencies {
   public static let nuke = Self(.external(name: "Nuke"))
   public static let nukeUI = Self(.external(name: "NukeUI"))
   public static let swiftSoup = Self(.external(name: "SwiftSoup"))
+  public static let semver = Self(.external(name: "Semver"))
   public static let shimmer = Self(.external(name: "Shimmer"))
+  public static let tagged = Self(.external(name: "Tagged"))
   public static let texture = Self(.external(name: "Texture"))
   public static let zipFoundation = Self(.external(name: "ZIPFoundation"))
 }

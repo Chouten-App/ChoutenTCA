@@ -244,7 +244,7 @@ extension MoreFeature.View: View {
 #Preview("More") {
   MoreFeature.View(
     store: .init(
-      initialState: .init(versionString: "x.x.x"),
+      initialState: .init(),
       reducer: { MoreFeature() }
     )
   )

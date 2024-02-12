@@ -515,7 +515,7 @@ struct ContinueCard: View {
     if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first, let module {
       let fileURL = documentsDirectory
         .appendingPathComponent("Frames")
-        .appendingPathComponent(module.id)
+        .appendingPathComponent(module.id.rawValue)
         .appendingPathComponent(
           item.mediaUrl
             .replacingOccurrences(of: "://", with: "_")

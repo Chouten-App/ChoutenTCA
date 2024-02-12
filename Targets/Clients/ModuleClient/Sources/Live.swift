@@ -10,6 +10,7 @@ import Combine
 import Dependencies
 import Foundation
 import OSLog
+import Semver
 import SharedModels
 import ZIPFoundation
 
@@ -123,23 +124,18 @@ extension ModuleClient: DependencyKey {
                     logger.log("Module exists.")
                     moduleFound = true
                     // if id matches, check version number
-                    let versionResult = module.version.versionCompare(m.version)
 
-                    switch versionResult {
-                    case .orderedSame:
-                      // versions are the same, do nothing to modules dir
-                      break
-                    case .orderedAscending:
-                      // new module version is lower, do nothing to module dir
-                      break
-                    case .orderedDescending:
+                    if module.version > m.version {
                       // new module version is higher, remove old module and add new one
 
                       // remove old dir
                       try FileManager.default.removeItem(at: modulesDirectory.appendingPathComponent(trueModuleName))
 
                       // copy cache module dir to modules dir
-                      try fileManager.copyItem(at: cacheDirectory.appendingPathComponent(moduleName), to: modulesDirectory.appendingPathComponent(trueModuleName))
+                      try fileManager.copyItem(
+                        at: cacheDirectory.appendingPathComponent(moduleName),
+                        to: modulesDirectory.appendingPathComponent(trueModuleName)
+                      )
                     }
                   }
                 }
@@ -148,7 +144,10 @@ extension ModuleClient: DependencyKey {
 
             if !moduleFound {
               let trueModuleName = module.name
-              try fileManager.copyItem(at: cacheDirectory.appendingPathComponent(moduleName), to: modulesDirectory.appendingPathComponent(trueModuleName))
+              try fileManager.copyItem(
+                at: cacheDirectory.appendingPathComponent(moduleName),
+                to: modulesDirectory.appendingPathComponent(trueModuleName)
+              )
             }
           }
         }
@@ -166,7 +165,7 @@ extension ModuleClient: DependencyKey {
 
             if let m {
               list.append(m)
-              moduleIds.withValue { $0.append(m.id) }
+              moduleIds.withValue { $0.append(.init(m.id)) }
             }
           }
         }
@@ -187,7 +186,7 @@ extension ModuleClient: DependencyKey {
         return nil
       },
       deleteModule: { module in
-        if let index = moduleIds.value.firstIndex(of: module.id) {
+        if let index = moduleIds.value.firstIndex(of: .init(module.id)) {
           do {
             let documentsDirectory = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
 
@@ -207,7 +206,7 @@ extension ModuleClient: DependencyKey {
         return false
       },
       setSelectedModuleName: { module in
-        let index = moduleIds.value.firstIndex(of: module.id)
+        let index = moduleIds.value.firstIndex(of: .init(module.id))
         if let index, moduleFolderNames.count > index {
           selectedModuleName.setValue(moduleFolderNames[index])
         }

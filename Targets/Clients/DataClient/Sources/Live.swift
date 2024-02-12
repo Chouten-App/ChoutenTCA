@@ -13,6 +13,8 @@ import Foundation
 import OSLog
 import SharedModels
 
+
+// TODO: Move this to `ModuleClient`
 extension DataClient: DependencyKey {
   public static let liveValue: Self = {
     let infoData = CurrentValueSubject<InfoData?, Never>(nil)

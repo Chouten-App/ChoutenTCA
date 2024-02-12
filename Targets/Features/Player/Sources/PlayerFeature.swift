@@ -142,7 +142,7 @@ public struct PlayerFeature: Feature {
 
           // Create a directory URL based on module ID inside 'Frames' directory
           let moduleDirectory = framesDirectory
-            .appendingPathComponent(module.id, isDirectory: true)
+            .appendingPathComponent(module.id.rawValue, isDirectory: true)
 
           // Create a directory URL based on 'url' inside module directory
           let urlDirectory = moduleDirectory

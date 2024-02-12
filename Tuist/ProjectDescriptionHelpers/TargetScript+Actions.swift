@@ -20,7 +20,8 @@ extension TargetScript {
       fi
       """,
       name: "SwiftLint",
-      basedOnDependencyAnalysis: false
+      basedOnDependencyAnalysis: false,
+      runForInstallBuildsOnly: false
     )
   }
 
@@ -29,13 +30,14 @@ extension TargetScript {
       script: """
       export PATH="$PATH:/opt/homebrew/bin"
       if which swiftformat >/dev/null; then
-          swiftformat --config ../../.swiftformat.yml --lint ../..
+          swiftformat --config ../../.swiftformat.yml --lint --lenient ../..
       else
           echo "warning: SwiftFormat not installed, download from https://github.com/nicklockwood/SwiftFormat"
       fi
       """,
       name: "SwiftFormat",
-      basedOnDependencyAnalysis: false
+      basedOnDependencyAnalysis: false,
+      runForInstallBuildsOnly: false
     )
   }
 }

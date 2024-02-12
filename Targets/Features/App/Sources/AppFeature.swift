@@ -21,7 +21,6 @@ public struct AppFeature: Feature {
 
   @ObservableState
   public struct State: FeatureState {
-    let versionString: String
     public var more: MoreFeature.State
     public var discover: DiscoverFeature.State
     public var player: PlayerFeature.State
@@ -37,13 +36,10 @@ public struct AppFeature: Feature {
     public var mediaItems: [Media] = []
     public var modules: [Module] = []
 
-    public var selectedModuleId: String = ""
+    public var selectedModuleId: Module.ID = ""
 
-    public init(versionString: String = "x.x.x(x)") {
-      self.versionString = versionString
-      self.more = MoreFeature.State(
-        versionString: versionString
-      )
+    public init() {
+      self.more = MoreFeature.State()
       self.discover = DiscoverFeature.State()
       self.player = PlayerFeature.State()
       self.sheet = ModuleSheetFeature.State()

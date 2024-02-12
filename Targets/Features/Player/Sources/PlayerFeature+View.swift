@@ -462,10 +462,9 @@ extension PlayerFeature.View {
                 if let infoData = store.infoData {
                   print(infoData)
 
-                  if !infoData.mediaList.isEmpty {
-                    let item = infoData.mediaList[0].list[store.index]
+                  if let item = infoData.mediaList.first?.list[store.index], let module = store.module {
                     let newMediaItem = Media(
-                      moduleID: store.module?.id ?? "",
+                      moduleID: module.id,
                       image: item.image ?? infoData.poster,
                       current: currentTime,
                       duration: playerVM.duration ?? 1.0,
