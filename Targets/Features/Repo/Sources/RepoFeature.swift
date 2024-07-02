@@ -1,77 +1,109 @@
 //
-//  RepoFeature.swift
+//  SearchFeature.swift
+//  Search
 //
-//
-//  Created by Inumaki on 14.12.23.
+//  Created by Inumaki on 15.05.24.
 //
 
 import Architecture
-import ComposableArchitecture
-import SharedModels
+import Combine
+import RelayClient
+import RepoClient
+@preconcurrency import SharedModels
 import SwiftUI
 
-public struct RepoFeature: Feature {
-  public struct State: FeatureState {
-    public init() {}
-  }
+@Reducer
+public struct RepoFeature: Reducer {
+    @Dependency(\.relayClient) var relayClient
+    @Dependency(\.repoClient) var repoClient
 
-  public enum Action: FeatureAction {
-    public enum ViewAction: SendableAction {}
-    public enum DelegateAction: SendableAction {}
-    public enum InternalAction: SendableAction {}
+    @ObservableState
+    public struct State: FeatureState {
+        // swiftlint:disable redundant_optional_initialization
+        public var installRepoMetadata: RepoMetadata? = nil
+        // swiftlint:enable redundant_optional_initialization
+        public var repos: [RepoMetadata] = []
+        public init() { }
+    }
 
-    case view(ViewAction)
-    case delegate(DelegateAction)
-    case `internal`(InternalAction)
-  }
+    @CasePathable
+    @dynamicMemberLookup
+    public enum Action: FeatureAction {
+        @CasePathable
+        @dynamicMemberLookup
+        public enum ViewAction: SendableAction {
+            case onAppear
+            case install(url: String)
+            case fetch(url: String)
+            case installWithModules(_ metadata: RepoMetadata, modules: [String])
+            case installModule(_ metadata: RepoMetadata, id: String)
 
-  @MainActor
-  public struct View: FeatureView {
-    public let store: StoreOf<RepoFeature>
-    @SwiftUI.State var showContextMenu = false
-    @SwiftUI.State var hoveredIndex = -1
-    @GestureState var press = false
-    @SwiftUI.State var selectedTags: [Int] = []
-
-    @Namespace var animation
-
-    let installedModules: [Module] = [
-      Module.sample,
-      Module.sample2,
-      Module.sampleUpdate
-    ]
-
-    func getFilteredModules() -> [Module] {
-      // filter using tags
-      let subtypesSet: Set<String> = Set(installedModules.flatMap(\.subtypes))
-
-      // Convert the Set back to an array to remove duplicates
-      let uniqueSubtypesArray: [String] = Array(subtypesSet).sorted(using: .localized)
-
-      let filtered = uniqueSubtypesArray.enumerated().compactMap { index, subtype in
-        selectedTags.contains(index) ? subtype : nil
-      }
-
-      var filteredModules = installedModules.filter { module in
-        // Filter the modules based on whether any subtype matches the filtered tags
-        let matchingSubtypes = module.subtypes.filter { subtype in
-          filtered.contains(subtype)
+            case setMetadata(_ metadata: RepoMetadata)
         }
 
-        return !matchingSubtypes.isEmpty // Filter out modules with no matching subtypes
-      }
+        @CasePathable
+        @dynamicMemberLookup
+        public enum DelegateAction: SendableAction {}
 
-      if selectedTags.isEmpty {
-        return installedModules
-      }
+        @CasePathable
+        @dynamicMemberLookup
+        public enum InternalAction: SendableAction {}
 
-      return filteredModules
+        case view(ViewAction)
+        case delegate(DelegateAction)
+        case `internal`(InternalAction)
     }
 
-    public nonisolated init(store: StoreOf<RepoFeature>) {
-      self.store = store
-    }
-  }
+    func getRepos() -> [RepoMetadata] {
+        let fileManager = FileManager.default
 
-  public init() {}
+        // Get the path to the user's Documents directory
+        guard let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            print("Could not locate the Documents directory.")
+            return []
+        }
+
+        // Append the "Repos" folder to the path
+        let reposDirectory = documentsDirectory.appendingPathComponent("Repos")
+
+        do {
+            // Get the list of all items in the "Repos" directory
+            let items = try fileManager.contentsOfDirectory(at: reposDirectory, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+
+            var repoArray: [RepoMetadata] = []
+            for item in items {
+                var isDirectory: ObjCBool = false
+
+                // Check if the item is a directory
+                if fileManager.fileExists(atPath: item.path, isDirectory: &isDirectory), isDirectory.boolValue {
+                    // Construct the path to the "metadata.json" file
+                    let metadataFilePath = item.appendingPathComponent("metadata.json")
+
+                    if fileManager.fileExists(atPath: metadataFilePath.path) {
+                        do {
+                            // Read the contents of the "metadata.json" file
+                            let jsonData = try Data(contentsOf: metadataFilePath)
+
+                            // Convert the JSON data to a string for printing
+                            let repo = try JSONDecoder().decode(RepoMetadata.self, from: jsonData)
+
+                            repoArray.append(repo)
+                            print("Loaded Repo \(repo.id)")
+                        } catch {
+                            print("Failed to read JSON file at path: \(metadataFilePath.path), error: \(error)")
+                        }
+                    } else {
+                        print("No metadata.json file found in directory: \(item.path)")
+                    }
+                }
+            }
+            return repoArray
+        } catch {
+            print("Failed to list contents of directory: \(reposDirectory.path), error: \(error)")
+        }
+
+        return []
+    }
+
+    public init() { }
 }

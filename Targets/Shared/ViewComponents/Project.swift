@@ -5,8 +5,10 @@ import ProjectDescriptionHelpers
 let project = Project.shared(
   .viewComponents,
   dependencies: [
-    .externalDependencies.grdb.target,
     .shared.sharedModels.project,
-    .externalDependencies.composableArchitecture.target
+    .shared.architecture.project,
+    .externalDependencies.composableArchitecture.target,
+    .externalDependencies.nuke.target,
+    .clients.repoClient.project
   ]
 )

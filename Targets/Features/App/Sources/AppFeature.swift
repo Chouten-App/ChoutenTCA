@@ -6,128 +6,77 @@
 //
 
 import Architecture
+import Combine
 import DataClient
-import Discover
-import ModuleSheet
-import More
-import Player
+import RepoClient
 import SharedModels
 import SwiftUI
 
 @Reducer
-public struct AppFeature: Feature {
-  @Dependency(\.dataClient) var dataClient
-  @Dependency(\.moduleClient) var moduleClient
+public struct AppFeature: Reducer {
+    @Dependency(\.dataClient) var dataClient
+    @Dependency(\.repoClient) var repoClient
 
-  @ObservableState
-  public struct State: FeatureState {
-    public var more: MoreFeature.State
-    public var discover: DiscoverFeature.State
-    public var player: PlayerFeature.State
-    public var sheet: ModuleSheetFeature.State
+    @ObservableState
+    public struct State: FeatureState {
 
-    public var selected = Tab.home
-    public var showTabbar = true
-    public var showPlayer = false
-    public var fullscreen = false
-    public var videoUrl: String?
-    public var videoIndex: Int?
+        public var selected = Tab.home
 
-    public var mediaItems: [Media] = []
-    public var modules: [Module] = []
+        public init() { }
 
-    public var selectedModuleId: Module.ID = ""
+        public enum Tab: String, CaseIterable, Sendable {
+            case home = "Home"
+            case discover = "Discover"
+            case repos = "Repos"
 
-    public init() {
-      self.more = MoreFeature.State()
-      self.discover = DiscoverFeature.State()
-      self.player = PlayerFeature.State()
-      self.sheet = ModuleSheetFeature.State()
-    }
+            var image: String {
+                switch self {
+                case .home:
+                    "house"
+                case .discover:
+                    "safari"
+                case .repos:
+                    "shippingbox"
+                }
+            }
 
-    public enum Tab: String, CaseIterable, Sendable {
-      case home = "Home"
-      case discover = "Discover"
-      case repos = "Repos"
-      case more = "More"
-
-      var image: String {
-        switch self {
-        case .home:
-          "house"
-        case .discover:
-          "safari"
-        case .repos:
-          "shippingbox"
-        case .more:
-          "ellipsis"
+            var selected: String {
+                switch self {
+                case .home:
+                    "house.fill"
+                case .discover:
+                    "safari.fill"
+                case .repos:
+                    "shippingbox.fill"
+                }
+            }
         }
-      }
+    }
 
-      var selected: String {
-        switch self {
-        case .home:
-          "house.fill"
-        case .discover:
-          "safari.fill"
-        case .repos:
-          "shippingbox.fill"
-        case .more:
-          "ellipsis"
+    @CasePathable
+    @dynamicMemberLookup
+    public enum Action: FeatureAction {
+        @CasePathable
+        @dynamicMemberLookup
+        public enum ViewAction: SendableAction {
+            case changeTab(_ tab: State.Tab)
+            case toggleTabbar
+            case onAppear
+            case install(url: String)
         }
-      }
-    }
-  }
 
-  @CasePathable
-  @dynamicMemberLookup
-  public enum Action: FeatureAction {
-    @CasePathable
-    @dynamicMemberLookup
-    public enum ViewAction: SendableAction {
-      case changeTab(_ tab: State.Tab)
-      case toggleTabbar
-      case onAppear
-      case setVideoUrl(_ url: String?, index: Int?)
-      case updateMediaItems(_ items: [Media])
+        @CasePathable
+        @dynamicMemberLookup
+        public enum DelegateAction: SendableAction {}
+
+        @CasePathable
+        @dynamicMemberLookup
+        public enum InternalAction: SendableAction {}
+
+        case view(ViewAction)
+        case delegate(DelegateAction)
+        case `internal`(InternalAction)
     }
 
-    @CasePathable
-    @dynamicMemberLookup
-    public enum DelegateAction: SendableAction {}
-
-    @CasePathable
-    @dynamicMemberLookup
-    public enum InternalAction: SendableAction {
-      case more(MoreFeature.Action)
-      case discover(DiscoverFeature.Action)
-      case player(PlayerFeature.Action)
-      case sheet(ModuleSheetFeature.Action)
-    }
-
-    case view(ViewAction)
-    case delegate(DelegateAction)
-    case `internal`(InternalAction)
-  }
-
-  @MainActor
-  public struct View: FeatureView {
-    @Namespace var animation
-    public let store: StoreOf<AppFeature>
-    @Environment(\.verticalSizeClass) var verticalSizeClass
-    @Environment(\.horizontalSizeClass) var horizontalSizeClass
-    @AppStorage("colorScheme") var colorScheme: Int?
-    @SwiftUI.State var showContextMenu = false
-    @SwiftUI.State var hoveredIndex = -1
-    @GestureState var press = false
-
-    @SwiftUI.State var showAlert = false
-    @SwiftUI.State var changeMediaData: Media?
-
-    public init(store: StoreOf<AppFeature>) {
-      self.store = store
-    }
-  }
-
-  public init() {}
+    public init() { }
 }

@@ -5,12 +5,11 @@ import ProjectDescriptionHelpers
 let project = Project.feature(
   .discover,
   dependencies: [
+    .features.info.project,
     .shared.architecture.project,
-    .shared.viewComponents.project,
-    .externalDependencies.shimmer.target,
-    .features.search.project,
-    .externalDependencies.kingfisher.target,
     .externalDependencies.composableArchitecture.target,
-    .clients.moduleClient.project
+    .externalDependencies.nuke.target,
+    .clients.dataClient.project,
+    .clients.relayClient.project
   ]
 )

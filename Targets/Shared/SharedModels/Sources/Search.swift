@@ -1,63 +1,122 @@
 //
 //  Search.swift
+//  ChoutenRedesign
 //
-//
-//  Created by Inumaki on 17.10.23.
+//  Created by Inumaki on 30.01.24.
 //
 
 import Foundation
+import JavaScriptCore
 
-// MARK: - SearchData
+public struct SearchResultInfo: Codable, Equatable {
+    public var count: Int?
+    public var pages: Int
+    public var next: String?
 
-public struct SearchData: Codable, Hashable, Equatable, Sendable {
-  public let url: String
-  public let img: String
-  public let title: String
-  public let indicatorText: String?
-  public let currentCount: Int?
-  public let totalCount: Int?
-
-  public init(url: String, img: String, title: String, indicatorText: String?, currentCount: Int?, totalCount: Int?) {
-    self.url = url
-    self.img = img
-    self.title = title
-    self.indicatorText = indicatorText
-    self.currentCount = currentCount
-    self.totalCount = totalCount
-  }
-
-  public var currentCountString: String {
-    if let currentCount {
-      "\(currentCount)"
-    } else {
-      "⁓"
+    public init(count: Int? = nil, pages: Int, next: String? = nil) {
+        self.count = count
+        self.pages = pages
+        self.next = next
     }
-  }
 
-  public var totalCountString: String {
-    if let totalCount {
-      "\(totalCount)"
-    } else {
-      "⁓"
+    public init?(jsValue: JSValue) {
+        guard let pages = jsValue["pages"]?.toInt32() as? Int else { return nil }
+
+        let count = jsValue["count"]?.toInt32() as? Int
+        let next = jsValue["next"]?.toString()
+
+        self.init(count: count, pages: pages, next: next)
     }
-  }
-
-  public static let sample = Self(
-    url: "",
-    img: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg",
-    title: "Title",
-    indicatorText: "18+",
-    currentCount: 12,
-    totalCount: 12
-  )
-
-  public static let sampleList = [Self](repeating: sample, count: 50)
 }
 
-// MARK: Identifiable
+public struct SearchResult: Codable, Equatable {
+    public var info: SearchResultInfo
+    public var results: [SearchData]
 
-extension SearchData: Identifiable {
-  public var id: String {
-    "\(hashValue)"
-  }
+    public init(info: SearchResultInfo, results: [SearchData]) {
+        self.info = info
+        self.results = results
+    }
+
+    public init?(jsValue: JSValue) {
+        guard
+            let infoValue = jsValue["info"],
+            let info = SearchResultInfo(jsValue: infoValue),
+            let dataArray = jsValue["results"]?.toArray() as? [[String: Any]]
+        else {
+            return nil
+        }
+
+        var searchDataArray: [SearchData] = []
+        for searchItem in dataArray {
+            guard let url = searchItem["url"] as? String,
+                  let title = searchItem["title"] as? String,
+                  let img = searchItem["poster"] as? String,
+                  let indicatorText = searchItem["indicator"] as? String else {
+                continue
+            }
+
+            let currentCount = searchItem["current"] as? Int
+            let totalCount = searchItem["total"] as? Int
+
+            let value = SearchData(
+                url: url,
+                img: img,
+                title: title,
+                indicatorText: indicatorText,
+                currentCount: currentCount ?? -1,
+                totalCount: totalCount ?? -1
+            )
+            searchDataArray.append(value)
+        }
+
+        self.init(info: info, results: searchDataArray)
+    }
+}
+
+public struct SearchData: Codable, Equatable {
+    public let url: String
+    public let img: String
+    public let title: String
+    public let indicatorText: String
+    public let currentCount: Int
+    public let totalCount: Int
+
+    public init(url: String, img: String, title: String, indicatorText: String, currentCount: Int, totalCount: Int) {
+        self.url = url
+        self.img = img
+        self.title = title
+        self.indicatorText = indicatorText
+        self.currentCount = currentCount
+        self.totalCount = totalCount
+    }
+
+    public init?(jsValue: JSValue) {
+        guard
+            let url = jsValue["url"]?.toString(),
+            let img = jsValue["img"]?.toString(),
+            let title = jsValue["title"]?.toString(),
+            let indicatorText = jsValue["indicatorText"]?.toString(),
+            let currentCount = jsValue["currentCount"]?.toInt32(),
+            let totalCount = jsValue["totalCount"]?.toInt32()
+        else {
+            return nil
+        }
+
+        self.url = url
+        self.img = img
+        self.title = title
+        self.indicatorText = indicatorText
+        self.currentCount = Int(currentCount)
+        self.totalCount = Int(totalCount)
+    }
+
+    public static let sample = Self(
+        url: "",
+        img: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg",
+        title: "Title",
+        indicatorText: "Text",
+        currentCount: 1,
+        totalCount: 12
+    )
 }

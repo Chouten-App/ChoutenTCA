@@ -6,9 +6,9 @@ let project = Project.feature(
   .home,
   dependencies: [
     .shared.architecture.project,
-    .externalDependencies.kingfisher.target,
-    .externalDependencies.composableArchitecture.target,
     .shared.viewComponents.project,
-    .externalDependencies.shimmer.target
+    .shared.sharedModels.project,
+    .externalDependencies.composableArchitecture.target,
+    .clients.dataClient.project
   ]
 )

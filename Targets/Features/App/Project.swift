@@ -5,16 +5,16 @@ import ProjectDescriptionHelpers
 let project = Project.feature(
   .app,
   dependencies: [
-    .shared.architecture.project,
-    .features.more.project,
-    .features.player.project,
-    .features.moduleSheet.project,
+    .features.home.project,
+    .features.search.project,
     .features.discover.project,
+    .features.repo.project,
+    .features.settings.project,
+    .shared.architecture.project,
     .shared.viewComponents.project,
     .externalDependencies.composableArchitecture.target,
-    .externalDependencies.shimmer.target,
-    .externalDependencies.kingfisher.target,
-    .externalDependencies.grdb.target,
-    .clients.dataClient.project
+    .externalDependencies.nuke.target,
+    .clients.dataClient.project,
+    .clients.repoClient.project
   ]
 )

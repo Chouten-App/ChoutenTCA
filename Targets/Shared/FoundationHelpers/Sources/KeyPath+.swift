@@ -43,3 +43,4 @@ infix operator !|>
 public func !|> <T, L: Sequence, V: Equatable>(keyPath: KeyPath<T, V>, _ into: L) -> (T) -> Bool where V == L.Element {
   { !into.contains($0[keyPath: keyPath]) }
 }
+// swiftlint:enable static_operator

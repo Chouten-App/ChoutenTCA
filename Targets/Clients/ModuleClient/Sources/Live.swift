@@ -190,7 +190,12 @@ extension ModuleClient: DependencyKey {
           do {
             let documentsDirectory = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
 
-            try FileManager.default.removeItem(at: documentsDirectory.appendingPathComponent("Modules").appendingPathComponent(moduleFolderNames[index]))
+            try FileManager.default
+                  .removeItem(
+                    at: documentsDirectory
+                        .appendingPathComponent("Modules")
+                        .appendingPathComponent(moduleFolderNames[index])
+                  )
             // let globalIndex = globalData.getAvailableModules().firstIndex(of: module)
             // if globalIndex != nil {
             //    var temp = globalData.getAvailableModules()

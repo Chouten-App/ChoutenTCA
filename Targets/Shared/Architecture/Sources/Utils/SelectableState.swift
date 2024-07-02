@@ -57,7 +57,6 @@ public struct SelectableState<C: IdentifiableAccess> {
   }
 
   private mutating func update(_ newValue: C) {
-    // TODO: Figure out if selected should be updated
 //        if let _selected {
 //            self._selected = newValue[id: _selected] == nil ? nil : _selected
 //        }
@@ -108,3 +107,4 @@ extension SelectableState: Hashable where C: Hashable, C.Value: Hashable, C.ID: 
 // MARK: - SelectableState + Sendable
 
 extension SelectableState: Sendable where C: Sendable, C.Value: Sendable, C.ID: Sendable {}
+// swiftlint:enable type_name

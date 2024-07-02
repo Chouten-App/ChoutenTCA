@@ -22,14 +22,22 @@ let project = Project(
       deploymentTargets: Environments.iosDeploymentTarget,
       infoPlist: .file(path: "Resources/ChoutenApp-Info.plist"),
       sources: ["Sources/**"],
-      resources: [.folderReference(path: "../Shared/Resources/**")],
+      resources: [
+        "../Shared/Resources/**",
+        "./Resources/LaunchScreen.storyboard"
+      ],
       entitlements: .file(path: "Resources/ChoutenApp.entitlements"),
       scripts: [.swiftLint, .swiftFormat],
       dependencies: [
         .externalDependencies.composableArchitecture.target,
         .features.app.project
       ],
-      settings: .settings(base: ["GENERATE_INFOPLIST_FILE": true])
+      settings: .settings(base: [
+          "GENERATE_INFOPLIST_FILE": true,
+          "CURRENT_PROJECT_VERSION": "1",
+          "MARKETING_VERSION": "0.4.0",
+          "DEVELOPMENT_TEAM": "A9QQBWPHB7"
+      ])
     )
   ]
 )

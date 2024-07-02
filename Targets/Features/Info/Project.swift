@@ -5,13 +5,13 @@ import ProjectDescriptionHelpers
 let project = Project.feature(
   .info,
   dependencies: [
+    .features.video.project,
     .shared.architecture.project,
-    .externalDependencies.kingfisher.target,
-    .externalDependencies.composableArchitecture.target,
     .shared.viewComponents.project,
-    .features.webview.project,
-    .externalDependencies.shimmer.target,
+    .shared.sharedModels.project,
+    .externalDependencies.composableArchitecture.target,
+    .externalDependencies.nuke.target,
     .clients.dataClient.project,
-    .externalDependencies.nukeUI.target
+    .clients.relayClient.project
   ]
 )

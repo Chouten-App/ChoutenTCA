@@ -37,7 +37,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   func createModuleAndThemesFoldersIfNeeded() {
     let fileManager = FileManager.default
     let documentsURL = (try? fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)).unsafelyUnwrapped
-    let modulesURL = documentsURL.appendingPathComponent("Modules", isDirectory: true)
+    let modulesURL = documentsURL.appendingPathComponent("Repos", isDirectory: true)
     let themesURL = documentsURL.appendingPathComponent("Themes", isDirectory: true)
     let cacheURL = documentsURL.appendingPathComponent("CACHE", isDirectory: true)
 
@@ -46,7 +46,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     if !fileManager.fileExists(atPath: modulesURL.path, isDirectory: &isDirectory) {
       do {
         try fileManager.createDirectory(at: modulesURL, withIntermediateDirectories: false, attributes: nil)
-        print("Created Modules folder")
+        print("Created Repos folder")
       } catch {
         print("Error: \(error)")
       }

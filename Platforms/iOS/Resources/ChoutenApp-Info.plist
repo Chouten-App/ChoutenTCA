@@ -2,6 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>chouten</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.inumaki.Chouten</string>
+		</dict>
+	</array>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>UISupportsDocumentBrowser</key>
+	<true/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDocumentTypes</key>
@@ -39,13 +54,8 @@
 		<string>audio</string>
 		<string>fetch</string>
 	</array>
-	<key>UILaunchScreen</key>
-	<dict>
-		<key>UIColorName</key>
-		<string>LaunchColors</string>
-		<key>UIImageName</key>
-		<string>icon</string>
-	</dict>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
@@ -57,6 +67,8 @@
 			<string>Chouten Module</string>
 			<key>UTTypeIconFiles</key>
 			<array/>
+			<key>UTTypeIconName</key>
+			<string>MOD</string>
 			<key>UTTypeIdentifier</key>
 			<string>com.chouten.module</string>
 			<key>UTTypeTagSpecification</key>
@@ -64,25 +76,6 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>module</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.json</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>Chouten Theme</string>
-			<key>UTTypeIconFiles</key>
-			<array/>
-			<key>UTTypeIdentifier</key>
-			<string>com.chouten.theme</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>theme</string>
 				</array>
 			</dict>
 		</dict>

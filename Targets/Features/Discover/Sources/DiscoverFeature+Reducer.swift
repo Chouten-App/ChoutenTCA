@@ -1,55 +1,38 @@
 //
 //  DiscoverFeature+Reducer.swift
+//  Discover
 //
-//
-//  Created by Inumaki on 12.10.23.
+//  Created by Inumaki on 19.04.24.
 //
 
 import Architecture
+import Combine
 import ComposableArchitecture
-import Search
+import SharedModels
 import SwiftUI
 
 extension DiscoverFeature {
   @ReducerBuilder<State, Action> public var body: some ReducerOf<Self> {
-    Scope(\.view) {
-      BindingReducer()
-    }
-
-    Scope(state: \.search, action: \.internal.search) {
-      SearchFeature()
-    }
-
     Reduce { state, action in
       switch action {
       case let .view(viewAction):
         switch viewAction {
-        case let .setScrollPosition(value):
-          state.scrollPosition = value
-          return .none
-        case let .setCarouselIndex(value):
-          state.carouselIndex = value
-          return .none
-        case let .setSearchVisible(newValue):
-          state.searchVisible = newValue
-          return .none
-        case let .setState(newState):
-          state.state = newState
-          return .none
-        case .binding:
-          return .none
-        case .refresh:
-          state.state = .notStarted
-          return .none
         case .onAppear:
-          return .run {}
-        }
-      case let .internal(internalAction):
-        switch internalAction {
-        case .search(.view(.backButtonPressed)):
-          return .send(.view(.setSearchVisible(newValue: false)))
-        case .search:
-          return .none
+            state.discoverSections = []
+            return .merge(
+                .run { send in
+                    do {
+                        let data = try await self.relayClient.discover()
+                        print(data)
+                        await send(.view(.setDiscoverSections(data)))
+                    } catch {
+                        print(error.localizedDescription)
+                    }
+                }
+            )
+        case .setDiscoverSections(let data):
+            state.discoverSections = data
+            return .none
         }
       }
     }

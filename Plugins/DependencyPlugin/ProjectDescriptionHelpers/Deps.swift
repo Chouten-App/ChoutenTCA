@@ -20,16 +20,13 @@ extension TargetDependency {
 
 public enum Features: String, CaseIterable, QualifiedName {
   case app
-  case appearance
-  case discover
   case home
+  case discover
   case info
-  case moduleSheet
-  case more
-  case player
-  case repo
   case search
-  case webview
+  case settings
+  case video
+  case repo
 
   public var project: TargetDependency {
     .project(target: name, path: .relativeToRoot("Targets/Features/\(name)"))
@@ -39,10 +36,11 @@ public enum Features: String, CaseIterable, QualifiedName {
 // MARK: - Clients
 
 public enum Clients: String, CaseIterable, QualifiedName {
-  case buildClient
+  case repoClient
   case dataClient
   case fileClient
   case moduleClient
+  case relayClient
 
   public var project: TargetDependency {
     .project(target: name, path: .relativeToRoot("Targets/Clients/\(name)"))
@@ -63,17 +61,13 @@ public enum Shared: String, CaseIterable, QualifiedName {
 }
 
 extension ExternalDependencies {
-  public static let ascollectionView = Self(.external(name: "ASCollectionView"))
   public static let casePaths = Self(.external(name: "CasePaths"))
   public static let composableArchitecture = Self(.external(name: "ComposableArchitecture"))
   public static let dependenciesMacros = Self(.external(name: "DependenciesMacros"))
-  public static let grdb = Self(.external(name: "GRDB"))
-  public static let kingfisher = Self(.external(name: "Kingfisher"))
   public static let nuke = Self(.external(name: "Nuke"))
   public static let nukeUI = Self(.external(name: "NukeUI"))
   public static let swiftSoup = Self(.external(name: "SwiftSoup"))
   public static let semver = Self(.external(name: "Semver"))
-  public static let shimmer = Self(.external(name: "Shimmer"))
   public static let tagged = Self(.external(name: "Tagged"))
   public static let texture = Self(.external(name: "Texture"))
   public static let zipFoundation = Self(.external(name: "ZIPFoundation"))

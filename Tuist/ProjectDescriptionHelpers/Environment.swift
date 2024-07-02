@@ -11,7 +11,7 @@ import ProjectDescription
 public enum Environments {
   public static let appName = "Chouten"
   public static let organizationName = "chouten.app"
-  public static let partialBundleId = "app.chouten"
+  public static let partialBundleId = "com.inumaki"
   public static let bundleId = "\(partialBundleId).\(appName)"
 
   public static let iosDeploymentTarget = DeploymentTargets.iOS("15.0")

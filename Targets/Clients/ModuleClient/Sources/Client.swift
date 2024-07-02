@@ -12,8 +12,6 @@ import OSLog
 import SharedModels
 
 // MARK: - ModuleClient
-
-// TODO: This should handle Module functions too rather than exposing JS
 @DependencyClient
 public struct ModuleClient: Sendable {
   public var importFromFile: @Sendable (_ fileUrl: URL) throws -> Void
