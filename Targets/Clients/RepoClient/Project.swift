@@ -9,6 +9,7 @@ let project = Project.client(
     .externalDependencies.composableArchitecture.target,
     .externalDependencies.semver.target,
     .externalDependencies.tagged.target,
-    .shared.sharedModels.project
+    .shared.sharedModels.project,
+    .shared.architecture.project
   ]
 )

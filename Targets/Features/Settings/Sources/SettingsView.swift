@@ -89,7 +89,7 @@ class TopBar: UIView {
 }
 
 public class SettingsView: UIViewController {
-    var store: Store<SettingsFeature.State, SettingsFeature.Action>
+//    var store: Store<SettingsFeature.State, SettingsFeature.Action>
 
     let stack: UIStackView = {
         let stack = UIStackView()
@@ -313,13 +313,13 @@ public class SettingsView: UIViewController {
     let navController = UINavigationController()
 
     public init() {
-        store = .init(
-            initialState: .init(),
-            reducer: { SettingsFeature() }
-        )
+//        store = .init(
+//            initialState: .init(),
+//            reducer: { SettingsFeature() }
+//        )
         super.init(nibName: nil, bundle: nil)
 
-        store.send(.view(.onAppear))
+//        store.send(.view(.onAppear))
     }
 
     required init?(coder: NSCoder) {
