@@ -16,7 +16,7 @@ public struct InfoData: Codable, Equatable, Sendable {
     public let banner: String?
     public let status: String?
     public let mediaType: String
-    public let seasons: [SeasonData]
+    public var seasons: [SeasonData]
     public var mediaList: [MediaList]
 
     public init(titles: Titles, tags: [String], description: String, poster: String, banner: String?, status: String?, mediaType: String, seasons: [SeasonData], mediaList: [MediaList]) {
@@ -119,7 +119,7 @@ public struct InfoData: Codable, Equatable, Sendable {
 public struct SeasonData: Codable, Equatable, Sendable {
     public let name: String
     public let url: String
-    public let selected: Bool?
+    public var selected: Bool?
 
     public init(name: String, url: String, selected: Bool? = nil) {
         self.name = name

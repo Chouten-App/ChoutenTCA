@@ -66,6 +66,8 @@ public class InfoViewRefactor: LoadableViewControllerBase {
 
         view.backgroundColor = ThemeManager.shared.getColor(for: .bg)
 
+        successInfoVC.delegate = self
+
         observe { [weak self] in
             guard let self else { return }
 
@@ -112,5 +114,11 @@ public class InfoViewRefactor: LoadableViewControllerBase {
             topBar.heightAnchor.constraint(equalToConstant: topPadding + 40),
             topBar.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width)
         ])
+    }
+}
+
+extension InfoViewRefactor: SuccessInfoVCDelegate {
+    public func fetchMedia(url: String, newIndex: Int) {
+        store.send(.view(.fetchNewSeason(url, newIndex: newIndex)))
     }
 }

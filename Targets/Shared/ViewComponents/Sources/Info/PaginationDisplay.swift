@@ -9,8 +9,18 @@ import Architecture
 import SharedModels
 import UIKit
 
+public protocol PaginationDelegate: AnyObject {
+    func didChangePagination(to: Int)
+}
+
+class PaginationTapGesture: UITapGestureRecognizer {
+    var pagination: Int?
+}
+
 class PaginationDisplay: UIView {
 
+    public weak var delegate: PaginationDelegate?
+    public var selectedPagination: Int = 0
     var infoData: InfoData
 
     let scrollView: UIScrollView = {
@@ -70,11 +80,11 @@ class PaginationDisplay: UIView {
             let tag = infoData.mediaList[index]
 
             let tagView = UIView()
-            tagView.backgroundColor = index == 0 ? ThemeManager.shared.getColor(for: .accent) : .circleBG
+            tagView.backgroundColor = index == selectedPagination ? ThemeManager.shared.getColor(for: .accent) : ThemeManager.shared.getColor(for: .overlay)
             tagView.translatesAutoresizingMaskIntoConstraints = false
 
             tagView.layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
-            tagView.layer.borderWidth = 0.5
+            tagView.layer.borderWidth = index == selectedPagination ? 0.5 : 0.0
             tagView.layer.cornerRadius = 12
             tagView.clipsToBounds = true
 
@@ -94,7 +104,24 @@ class PaginationDisplay: UIView {
                 label.centerXAnchor.constraint(equalTo: tagView.centerXAnchor),
                 label.centerYAnchor.constraint(equalTo: tagView.centerYAnchor)
             ])
+
+            let tapGesture = PaginationTapGesture(target: self, action: #selector(changePagination(_ :)))
+            tapGesture.pagination = index
+            tagView.isUserInteractionEnabled = true
+            tagView.addGestureRecognizer(tapGesture)
         }
+    }
+
+    @objc func changePagination(_ sender: PaginationTapGesture) {
+        print("Change Pagination")
+        selectedPagination = sender.pagination ?? 0
+        for index in 0..<contentView.arrangedSubviews.count {
+            contentView.arrangedSubviews[index].backgroundColor = index == self.selectedPagination
+                        ? ThemeManager.shared.getColor(for: .accent)
+                        : ThemeManager.shared.getColor(for: .overlay)
+            contentView.arrangedSubviews[index].layer.borderWidth = index == self.selectedPagination ? 0.5 : 0.0
+        }
+        delegate?.didChangePagination(to: selectedPagination)
     }
 
     // MARK: Layout

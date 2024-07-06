@@ -108,15 +108,12 @@ extension JSValue {
 
                         let mediaItem = MediaItem(url: url, number: number, title: title, language: language, description: description, thumbnail: image)
 
-                        // Here, you can create a MediaItem instance
                         mediaItems.append(mediaItem)
-                        print(mediaItem)
                     }
                     let mediaList = Pagination(id: id, title: title, items: mediaItems)
                     pagination.append(mediaList)
                 }
 
-                // Here, you can create a MediaList instance
                 let mediaList = MediaList(title: title, pagination: pagination)
                 mediaLists.append(mediaList)
             }

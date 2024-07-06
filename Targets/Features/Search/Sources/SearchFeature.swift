@@ -100,11 +100,18 @@ public struct SearchFeature: Reducer {
               state.result!.results += value.results
               // swiftlint:enable force_unwrapping
               state.status = .success
+              state.loading = false
               return .none
           case .paginateSearch:
+              guard let resultInfo = state.result?.info,
+                    state.page < resultInfo.pages else {
+                  return .none
+              }
               if !state.loading {
                   state.page += 1
                   state.loading = true
+
+                  print("pagination")
 
                   return .send(.view(.search))
               }

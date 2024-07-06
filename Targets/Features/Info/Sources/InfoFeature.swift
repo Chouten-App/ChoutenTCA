@@ -33,6 +33,8 @@ public struct InfoFeature: Reducer {
         public enum ViewAction: SendableAction {
             case onAppear(_ url: String)
             case fetchMedia(_ url: String)
+            case fetchNewSeason(_ url: String, newIndex: Int)
+            case setSelectedSeason(_ newIndex: Int, data: [MediaList])
             case setInfoData(_ data: InfoData)
             case setMediaList(_ data: [MediaList])
         }
@@ -81,6 +83,26 @@ public struct InfoFeature: Reducer {
                       }
                   }
               )
+          case let .fetchNewSeason(url, newIndex):
+              return .merge(
+                  .run { send in
+                      do {
+                          let data = try await self.relayClient.media(url)
+                          await send(.view(.setSelectedSeason(newIndex, data: data)))
+                      } catch {
+                          print(error.localizedDescription)
+                      }
+                  }
+              )
+          case let .setSelectedSeason(newIndex, data):
+              if state.infoData != nil {
+                  // swiftlint:disable force_unwrapping
+                  for index in state.infoData!.seasons.indices {
+                      state.infoData!.seasons[index].selected = index == newIndex
+                  }
+                  // swiftlint:enable force_unwrapping
+              }
+              return .send(.view(.setMediaList(data)))
           case .setInfoData(let data):
               state.infoData = data
 

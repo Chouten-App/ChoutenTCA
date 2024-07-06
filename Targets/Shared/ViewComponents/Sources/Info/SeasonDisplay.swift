@@ -9,9 +9,15 @@ import Architecture
 import SharedModels
 import UIKit
 
+public protocol SeasonDisplayDelegate: AnyObject {
+    func didChangePagination(to: Int)
+}
+
 public class SeasonDisplay: UIView {
 
+    public weak var delegate: SeasonDisplayDelegate?
     public var infoData: InfoData
+    public var selectedPagination: Int = 0
 
     let stack: UIStackView = {
         let stack = UIStackView()
@@ -37,7 +43,7 @@ public class SeasonDisplay: UIView {
         return label
     }()
 
-    let seasonButton = CircleButton(icon: "chevron.right")
+    public let seasonButton = CircleButton(icon: "chevron.right")
 
     let mediaCountLabel: UILabel = {
         let label = UILabel()
@@ -85,14 +91,13 @@ public class SeasonDisplay: UIView {
         stack.addArrangedSubview(pagination)
 
         addSubview(stack)
-
-        seasonButton.onTap = {
-            print("go back")
-        }
+        pagination.delegate = self
     }
 
     public func updateData() {
-        mediaCountLabel.text = "\(infoData.mediaList.first?.pagination.first?.items.count ?? 0) \(infoData.mediaType)"
+        if infoData.mediaList.count > selectedPagination {
+            mediaCountLabel.text = "\(infoData.mediaList[selectedPagination].pagination.first?.items.count ?? 0) \(infoData.mediaType)"
+        }
         seasonLabel.text = infoData.seasons.first(where: { $0.selected == true })?.name
         pagination.infoData = infoData
         pagination.updateData()
@@ -112,5 +117,15 @@ public class SeasonDisplay: UIView {
                 pagination.topAnchor.constraint(equalTo: mediaCountLabel.bottomAnchor, constant: 8)
             ])
         }
+    }
+}
+
+extension SeasonDisplay: PaginationDelegate {
+    public func didChangePagination(to index: Int) {
+        selectedPagination = index
+        if infoData.mediaList.count > selectedPagination {
+            mediaCountLabel.text = "\(infoData.mediaList[selectedPagination].pagination.first?.items.count ?? 0) \(infoData.mediaType)"
+        }
+        delegate?.didChangePagination(to: index)
     }
 }

@@ -85,6 +85,12 @@ public class PlayerVC: UIViewController {
         observe { [weak self] in
             guard let self = self else { return }
 
+            if let serverLists = store.serverLists,
+               self.controls.servers == nil {
+                self.controls.selectedServerIndex = 0
+                self.controls.servers = serverLists
+                self.controls.updateData()
+            }
             switch store.status {
             case .loading:
                 break
@@ -113,6 +119,9 @@ public class PlayerVC: UIViewController {
                             self.controls.durationLabel.text = self.formatTime(duration)
                         }
                     }
+                    self.controls.data = store.videoData
+                    self.controls.selectedSourceIndex = 0
+                    self.controls.updateData()
                 }
             default:
                 break
@@ -235,6 +244,60 @@ extension PlayerVC: PlayerControlsDelegate {
             self.dismiss(animated: true, completion: nil)
         }
     }
+
+    func updateSelectedServer(_ index: Int) {
+        if let serverLength = store.serverLists?.first?.list.count,
+           serverLength > index,
+           let serverUrl = store.serverLists?.first?.list[index].url {
+            print("Getting data for \(store.serverLists?.first?.list[index].name)")
+            store.send(.view(.getSources(serverUrl)))
+        }
+    }
+
+    func updateSelectedQuality(_ index: Int) {
+        guard let sources = self.store.videoData?.sources,
+              sources.count > index else {
+            return
+        }
+
+        // store current time
+        let storedCurrentTime = self.playerVM.currentTime
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            if let url = URL(string: sources[index].file) {
+                let asset = AVAsset(url: url)
+                let item = AVPlayerItem(asset: asset)
+
+                DispatchQueue.main.async {
+                    self.playerVM.setCurrentItem(item)
+                    self.playerVM.isEditingCurrentTime = true
+                    self.playerVM.currentTime = storedCurrentTime
+                    self.playerVM.isEditingCurrentTime = false
+                    self.controls.showPlayButton()
+
+                    self.timeObserver = self.playerVM.player
+                        .addPeriodicTimeObserver(
+                            forInterval: CMTime(seconds: 1, preferredTimescale: 1),
+                            queue: .main
+                        ) { [weak self] time in
+                            guard let self = self else { return }
+
+                            self.controls.currentTimeLabel.text = self.formatTime(time.seconds)
+                            if let duration = self.playerVM.duration {
+                                self.view.layoutIfNeeded()
+                                UIView.animate(withDuration: 0.1) {
+                                    self.controls.progressBar.updateProgress(time.seconds / duration)
+                                    self.view.layoutIfNeeded()
+                                }
+                                self.controls.duration = duration
+                                self.controls.durationLabel.text = self.formatTime(duration)
+                            }
+                        }
+                }
+            }
+        }
+    }
+
 }
 
 extension PlayerVC {

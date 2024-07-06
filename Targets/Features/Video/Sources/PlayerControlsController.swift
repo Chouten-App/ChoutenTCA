@@ -6,6 +6,7 @@
 //
 
 import Architecture
+import SharedModels
 import UIKit
 import ViewComponents
 
@@ -13,10 +14,16 @@ protocol PlayerControlsDelegate: AnyObject {
     func updateCurrentTime(didChangeProgress progress: Double)
     func playPauseTapped()
     func navigateBack()
+    func updateSelectedQuality(_ index: Int)
+    func updateSelectedServer(_ index: Int)
 }
 
 class PlayerControlsController: UIViewController {
 
+    var data: VideoData?
+    var servers: [ServerList]?
+    var selectedSourceIndex: Int?
+    var selectedServerIndex: Int?
     var progressBar = SeekBar(progress: 0.0)
     var progress: Double = 0.0
     var duration: Double = 0.0
@@ -129,6 +136,8 @@ class PlayerControlsController: UIViewController {
 
     let backButton = CircleButton(icon: "chevron.left")
 
+    let settingsButton = CircleButton(icon: "gear", hasInteraction: true)
+
     let activityIndicator = UIActivityIndicatorView(style: .medium)
 
     override func viewDidLoad() {
@@ -160,10 +169,39 @@ class PlayerControlsController: UIViewController {
         backwardButton.addSubview(backwardIcon)
         backwardButton.addSubview(backwardText)
         view.addSubview(backwardButton)
+        view.addSubview(settingsButton)
 
         backButton.onTap = {
             self.delegate?.navigateBack()
         }
+
+        settingsButton.menu = {
+            let servers = UIMenu(title: "Servers", image: UIImage(systemName: "server.rack"), children: [
+                UIAction(title: "Submenu Action 1", image: UIImage(systemName: "square.and.arrow.up")) { action in
+                    print("Submenu Action 1 selected")
+                },
+                UIAction(title: "Submenu Action 2", image: UIImage(systemName: "square.and.arrow.down")) { action in
+                    print("Submenu Action 2 selected")
+                }
+            ])
+
+            if let data {
+                let qualities = UIMenu(
+                    title: "Qualities",
+                    image: UIImage(systemName: "slider.horizontal.3"),
+                    children: data.sources.compactMap { source in
+                        return UIAction(title: source.quality) { action in
+                            print("Submenu Action 3 selected")
+                        }
+                    }
+                )
+                return UIMenu(title: "Settings", children: [servers, qualities])
+            }
+
+            // Create and return a UIMenu with the actions
+            return UIMenu(title: "Settings", children: [servers])
+        }()
+        settingsButton.showsMenuAsPrimaryAction = true
 
         forwardButton.addSubview(forwardIcon)
         forwardButton.addSubview(forwardText)
@@ -178,6 +216,9 @@ class PlayerControlsController: UIViewController {
         NSLayoutConstraint.activate([
             backButton.leadingAnchor.constraint(equalTo: progressBar.leadingAnchor),
             backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 28),
+
+            settingsButton.trailingAnchor.constraint(equalTo: progressBar.trailingAnchor),
+            settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 28),
 
             currentTimeLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -8),
             currentTimeLabel.leadingAnchor.constraint(equalTo: progressBar.leadingAnchor, constant: 12),
@@ -233,6 +274,50 @@ class PlayerControlsController: UIViewController {
             forwardButton.widthAnchor.constraint(equalToConstant: 28),
             forwardButton.heightAnchor.constraint(equalToConstant: 28)
         ])
+    }
+
+    public func updateData() {
+        settingsButton.menu = {
+            var submenus: [UIMenu] = []
+
+            if let servers {
+                let serversList = UIMenu(
+                    title: "Servers",
+                    image: UIImage(systemName: "server.rack"),
+                    children: servers.compactMap { serverList in
+                        let serverItems = serverList.list.enumerated().compactMap { index, serverData in
+                            UIAction(title: serverData.name, state: index == selectedServerIndex ? .on : .off) { action in
+                                self.selectedServerIndex = index
+                                self.delegate?.updateSelectedServer(index)
+                            }
+                        }
+
+                        return UIMenu(title: serverList.title, children: serverItems)
+                    }
+                )
+
+                submenus.append(serversList)
+            }
+
+            if let data {
+                let qualities = UIMenu(
+                    title: "Qualities",
+                    image: UIImage(systemName: "slider.horizontal.3"),
+                    children: data.sources.enumerated().compactMap { (index, source) in
+                        UIAction(title: source.quality, state: index == selectedSourceIndex ? .on : .off) { action in
+                            self.selectedSourceIndex = index
+                            self.delegate?.updateSelectedQuality(index)
+                            self.updateData()
+                        }
+                    }
+                )
+
+                submenus.append(qualities)
+            }
+
+            // Create and return a UIMenu with the actions
+            return UIMenu(title: "Settings", children: submenus)
+        }()
     }
 
     @objc func playPauseTapped() {

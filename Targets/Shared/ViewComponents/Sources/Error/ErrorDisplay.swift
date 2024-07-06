@@ -8,8 +8,14 @@
 import Architecture
 import UIKit
 
+public enum ErrorType: String {
+    case info = "Info:"
+    case warning = "Warning:"
+    case error = "Error:"
+}
+
 extension UIView {
-    func showErrorDisplay(message: String, description: String? = nil) {
+    public func showErrorDisplay(message: String, description: String? = nil, indicator: String? = nil, type: ErrorType = .info) {
         // Access the window scene
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first else {
@@ -20,9 +26,15 @@ extension UIView {
         let errorDisplay = ErrorDisplay()
         errorDisplay.titleLabel.text = message
 
-        if let description = description {
+        if let description {
             errorDisplay.descriptionLabel.text = description
         }
+
+        if let indicator {
+            errorDisplay.indicator.text = indicator
+        }
+
+        errorDisplay.typeLabel.text = type.rawValue
 
         // Add the ErrorDisplay view to the window
         window.addSubview(errorDisplay)

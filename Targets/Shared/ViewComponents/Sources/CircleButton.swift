@@ -12,22 +12,26 @@ public class CircleButton: UIButton {
 
     public let iconName: String
     public var onTap: (() -> Void)?
+    public var hasInteraction: Bool
 
     override public init(frame: CGRect) {
         self.iconName = "xmark"
+        self.hasInteraction = false
         super.init(frame: frame)
         setupButton()
     }
 
     public required init?(coder aDecoder: NSCoder) {
         self.iconName = "xmark"
+        self.hasInteraction = false
         super.init(coder: aDecoder)
         setupButton()
     }
 
-    public init(icon: String, onTap: (() -> Void)? = nil) {
+    public init(icon: String, onTap: (() -> Void)? = nil, hasInteraction: Bool = false) {
         self.iconName = icon
         self.onTap = onTap
+        self.hasInteraction = hasInteraction
         super.init(frame: .zero)
         setupButton()
     }
@@ -65,7 +69,9 @@ public class CircleButton: UIButton {
             heightAnchor.constraint(equalToConstant: 28)
         ])
 
-        addTarget(self, action: #selector(handleTap), for: .touchUpInside) // Add this line
+        if !hasInteraction {
+            addTarget(self, action: #selector(handleTap), for: .touchUpInside) // Add this line
+        }
     }
 
     override public func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {

@@ -27,6 +27,7 @@ public enum Features: String, CaseIterable, QualifiedName {
   case settings
   case video
   case repo
+  case book
 
   public var project: TargetDependency {
     .project(target: name, path: .relativeToRoot("Targets/Features/\(name)"))

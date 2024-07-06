@@ -20,12 +20,17 @@ public struct SearchResultInfo: Codable, Equatable {
     }
 
     public init?(jsValue: JSValue) {
-        guard let pages = jsValue["pages"]?.toInt32() as? Int else { return nil }
+        guard let pages = jsValue["pages"]?.toInt32() else {
+            return nil
+        }
+
+        let convertedPages = Int(pages)
 
         let count = jsValue["count"]?.toInt32() as? Int
         let next = jsValue["next"]?.toString()
 
-        self.init(count: count, pages: pages, next: next)
+
+        self.init(count: count, pages: convertedPages, next: next)
     }
 }
 
@@ -40,10 +45,18 @@ public struct SearchResult: Codable, Equatable {
 
     public init?(jsValue: JSValue) {
         guard
-            let infoValue = jsValue["info"],
-            let info = SearchResultInfo(jsValue: infoValue),
-            let dataArray = jsValue["results"]?.toArray() as? [[String: Any]]
+            let infoValue = jsValue["info"]
         else {
+            print("missing info value")
+            return nil
+        }
+
+        guard let info = SearchResultInfo(jsValue: infoValue) else {
+            print("conversion of info failed")
+            return nil
+        }
+
+        guard let dataArray = jsValue["results"]?.toArray() as? [[String: Any]] else {
             return nil
         }
 

@@ -18,6 +18,7 @@ public struct VideoFeature: Reducer {
     @ObservableState
     public struct State: FeatureState {
         public var videoData: VideoData?
+        public var serverLists: [ServerList]?
         public var status: VideoStatus = .idle
         public init() { }
     }
@@ -77,7 +78,7 @@ public struct VideoFeature: Reducer {
                   }
               )
           case .setServers(let data):
-              print(data)
+              state.serverLists = data
               if let firstServerList = data.first,
                  let firstServer = firstServerList.list.first {
                   let serverUrl = firstServer.url

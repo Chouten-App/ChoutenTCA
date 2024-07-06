@@ -33,23 +33,23 @@ class SeasonSelectorCloseButton: UIButton {
                 .withRenderingMode(.alwaysTemplate)
                 .applyingSymbolConfiguration(
                     .init(
-                        font: .systemFont(ofSize: 20)
+                        font: .systemFont(ofSize: 14, weight: .bold)
                     )
                 ),
             for: .normal
         )
-        imageView?.tintColor = ThemeManager.shared.getColor(for: .fg)
+        imageView?.tintColor = ThemeManager.shared.getColor(for: .bg)
         imageView?.contentMode = .scaleAspectFit
         imageView?.translatesAutoresizingMaskIntoConstraints = false
 
         var configuration = UIButton.Configuration.plain()
-        configuration.baseBackgroundColor = ThemeManager.shared.getColor(for: .overlay)
-        configuration.baseForegroundColor = ThemeManager.shared.getColor(for: .fg)
-        configuration.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 14, bottom: 14, trailing: 14)
+        configuration.baseBackgroundColor = ThemeManager.shared.getColor(for: .fg)
+        configuration.baseForegroundColor = ThemeManager.shared.getColor(for: .bg)
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 15, leading: 15, bottom: 15, trailing: 15)
         self.configuration = configuration
 
-        backgroundColor = ThemeManager.shared.getColor(for: .container)
-        layer.cornerRadius = 24
+        backgroundColor = ThemeManager.shared.getColor(for: .fg)
+        layer.cornerRadius = 22
 
         layer.borderWidth = 0.5
         layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
@@ -57,8 +57,8 @@ class SeasonSelectorCloseButton: UIButton {
         translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            widthAnchor.constraint(equalToConstant: 48),
-            heightAnchor.constraint(equalToConstant: 48)
+            widthAnchor.constraint(equalToConstant: 44),
+            heightAnchor.constraint(equalToConstant: 44)
         ])
 
         // Add tap gesture

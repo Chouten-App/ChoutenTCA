@@ -13,6 +13,21 @@ import SharedModels
 import UIKit
 import ViewComponents
 
+extension UIView {
+    var parentViewController: UIViewController? {
+        var parentResponder: UIResponder? = self
+        while parentResponder != nil {
+            // swiftlint:disable force_unwrapping
+            parentResponder = parentResponder!.next
+            // swiftlint:enable force_unwrapping
+            if let viewController = parentResponder as? UIViewController {
+                return viewController
+            }
+        }
+        return nil
+    }
+}
+
 class TopBar: UIView {
     // MARK: - Properties
     private let effectView: UIVisualEffectView = {
@@ -74,6 +89,10 @@ class TopBar: UIView {
             effectView.topAnchor.constraint(equalTo: self.topAnchor),
             effectView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
         ])
+
+        doneText.isUserInteractionEnabled = true
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        doneText.addGestureRecognizer(tapGesture)
     }
 
     // MARK: - Configuration
@@ -85,6 +104,33 @@ class TopBar: UIView {
     func updateAppearance() {
         doneText.textColor = ThemeManager.shared.getColor(for: .fg)
         settingsText.textColor = ThemeManager.shared.getColor(for: .fg)
+    }
+
+    @objc func handleTap() {
+        if doneText.text == "Done" {
+            let scenes = UIApplication.shared.connectedScenes
+            if let windowScene = scenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let navController = window.rootViewController as? UINavigationController {
+                navController.dismiss(animated: true)
+            }
+        } else {
+            // remove other view and vc like appearance or logs
+            if let parentVC = self.parentViewController {
+                if let childVC = parentVC.children.first(where: { $0.view.tag == 1000 }) {
+                    UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveEaseOut, animations: {
+                        childVC.view.alpha = 0.0
+                        childVC.view.transform = CGAffineTransform(translationX: 0, y: parentVC.view.frame.height)
+                    }) { _ in
+                        childVC.view.removeFromSuperview()
+                        childVC.removeFromParent()
+                        if let settingsVC = parentVC as? SettingsView {
+                            settingsVC.topbar.configure(settingsText: "Settings", doneText: "Done")
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -308,6 +354,53 @@ public class SettingsView: UIViewController {
         return view
     }()
 
+    let logDisplay: UIView = {
+        let view = UIView()
+        view.backgroundColor = ThemeManager.shared.getColor(for: .container)
+        view.layer.cornerRadius = 20
+        view.layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
+        view.layer.borderWidth = 0.5
+        view.translatesAutoresizingMaskIntoConstraints = false
+
+        let iconView = CircleButton(icon: "laptopcomputer")
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+
+        let label = UILabel()
+        label.text = "Developer"
+        label.font = .systemFont(ofSize: 15, weight: .bold)
+        label.textColor = ThemeManager.shared.getColor(for: .fg)
+        label.translatesAutoresizingMaskIntoConstraints = false
+
+        let chevronView = UIImageView()
+        chevronView.image = UIImage(systemName: "chevron.right")?
+            .withRenderingMode(.alwaysTemplate)
+            .applyingSymbolConfiguration(
+                .init(
+                    font: .systemFont(ofSize: 14)
+                )
+            )
+        chevronView.tintColor = ThemeManager.shared.getColor(for: .fg)
+        chevronView.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(iconView)
+        view.addSubview(label)
+        view.addSubview(chevronView)
+
+        NSLayoutConstraint.activate([
+            iconView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+            iconView.topAnchor.constraint(equalTo: view.topAnchor, constant: 12),
+            iconView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
+
+            label.centerYAnchor.constraint(equalTo: iconView.centerYAnchor),
+            label.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 8),
+
+            chevronView.centerYAnchor.constraint(equalTo: iconView.centerYAnchor),
+            chevronView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12)
+        ])
+
+        return view
+    }()
+
     let topbar = TopBar()
 
     let navController = UINavigationController()
@@ -336,6 +429,7 @@ public class SettingsView: UIViewController {
 
         stack.addArrangedSubview(notLoggedInView)
         stack.addArrangedSubview(settingDisplay)
+        stack.addArrangedSubview(logDisplay)
         stack.addArrangedSubview(labelStack)
 
         view.addSubview(stack)
@@ -357,6 +451,10 @@ public class SettingsView: UIViewController {
         settingDisplay.isUserInteractionEnabled = true
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(goToAppearance))
         settingDisplay.addGestureRecognizer(tapGesture)
+
+        logDisplay.isUserInteractionEnabled = true
+        let tapGesture2 = UITapGestureRecognizer(target: self, action: #selector(goToLog))
+        logDisplay.addGestureRecognizer(tapGesture2)
     }
 
     override public func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -375,6 +473,8 @@ public class SettingsView: UIViewController {
     @objc func goToAppearance() {
         let tempVC = AppearanceVC()
 
+        tempVC.view.tag = 1000
+
         addChild(tempVC)
         view.addSubview(tempVC.view)
         topbar.configure(settingsText: "Appearance", doneText: "Back")
@@ -385,5 +485,20 @@ public class SettingsView: UIViewController {
         }
 
         // navController.pushViewController(tempVC, animated: true)
+    }
+
+    @objc func goToLog() {
+        let tempVC = LogVC()
+
+        tempVC.view.tag = 1000
+
+        addChild(tempVC)
+        view.addSubview(tempVC.view)
+        topbar.configure(settingsText: "Developer", doneText: "Back")
+
+        UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveEaseOut) {
+            tempVC.view.alpha = 1.0
+            tempVC.view.transform = CGAffineTransform(translationX: 0, y: 0)
+        }
     }
 }

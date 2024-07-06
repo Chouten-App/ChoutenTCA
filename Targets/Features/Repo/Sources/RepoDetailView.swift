@@ -15,10 +15,15 @@ class ModuleTapGestureRecognizer: UITapGestureRecognizer {
     var moduleId: String?
 }
 
+protocol RepoDetailDelegate: AnyObject {
+    func refreshRepo()
+}
+
+// swiftlint:disable type_body_length
 class RepoDetailView: UIViewController {
     @Dependency(\.repoClient) var repoClient
 
-    let repo: RepoMetadata
+    var repo: RepoMetadata
 
     let scrollView: UIScrollView = {
         let view = UIScrollView()
@@ -153,6 +158,9 @@ class RepoDetailView: UIViewController {
         return label
     }()
 
+    let backButton = CircleButton(icon: "chevron.left")
+    let refreshButton = CircleButton(icon: "arrow.triangle.2.circlepath")
+
     init(_ repo: RepoMetadata) {
         self.repo = repo
         super.init(nibName: nil, bundle: nil)
@@ -256,6 +264,31 @@ class RepoDetailView: UIViewController {
         scrollView.addSubview(contentView)
 
         view.addSubview(scrollView)
+        view.addSubview(backButton)
+        view.addSubview(refreshButton)
+
+        backButton.onTap = {
+            let scenes = UIApplication.shared.connectedScenes
+            if let windowScene = scenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let navController = window.rootViewController as? UINavigationController {
+                navController.popViewController(animated: true)
+            }
+        }
+
+        refreshButton.onTap = {
+            Task {
+                if let urlString = self.repo.url,
+                   let url = URL(string: urlString) {
+                    var newRepoMetadata = try await self.repoClient.fetchRepoDetails(url: url)
+                    if var newRepoMetadata {
+                        newRepoMetadata.url = self.repo.url
+                        self.repo = newRepoMetadata
+                        self.updateData()
+                    }
+                }
+            }
+        }
 
         let installedModules = getInstalledModules()
         for index in 0..<installedModules.count {
@@ -342,8 +375,98 @@ class RepoDetailView: UIViewController {
 
             topPart.heightAnchor.constraint(equalToConstant: topPadding + 200),
 
-            availableModuleStack.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 40)
+            descriptionLabel.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 40),
+
+            availableModuleStack.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 40),
+
+            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            backButton.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 40),
+
+            refreshButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            refreshButton.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 40)
         ])
+    }
+
+    func updateData() {
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+
+        if let imageUrl = documentsDirectory?.appendingPathComponent("Repos").appendingPathComponent(repo.id).appendingPathComponent("icon.png") {
+            let imageData = try? Data(contentsOf: imageUrl)
+
+            if let imageData {
+                let image = UIImage(data: imageData)
+
+                repoPicture.image = image
+            }
+        }
+        titleLabel.text = repo.title
+        authorLabel.text = repo.author
+        descriptionLabel.text = repo.description
+
+        installedModuleStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        availableModuleStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+
+        let loadingCard = TitleCard(
+            "Looking for modules...",
+            description: "Loading all available modules from the repo."
+        )
+
+        if let modules = repo.modules {
+            for availableModule in modules {
+                let convertedModule = Module(
+                    id: availableModule.id,
+                    name: availableModule.name,
+                    author: availableModule.author,
+                    description: "N/A",
+                    type: 0,
+                    subtypes: availableModule.subtypes,
+                    version: availableModule.version,
+                    state: .notInstalled
+                )
+                let moduleCard = ModuleCard(convertedModule, id: repo.id)
+
+                let tapGesture = ModuleTapGestureRecognizer(target: self, action: #selector(installModule(_:)))
+                tapGesture.moduleId = availableModule.id
+                moduleCard.isUserInteractionEnabled = true
+                moduleCard.addGestureRecognizer(tapGesture)
+
+                availableModuleStack.addArrangedSubview(moduleCard)
+            }
+        } else {
+            availableModuleStack.addArrangedSubview(loadingCard)
+        }
+
+        let installedModules = getInstalledModules()
+        for index in 0..<installedModules.count {
+            var module = installedModules[index]
+
+            // check if new version exists
+            if let availableVersion = repo.modules?.first { $0.id == module.id }?.version {
+                print(availableVersion)
+                switch module.version.compare(availableVersion, options: .numeric) {
+                case .orderedSame:
+                    module.state = .upToDate
+                case .orderedDescending:
+                    // available is lower
+                    // should never happen, but is possible
+                    module.state = .upToDate
+                case .orderedAscending:
+                    module.state = .updateAvailable
+                }
+            }
+
+            let moduleCard = ModuleCard(module, id: repo.id)
+
+            installedModuleStack.addArrangedSubview(moduleCard)
+        }
+        if installedModules.isEmpty {
+            let noInstalledModules = TitleCard(
+                "No modules installed.",
+                description: "You don't have any modules installed yet."
+            )
+
+            installedModuleStack.addArrangedSubview(noInstalledModules)
+        }
     }
 
     @objc func installModule(_ sender: ModuleTapGestureRecognizer) {
@@ -358,3 +481,4 @@ class RepoDetailView: UIViewController {
         }
     }
 }
+// swiftlint:enable type_body_length

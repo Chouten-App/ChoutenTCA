@@ -21,8 +21,8 @@ public class MediaListDisplay: UIView {
         return contentView
     }()
 
-    let mediaListIndex: Int = 0
-    let paginationIndex: Int = 0
+    var mediaListIndex: Int = 0
+    var paginationIndex: Int = 0
 
     public weak var delegate: MediaListDelegate?
 
@@ -56,7 +56,13 @@ public class MediaListDisplay: UIView {
         addSubview(contentView)
     }
 
-    public func updateData() {
+    public func updateData(with index: Int? = nil) {
+        if let index {
+            mediaListIndex = index
+        }
+
+        print("medialist updating")
+
         contentView.arrangedSubviews
             .forEach { $0.removeFromSuperview() }
 

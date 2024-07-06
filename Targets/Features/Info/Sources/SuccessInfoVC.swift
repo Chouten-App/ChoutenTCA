@@ -10,9 +10,15 @@ import SharedModels
 import UIKit
 import Video
 import ViewComponents
+import Book
+
+public protocol SuccessInfoVCDelegate: AnyObject {
+    func fetchMedia(url: String, newIndex: Int)
+}
 
 public class SuccessInfoVC: UIViewController {
 
+    public weak var delegate: SuccessInfoVCDelegate?
     var infoData: InfoData
 
     var doneLoading = false
@@ -31,6 +37,14 @@ public class SuccessInfoVC: UIViewController {
     lazy var contentView: UIStackView = createContentView()
 
     var offsetY: Double = 0.0
+
+    var blurOverlay: UIImageView = {
+        let view = UIImageView()
+        view.contentMode = .top
+        view.clipsToBounds = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
 
     // MARK: Lifecycle
 
@@ -58,6 +72,9 @@ public class SuccessInfoVC: UIViewController {
         headerDisplay.infoData = infoData
         headerDisplay.updateData()
 
+        seasonDisplay.infoData = infoData
+        seasonDisplay.updateData()
+
         extraInfoDisplay.infoData = infoData
         extraInfoDisplay.updateData()
 
@@ -82,6 +99,8 @@ public class SuccessInfoVC: UIViewController {
 
                 self.contentView.addArrangedSubview(self.seasonDisplay)
                 self.contentView.addArrangedSubview(self.mediaListDisplay)
+
+                self.seasonSelector.updateData(with: self.infoData.seasons)
 
                 UIView.animate(withDuration: 0.2) {
                     self.seasonDisplay.alpha = 1.0
@@ -137,6 +156,8 @@ public class SuccessInfoVC: UIViewController {
     }
 
     override public func viewDidLoad() {
+        seasonSelector.alpha = 0.0
+
         super.viewDidLoad()
 
         view.backgroundColor = ThemeManager.shared.getColor(for: .bg)
@@ -158,13 +179,31 @@ public class SuccessInfoVC: UIViewController {
         view.addSubview(scrollView)
         view.addSubview(topBar)
 
-        topBar.layer.zPosition = 100
+        topBar.layer.zPosition = 10
+        seasonSelector.layer.zPosition = 20
+        seasonSelector.delegate = self
+
+        view.addSubview(seasonSelector)
+
+        //view.addSubview(blurOverlay)
+
+//            // TEMP
+//            let readerVC = ReaderView()
+//            addChild(readerVC)
+//            readerVC.view?.layer.zPosition = 1000
+//            view.addSubview(readerVC.view)
 
         setupConstraints()
 
         mediaListDisplay.delegate = self
 
-        // view.addSubview(seasonSelector)
+        seasonDisplay.delegate = self
+
+        seasonDisplay.seasonButton.onTap = {
+            UIView.animate(withDuration: 0.2) {
+                self.seasonSelector.alpha = 1.0
+            }
+        }
     }
 
     // MARK: Layout
@@ -194,10 +233,15 @@ public class SuccessInfoVC: UIViewController {
             seasonDisplay.heightAnchor.constraint(equalToConstant: 32 + 6 + 18 + 24),
             loadingSeasonDisplay.heightAnchor.constraint(equalToConstant: 32 + 6 + 14),
 
-//            seasonSelector.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-//            seasonSelector.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-//            seasonSelector.topAnchor.constraint(equalTo: view.topAnchor),
-//            seasonSelector.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            seasonSelector.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            seasonSelector.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            seasonSelector.topAnchor.constraint(equalTo: view.topAnchor),
+            seasonSelector.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+//            blurOverlay.topAnchor.constraint(equalTo: view.topAnchor),
+//            blurOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+//            blurOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+//            blurOverlay.heightAnchor.constraint(equalToConstant: 120)
         ])
     }
 
@@ -217,6 +261,35 @@ public class SuccessInfoVC: UIViewController {
         stack.spacing   = 20
         stack.translatesAutoresizingMaskIntoConstraints = false
         return stack
+    }
+
+    private func takeScreenshot() -> UIImage {
+        // Find the currently active scene
+        if let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+           let window = windowScene.windows.first {
+            let layer = window.layer
+            let scale = UIScreen.main.scale
+            UIGraphicsBeginImageContextWithOptions(layer.frame.size, false, scale)
+
+            if let context = UIGraphicsGetCurrentContext() {
+                layer.render(in: context)
+            }
+
+            let screenshot = UIGraphicsGetImageFromCurrentImageContext() ?? UIImage()
+            UIGraphicsEndImageContext()
+
+            return screenshot
+        }
+
+        return UIImage()
+    }
+
+    func addBlur(to image: UIImage) -> UIImage? {
+        if let ciImage = CIImage(image: image) {
+            ciImage.applyingFilter("CIGaussianBlur")
+            return UIImage(ciImage: ciImage)
+        }
+        return nil
     }
 }
 
@@ -249,5 +322,25 @@ extension SuccessInfoVC: MediaListDelegate {
         landscapeVC.modalPresentationStyle = .fullScreen
         navController.navigationBar.isHidden = true
         navController.present(landscapeVC, animated: true, completion: nil)
+    }
+}
+
+extension SuccessInfoVC: SeasonSelectorDelegate {
+    public func didChangeSeason(to newIndex: Int) {
+        if infoData.seasons.count > newIndex {
+            delegate?.fetchMedia(url: infoData.seasons[newIndex].url, newIndex: newIndex)
+        }
+    }
+
+    public func closeSelector() {
+        UIView.animate(withDuration: 0.2) {
+            self.seasonSelector.alpha = 0.0
+        }
+    }
+}
+
+extension SuccessInfoVC: SeasonDisplayDelegate {
+    public func didChangePagination(to index: Int) {
+        self.mediaListDisplay.updateData(with: index)
     }
 }

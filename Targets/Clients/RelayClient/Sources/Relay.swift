@@ -98,18 +98,69 @@ class Relay: ObservableObject {
     }
 
     func registerInContext(_ context: JSContext) {
-        let consoleLog: @convention(block) (String) -> Void = { message in
+        let consoleLog: @convention(block) (String, String, Int, Int) -> Void = { message, url, line, column in
+            let date = Date()
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            let dateString = dateFormatter.string(from: date)
+
+            LogManager.shared.log("Log", description: message, line: "\(line):\(column)")
+
             print("LOG: \(message)")
+            print("Time: \(dateString)")
+            print("File: \(url)")
+            print("Line: \(line)")
+            print("Column: \(column)")
         }
 
-        let consoleError: @convention(block) (String) -> Void = { message in
+        // Define the consoleError block to include error details
+        let consoleError: @convention(block) (String, String, Int, Int) -> Void = { message, url, line, column in
+            let date = Date()
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            let dateString = dateFormatter.string(from: date)
+
+            LogManager.shared.log("Log", description: message, type: .error, line: "\(line):\(column)")
+
             print("ERROR: \(message)")
+            print("Time: \(dateString)")
+            print("File: \(url)")
+            print("Line: \(line)")
+            print("Column: \(column)")
         }
 
         context.setObject(consoleLog, forKeyedSubscript: "consoleLog" as NSString)
         context.setObject(consoleError, forKeyedSubscript: "consoleError" as NSString)
-        context.evaluateScript("console.log = function(message) { consoleLog(message); }")
-        context.evaluateScript("console.error = function(message) { consoleError(message); }")
+        context.evaluateScript("""
+            function getStackDetails() {
+                var error = new Error();
+                var stack = error.stack.split("\\n")[2];
+                var match = stack.match(/(\\w+\\.js):(\\d+):(\\d+)/);
+                if (match) {
+                    return {
+                        url: match[1],
+                        line: parseInt(match[2], 10),
+                        column: parseInt(match[3], 10)
+                    };
+                } else {
+                    return {
+                        url: "",
+                        line: 0,
+                        column: 0
+                    };
+                }
+            }
+
+            console.log = function(message) {
+                var details = getStackDetails();
+                consoleLog(message, details.url, details.line, details.column);
+            };
+
+            console.error = function(message) {
+                var details = getStackDetails();
+                consoleError(message, details.url, details.line, details.column);
+            };
+        """)
 
         let sendRequest: @convention(block) (String, String, [String: String], String?) -> JSValue = { url, method, headers, body in
             self.sendRequest(url: url, method: method, headers: headers, body: body)

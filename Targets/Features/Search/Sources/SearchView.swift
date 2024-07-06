@@ -138,6 +138,7 @@ public class SearchView: UIViewController {
                         DispatchQueue.main.async {
                             print(result)
                             let collectionView = SearchCollectionView(result: result, layout: UICollectionViewFlowLayout())
+                            collectionView.reloadData()
                             self.scrollView.removeFromSuperview()
                             self.view.addSubview(collectionView)
                             collectionView.delegate = self
@@ -198,18 +199,24 @@ public class SearchView: UIViewController {
 // MARK: UIScrollViewDelegate
 extension SearchView: UIScrollViewDelegate, UICollectionViewDelegate {
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let offsetY = -scrollView.contentOffset.y - 60
+        let offsetY = -scrollView.contentOffset.y
 
         header.blurView.alpha = -offsetY / 60
 
-        // check if reached the bottom
-        let contentOffsetY = scrollView.contentOffset.y
-        let contentHeight = scrollView.contentSize.height
-        let scrollViewHeight = scrollView.frame.size.height
+        guard store.result != nil,
+        store.loading == false  else { return }
 
-        if contentOffsetY >= (contentHeight - scrollViewHeight) {
-            print("bottom")
-            store.send(.view(.paginateSearch))
+        // check if reached the bottom
+        Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) {[weak self] t in
+            let contentOffsetY = scrollView.contentOffset.y
+            let contentHeight = scrollView.contentSize.height
+            let scrollViewHeight = scrollView.frame.size.height
+
+            if contentOffsetY >= (contentHeight - scrollViewHeight) {
+                print("bottom")
+                self?.store.send(.view(.paginateSearch))
+            }
+            t.invalidate()
         }
     }
 }
