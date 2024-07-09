@@ -12,7 +12,7 @@ class CustomVideoPlayer: UIView {
     private var player: AVPlayer?
     private var playerLayer: AVPlayerLayer?
     private var playerVM: PlayerViewModel?
-    private var pictureInPictureController: AVPictureInPictureController?
+    var pictureInPictureController: AVPictureInPictureController?
 
     init(playerVM: PlayerViewModel) {
         super.init(frame: .zero)

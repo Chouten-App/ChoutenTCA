@@ -185,7 +185,7 @@ public class SuccessInfoVC: UIViewController {
 
         view.addSubview(seasonSelector)
 
-        //view.addSubview(blurOverlay)
+        // view.addSubview(blurOverlay)
 
 //            // TEMP
 //            let readerVC = ReaderView()
@@ -310,7 +310,7 @@ extension SuccessInfoVC: UIScrollViewDelegate {
 }
 
 extension SuccessInfoVC: MediaListDelegate {
-    public func mediaItemTapped(_ data: MediaItem) {
+    public func mediaItemTapped(_ data: MediaItem, index: Int) {
         let scenes = UIApplication.shared.connectedScenes
         guard let windowScene = scenes.first as? UIWindowScene,
               let window = windowScene.windows.first,
@@ -318,7 +318,7 @@ extension SuccessInfoVC: MediaListDelegate {
             return
         }
 
-        let landscapeVC = PlayerVC(data: data, info: infoData)
+        let landscapeVC = PlayerVC(data: data, info: infoData, index: index)
         landscapeVC.modalPresentationStyle = .fullScreen
         navController.navigationBar.isHidden = true
         navController.present(landscapeVC, animated: true, completion: nil)

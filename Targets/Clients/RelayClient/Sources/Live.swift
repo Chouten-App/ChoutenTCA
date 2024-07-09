@@ -176,37 +176,37 @@ extension RelayClient: DependencyKey {
                 log("Media", description: "Media function failed to return a value.", type: .error)
                 throw RelayError.mediaFunctionFailed
             },
-            servers: { url in
-                log("Servers", description: "Fetching Server Data.")
-
-                let value = try? await Relay.shared.callAsyncFunction("instance.servers('\(url)')")
-
-                if let value {
-                    log("Servers", description: "Converting jsValue to Server List.")
-                    if let servers = value.toServerDataArray() {
-                        return servers
-                    }
-
-                    log("Servers", description: "Converting the jsValue to Server List failed.", type: .error)
-                    throw RelayError.mediaConversionFailed
-                }
-
-                log("Servers", description: "Server function failed to return a value.", type: .error)
-                throw "Server error: \(url)"
-            },
             sources: { url in
-                log("Sources", description: "Fetching Source Data.")
+                log("Sources", description: "Fetching Sources Data.")
 
                 let value = try? await Relay.shared.callAsyncFunction("instance.sources('\(url)')")
 
                 if let value {
-                    log("Sources", description: "Converting jsValue to Source Data.")
-                    return VideoData(jsValue: value)
+                    log("Sources", description: "Converting jsValue to Sources List.")
+                    if let servers = value.toSourceDataArray() {
+                        return servers
+                    }
+
+                    log("Sources", description: "Converting the jsValue to Sources List failed.", type: .error)
+                    throw RelayError.mediaConversionFailed
                 }
 
-                log("Sources", description: "Source function failed to return a value.", type: .error)
+                log("Sources", description: "Sources function failed to return a value.", type: .error)
+                throw "Sources error: \(url)"
+            },
+            streams: { url in
+                log("Streams", description: "Fetching Streams Data.")
 
-                throw "Source error: \(url)"
+                let value = try? await Relay.shared.callAsyncFunction("instance.streams('\(url)')")
+
+                if let value {
+                    log("Streams", description: "Converting jsValue to Streams Data.")
+                    return MediaStream(jsValue: value)
+                }
+
+                log("Streams", description: "Streams function failed to return a value.", type: .error)
+
+                throw "Streams error: \(url)"
             },
             importFromFile: { fileUrl in
                 throw "\(fileUrl)"

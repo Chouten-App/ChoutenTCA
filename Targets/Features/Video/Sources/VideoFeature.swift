@@ -17,8 +17,8 @@ public struct VideoFeature: Reducer {
 
     @ObservableState
     public struct State: FeatureState {
-        public var videoData: VideoData?
-        public var serverLists: [ServerList]?
+        public var videoData: MediaStream?
+        public var serverLists: [SourceList]?
         public var status: VideoStatus = .idle
         public init() { }
     }
@@ -38,9 +38,9 @@ public struct VideoFeature: Reducer {
         public enum ViewAction: SendableAction {
             case onAppear(_ url: String)
             case getServers(_ url: String)
-            case setServers(_ data: [ServerList])
+            case setServers(_ data: [SourceList])
             case getSources(_ url: String)
-            case setSources(_ data: VideoData)
+            case setSources(_ data: MediaStream)
         }
 
         @CasePathable
@@ -70,7 +70,7 @@ public struct VideoFeature: Reducer {
               return .merge(
                   .run { send in
                       do {
-                          let servers = try await relayClient.servers(url)
+                          let servers = try await relayClient.sources(url)
                           await send(.view(.setServers(servers)))
                       } catch {
                           print(error.localizedDescription)
@@ -90,7 +90,7 @@ public struct VideoFeature: Reducer {
                   .run { send in
                       do {
                           print("running source code.")
-                          let sources = try await relayClient.sources(url)
+                          let sources = try await relayClient.streams(url)
                           await send(.view(.setSources(sources)))
                       } catch {
                           print(error.localizedDescription)
@@ -99,6 +99,7 @@ public struct VideoFeature: Reducer {
               )
           case .setSources(let data):
               state.videoData = data
+              print(data)
               state.status = .success
               return .none
           }

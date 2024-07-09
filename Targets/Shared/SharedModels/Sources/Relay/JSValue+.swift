@@ -126,32 +126,32 @@ extension JSValue {
     }
     // swiftlint:enable line_length
 
-    public func toServerDataArray() -> [ServerList]? {
+    public func toSourceDataArray() -> [SourceList]? {
         guard isArray else {
             return nil
         }
 
         if let jsArray = self.toArray() as? [[String: Any]] {
-            var serverListArray = [ServerList]()
+            var serverListArray = [SourceList]()
 
             for dict in jsArray {
                 guard let title = dict["title"] as? String,
-                      let listDictArray = dict["servers"] as? [[String: Any]] else {
+                      let listDictArray = dict["sources"] as? [[String: Any]] else {
                     continue
                 }
 
-                var list: [ServerData] = []
+                var list: [SourceData] = []
                 for itemDict in listDictArray {
                     guard let url = itemDict["url"] as? String,
                           let name = itemDict["name"] as? String else {
                         continue
                     }
-                    let serverData = ServerData(name: name, url: url)
+                    let serverData = SourceData(name: name, url: url)
                     list.append(serverData)
                 }
 
                 // Here, you can create a MediaList instance
-                let serverList = ServerList(title: title, list: list)
+                let serverList = SourceList(title: title, list: list)
                 serverListArray.append(serverList)
             }
 
@@ -215,13 +215,13 @@ extension JSValue {
         }
     }
 
-    public func toSourcesArray() -> [Source] {
+    public func toStreamsArray() -> [Stream] {
         guard isArray else {
             return []
         }
 
         if let jsArray = self.toArray() as? [[String: Any]] {
-            var sourcesArray = [Source]()
+            var sourcesArray = [Stream]()
 
             for dict in jsArray {
                 guard let quality = dict["quality"] as? String,
@@ -241,7 +241,7 @@ extension JSValue {
                 }
 
                 // Here, you can create a MediaList instance
-                let source = Source(file: file, type: sourceType, quality: quality)
+                let source = Stream(file: file, type: sourceType, quality: quality)
                 sourcesArray.append(source)
             }
 

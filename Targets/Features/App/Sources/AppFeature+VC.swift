@@ -29,6 +29,14 @@ public class AppViewController: UIViewController {
 
     var selectedTab: Int = 0
 
+    override public var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        .portrait
+    }
+
+    override public var preferredInterfaceOrientationForPresentation: UIInterfaceOrientation {
+        .portrait
+    }
+
     public init(_ module: Module?) {
         self.module = module
 

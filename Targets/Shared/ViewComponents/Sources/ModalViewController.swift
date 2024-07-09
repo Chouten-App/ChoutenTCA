@@ -155,7 +155,7 @@ public class ModalViewController: UIViewController {
 
             moduleSelectorView.view.leadingAnchor.constraint(equalTo: wrapper.leadingAnchor),
             moduleSelectorView.view.trailingAnchor.constraint(equalTo: wrapper.trailingAnchor),
-            moduleSelectorView.view.topAnchor.constraint(equalTo: titleWrapper.bottomAnchor, constant: 12),
+            moduleSelectorView.view.topAnchor.constraint(equalTo: titleWrapper.bottomAnchor),
             moduleSelectorView.view.bottomAnchor.constraint(equalTo: wrapper.bottomAnchor)
         ])
 

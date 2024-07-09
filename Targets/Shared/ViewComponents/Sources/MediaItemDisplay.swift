@@ -13,6 +13,7 @@ import UIKit
 class MediaItemDisplay: UIView {
 
     let mediaItem: MediaItem
+    let index: Int
 
     // swiftlint:disable lower_acl_than_parent
     public weak var delegate: MediaItemDelegate?
@@ -20,6 +21,7 @@ class MediaItemDisplay: UIView {
 
     override init(frame: CGRect) {
         self.mediaItem = MediaItem.sample
+        self.index = 0
         super.init(frame: frame)
         configure()
         setConstraints()
@@ -27,13 +29,15 @@ class MediaItemDisplay: UIView {
 
     required init?(coder: NSCoder) {
         self.mediaItem = MediaItem.sample
+        self.index = 0
         super.init(coder: coder)
         configure()
         setConstraints()
     }
 
-    init(item: MediaItem) {
+    init(item: MediaItem, index: Int) {
         self.mediaItem = item
+        self.index = index
         super.init(frame: .zero)
         configure()
         setConstraints()
@@ -214,6 +218,6 @@ class MediaItemDisplay: UIView {
     }
 
     @objc func handleTap() {
-        self.delegate?.tapped(mediaItem)
+        self.delegate?.tapped(mediaItem, index: index)
     }
 }

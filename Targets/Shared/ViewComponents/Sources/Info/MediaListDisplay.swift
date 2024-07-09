@@ -71,7 +71,7 @@ public class MediaListDisplay: UIView {
         let items = pagination.items
         for index in 0..<items.count {
             let item: MediaItem = items[index]
-            let mediaItemDisplay = MediaItemDisplay(item: item)
+            let mediaItemDisplay = MediaItemDisplay(item: item, index: index)
 
             mediaItemDisplay.delegate = self
 
@@ -97,7 +97,7 @@ public class MediaListDisplay: UIView {
 }
 
 extension MediaListDisplay: MediaItemDelegate {
-    public func tapped(_ data: MediaItem) {
-        self.delegate?.mediaItemTapped(data)
+    public func tapped(_ data: MediaItem, index: Int) {
+        self.delegate?.mediaItemTapped(data, index: index)
     }
 }

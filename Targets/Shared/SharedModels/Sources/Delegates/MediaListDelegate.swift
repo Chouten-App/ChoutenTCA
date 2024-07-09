@@ -8,9 +8,9 @@
 import Foundation
 
 public protocol MediaListDelegate: AnyObject {
-    func mediaItemTapped(_ data: MediaItem)
+    func mediaItemTapped(_ data: MediaItem, index: Int)
 }
 
 public protocol MediaItemDelegate: AnyObject {
-    func tapped(_ data: MediaItem)
+    func tapped(_ data: MediaItem, index: Int)
 }

@@ -20,8 +20,8 @@ public struct RelayClient: Sendable {
     public var search: @Sendable (_ url: String, _ page: Int) async throws -> SearchResult
     public var discover: @Sendable () async throws -> [DiscoverSection]
     public var media: @Sendable (_ url: String) async throws -> [MediaList]
-    public var servers: @Sendable (_ url: String) async throws -> [ServerList]
-    public var sources: @Sendable (_ url: String) async throws -> VideoData
+    public var sources: @Sendable (_ url: String) async throws -> [SourceList]
+    public var streams: @Sendable (_ url: String) async throws -> MediaStream
     public var importFromFile: @Sendable (_ fileUrl: URL) throws -> Void
 }
 

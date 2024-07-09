@@ -10,11 +10,11 @@ import JavaScriptCore
 
 // MARK: - ServerData
 
-public struct ServerList: Codable, Equatable, Sendable {
+public struct SourceList: Codable, Equatable, Sendable {
   public let title: String
-  public let list: [ServerData]
+  public let list: [SourceData]
 
-  public init(title: String, list: [ServerData]) {
+  public init(title: String, list: [SourceData]) {
     self.title = title
     self.list = list
   }
@@ -22,7 +22,7 @@ public struct ServerList: Codable, Equatable, Sendable {
 
 // MARK: - Server
 
-public struct ServerData: Codable, Hashable, Equatable, Sendable {
+public struct SourceData: Codable, Hashable, Equatable, Sendable {
   public let name: String
   public let url: String
 
@@ -34,22 +34,22 @@ public struct ServerData: Codable, Hashable, Equatable, Sendable {
 
 // MARK: - VideoData
 
-public struct VideoData: Codable, Equatable, Sendable {
-    public let sources: [Source]
+public struct MediaStream: Codable, Equatable, Sendable {
+    public let streams: [Stream]
     public let subtitles: [Subtitle]
     public let skips: [SkipTime]
     public let headers: [String: String]?
 
-    public init(sources: [Source], subtitles: [Subtitle], skips: [SkipTime], headers: [String: String]?) {
-        self.sources = sources
+    public init(streams: [Stream], subtitles: [Subtitle], skips: [SkipTime], headers: [String: String]?) {
+        self.streams = streams
         self.subtitles = subtitles
         self.skips = skips
         self.headers = headers
     }
 
     public init(jsValue: JSValue) {
-        let sourceValues = jsValue["sources"]?.toSourcesArray()
-        self.sources = sourceValues ?? []
+        let streamsValues = jsValue["streams"]?.toStreamsArray()
+        self.streams = streamsValues ?? []
 
         let subtitleValues = jsValue["subtitles"]?.toSubtitlesArray()
         self.subtitles = subtitleValues ?? []
@@ -100,7 +100,7 @@ public struct Subtitle: Codable, Equatable, Sendable {
 
 // MARK: - Source
 
-public struct Source: Codable, Equatable, Sendable {
+public struct Stream: Codable, Equatable, Sendable {
     public let file: String
     public let type: String
     public let quality: String

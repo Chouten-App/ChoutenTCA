@@ -15,11 +15,7 @@ public protocol SeekBarDelegate: AnyObject {
 public class SeekBar: UIView {
 
     public var width: Double = UIScreen.main.bounds.width
-    public var progress: Double = 0.0 {
-        didSet {
-            delegate?.seekBar(self, didChangeProgress: progress)
-        }
-    }
+    public var progress: Double = 0.0
 
     public weak var delegate: SeekBarDelegate?
 
@@ -124,13 +120,17 @@ public class SeekBar: UIView {
 
         switch gestureRecognizer.state {
         case .changed:
+            print(translation.x)
             progressTrailingConstraint.constant = min(max(translation.x + self.lastOffset, 0.0), width)
             progress = progressTrailingConstraint.constant / width
+            delegate?.seekBar(self, didChangeProgress: progress)
+            self.layoutIfNeeded()
         case .ended:
             isDragging = false
 
             progressTrailingConstraint.constant = min(max(translation.x + lastOffset, 0.0), width)
             progress = progressTrailingConstraint.constant / width
+            delegate?.seekBar(self, didChangeProgress: progress)
 
             UIView.animate(withDuration: 0.2) { [weak self] in
                 guard let self = self else { return }
