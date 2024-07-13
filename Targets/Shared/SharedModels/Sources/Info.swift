@@ -16,10 +16,11 @@ public struct InfoData: Codable, Equatable, Sendable {
     public let banner: String?
     public let status: String?
     public let mediaType: String
+    public let yearReleased: Int
     public var seasons: [SeasonData]
     public var mediaList: [MediaList]
 
-    public init(titles: Titles, tags: [String], description: String, poster: String, banner: String?, status: String?, mediaType: String, seasons: [SeasonData], mediaList: [MediaList]) {
+    public init(titles: Titles, tags: [String], description: String, poster: String, banner: String?, status: String?, mediaType: String, yearReleased: Int, seasons: [SeasonData], mediaList: [MediaList]) {
         self.titles = titles
         self.tags = tags
         self.description = description
@@ -27,6 +28,7 @@ public struct InfoData: Codable, Equatable, Sendable {
         self.banner = banner
         self.status = status
         self.mediaType = mediaType
+        self.yearReleased = yearReleased
         self.seasons = seasons
         self.mediaList = mediaList
     }
@@ -59,6 +61,7 @@ public struct InfoData: Codable, Equatable, Sendable {
         banner: "https://hoststreamsell-pics.s3.amazonaws.com/600c26a209974338f4a579055e7ef61f_big.jpg",
         status: "Finished",
         mediaType: "Episodes",
+        yearReleased: 2024,
         seasons: [],
         mediaList: [
             MediaList(
@@ -97,6 +100,7 @@ public struct InfoData: Codable, Equatable, Sendable {
         banner: nil,
         status: "Finished",
         mediaType: "Episodes",
+        yearReleased: 2024,
         seasons: [],
         mediaList: [
             MediaList(
@@ -212,6 +216,11 @@ extension InfoData {
             return nil
         }
 
+        guard let yearReleased = jsValue["yearReleased"]?.toInt32() else {
+            print("Failed to convert 'yearReleased'")
+            return nil
+        }
+
         guard let seasonsJSValue = jsValue["seasons"] else {
             print("Failed to convert 'seasons'")
             return nil
@@ -275,6 +284,7 @@ extension InfoData {
             banner: banner,
             status: computedStatus,
             mediaType: computedMediaType,
+            yearReleased: Int(yearReleased),
             seasons: seasons,
             mediaList: []
         )

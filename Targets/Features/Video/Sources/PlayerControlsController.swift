@@ -19,6 +19,7 @@ protocol PlayerControlsDelegate: AnyObject {
     func updateSelectedServer(_ index: Int)
     func updateSubtitleOffset(_ offset: Double)
     func nextEpisode()
+    func showMediaSelector()
 }
 
 extension Double {
@@ -30,7 +31,6 @@ extension Double {
 
 // swiftlint:disable type_body_length
 class PlayerControlsController: UIViewController {
-
     var data: MediaStream?
     var servers: [SourceList]?
     var selectedSourceIndex: Int?
@@ -166,7 +166,9 @@ class PlayerControlsController: UIViewController {
 
     let backButton = CircleButton(icon: "chevron.left")
 
-    let skipEpisodeButton = CircleButton(icon: "forward.fill")
+    let skipEpisodeButton = CircleButton(icon: "forward.fill", size: 8)
+
+    let mediaSelectorButton = CircleButton(icon: "play.rectangle.on.rectangle.fill", size: 8)
 
     let settingsButton = CircleButton(icon: "gear", hasInteraction: true)
 
@@ -235,6 +237,7 @@ class PlayerControlsController: UIViewController {
         backwardButton.addSubview(backwardIcon)
         backwardButton.addSubview(backwardText)
         view.addSubview(backwardButton)
+        view.addSubview(mediaSelectorButton)
         view.addSubview(settingsButton)
 
         view.addSubview(skipEpisodeButton)
@@ -245,6 +248,10 @@ class PlayerControlsController: UIViewController {
 
         backButton.onTap = {
             self.delegate?.navigateBack()
+        }
+
+        mediaSelectorButton.onTap = {
+            self.delegate?.showMediaSelector()
         }
 
         settingsButton.menu = {
@@ -307,10 +314,10 @@ class PlayerControlsController: UIViewController {
 //        view.addGestureRecognizer(tapGesture)
 
         NSLayoutConstraint.activate([
-            backButton.leadingAnchor.constraint(equalTo: progressBar.leadingAnchor),
+            backButton.leadingAnchor.constraint(equalTo: progressBar.leadingAnchor, constant: 12),
             backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 28),
 
-            settingsButton.trailingAnchor.constraint(equalTo: progressBar.trailingAnchor),
+            settingsButton.trailingAnchor.constraint(equalTo: progressBar.trailingAnchor, constant: -12),
             settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 28),
 
             currentTimeLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -8),
@@ -393,8 +400,11 @@ class PlayerControlsController: UIViewController {
             nextEpisodeText.topAnchor.constraint(equalTo: nextEpisodeTextWrapper.topAnchor, constant: 8),
             nextEpisodeText.bottomAnchor.constraint(equalTo: nextEpisodeTextWrapper.bottomAnchor, constant: -8),
 
-            skipEpisodeButton.bottomAnchor.constraint(equalTo: progressBar.topAnchor, constant: -8),
-            skipEpisodeButton.trailingAnchor.constraint(equalTo: progressBar.trailingAnchor, constant: -12)
+            skipEpisodeButton.bottomAnchor.constraint(equalTo: progressBar.topAnchor, constant: 8),
+            skipEpisodeButton.trailingAnchor.constraint(equalTo: progressBar.trailingAnchor, constant: -12),
+
+            mediaSelectorButton.trailingAnchor.constraint(equalTo: skipEpisodeButton.leadingAnchor, constant: -12),
+            mediaSelectorButton.bottomAnchor.constraint(equalTo: progressBar.topAnchor, constant: 8),
         ])
     }
 
@@ -554,6 +564,9 @@ class PlayerControlsController: UIViewController {
             self.progressBar.transform = CGAffineTransform(translationX: 0, y: 50)
             self.progressBar.alpha = 0.0
 
+            self.skipEpisodeButton.transform = CGAffineTransform(translationX: 0, y: -50)
+            self.skipEpisodeButton.alpha = 0.0
+
             self.currentTimeLabel.transform = CGAffineTransform(translationX: 0, y: 50)
             self.currentTimeLabel.alpha = 0.0
 
@@ -562,6 +575,9 @@ class PlayerControlsController: UIViewController {
 
             self.backButton.transform = CGAffineTransform(translationX: 0, y: -50)
             self.backButton.alpha = 0.0
+
+            self.mediaSelectorButton.transform = CGAffineTransform(translationX: 0, y: -50)
+            self.mediaSelectorButton.alpha = 0.0
 
             self.settingsButton.transform = CGAffineTransform(translationX: 0, y: -50)
             self.settingsButton.alpha = 0.0
@@ -595,8 +611,14 @@ class PlayerControlsController: UIViewController {
             self.backButton.transform = .identity
             self.backButton.alpha = 1.0
 
+            self.mediaSelectorButton.transform = .identity
+            self.mediaSelectorButton.alpha = 1.0
+
             self.settingsButton.transform = .identity
             self.settingsButton.alpha = 1.0
+
+            self.skipEpisodeButton.transform = .identity
+            self.skipEpisodeButton.alpha = 1.0
 
             self.playPauseButton.alpha = 1.0
             self.backwardButton.alpha = 1.0

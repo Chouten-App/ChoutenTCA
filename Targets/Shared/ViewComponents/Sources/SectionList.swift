@@ -89,7 +89,7 @@ public class SectionList: UIView {
             scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
             // scrollView.widthAnchor.constraint(equalTo: widthAnchor),
-            scrollView.heightAnchor.constraint(equalToConstant: 260),
+            scrollView.heightAnchor.constraint(equalToConstant: 200),
             // scrollView.centerXAnchor.constraint(equalTo: centerXAnchor),
 
             scrollViewContent.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),

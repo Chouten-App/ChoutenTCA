@@ -14,67 +14,8 @@ import SharedModels
 import UIKit
 import ViewComponents
 
-class CardTransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning {
-    private let isPresenting: Bool
-    public var originFrame: CGRect
-
-    init(isPresenting: Bool, originFrame: CGRect) {
-        self.isPresenting = isPresenting
-        self.originFrame = originFrame
-    }
-
-    func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
-        return 0.5
-    }
-
-    func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
-        let containerView = transitionContext.containerView
-
-        guard let toView = transitionContext.view(forKey: .to),
-              let fromView = transitionContext.view(forKey: .from) else {
-            transitionContext.completeTransition(false)
-            return
-        }
-
-        let initialFrame = isPresenting ? originFrame : toView.frame
-        let finalFrame = isPresenting ? toView.frame : originFrame
-
-        let animatedView = isPresenting ? toView : fromView
-        let backgroundView = isPresenting ? toView : fromView
-
-        if isPresenting {
-            animatedView.frame = initialFrame
-            animatedView.layer.cornerRadius = 20
-            animatedView.clipsToBounds = true
-            containerView.addSubview(animatedView)
-        } else {
-            containerView.insertSubview(animatedView, belowSubview: backgroundView)
-        }
-
-        let duration = transitionDuration(using: transitionContext)
-        UIView.animate(withDuration: duration, animations: {
-            animatedView.frame = finalFrame
-            animatedView.layer.cornerRadius = self.isPresenting ? 0 : 20
-        }) { _ in
-            transitionContext.completeTransition(true)
-        }
-
-        if isPresenting {
-            UIView.animate(withDuration: duration / 2, delay: duration / 2, options: [], animations: {
-                backgroundView.alpha = 1
-            })
-        }
-    }
-
-    func updateOriginFrame(_ frame: CGRect) {
-        self.originFrame = frame
-    }
-}
-
-
 public class DiscoverView: UIViewController {
     var store: Store<DiscoverFeature.State, DiscoverFeature.Action>
-    var animator: CardTransitionAnimator?
 
     let screenWidth = UIScreen.main.bounds.width
     let screenHeight = UIScreen.main.bounds.height
@@ -225,7 +166,7 @@ public class DiscoverView: UIViewController {
 
                                 NSLayoutConstraint.activate([
                                     sectionList.widthAnchor.constraint(equalTo: self.contentView.widthAnchor),
-                                    sectionList.heightAnchor.constraint(equalToConstant: 240)
+                                    sectionList.heightAnchor.constraint(equalToConstant: 220)
                                 ])
                             }
                         }
@@ -276,14 +217,7 @@ extension DiscoverView: CarouselCardDelegate {
             return
         }
 
-        let originFrame = tappedCard.superview?.convert(tappedCard.frame, to: nil) ?? .zero
-
         let tempVC = InfoViewRefactor(url: data.url)
-//        tempVC.modalPresentationStyle = .custom
-//        tempVC.transitioningDelegate = self
-//
-//        let animator = CardTransitionAnimator(isPresenting: true, originFrame: originFrame)
-//        self.animator = animator
 
         navController.navigationBar.isHidden = true
         navController.pushViewController(tempVC, animated: true)
@@ -307,17 +241,5 @@ extension DiscoverView: SectionListDelegate {
         let tempVC = InfoViewRefactor(url: data.url)
         navController.navigationBar.isHidden = true
         navController.pushViewController(tempVC, animated: true)
-    }
-}
-
-extension DiscoverView: UIViewControllerTransitioningDelegate {
-    public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        return animator
-    }
-
-    public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        guard let originFrame = self.animator?.originFrame else { return nil }
-        let reverseAnimator = CardTransitionAnimator(isPresenting: false, originFrame: originFrame)
-        return reverseAnimator
     }
 }

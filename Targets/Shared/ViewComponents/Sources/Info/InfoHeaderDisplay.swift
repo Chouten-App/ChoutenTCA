@@ -75,7 +75,7 @@ public class InfoHeaderDisplay: UIView {
 
         statusLabel.text = infoData.status ?? "N/A"
 
-        ratingLabel.text = "10.0"
+        ratingLabel.text = "\(infoData.yearReleased)"
     }
 
     public func configure() {

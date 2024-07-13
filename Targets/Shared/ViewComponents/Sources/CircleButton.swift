@@ -11,11 +11,13 @@ import UIKit
 public class CircleButton: UIButton {
 
     public let iconName: String
+    public let size: Double
     public var onTap: (() -> Void)?
     public var hasInteraction: Bool
 
     override public init(frame: CGRect) {
         self.iconName = "xmark"
+        self.size = 10.0
         self.hasInteraction = false
         super.init(frame: frame)
         setupButton()
@@ -23,13 +25,15 @@ public class CircleButton: UIButton {
 
     public required init?(coder aDecoder: NSCoder) {
         self.iconName = "xmark"
+        self.size = 10.0
         self.hasInteraction = false
         super.init(coder: aDecoder)
         setupButton()
     }
 
-    public init(icon: String, onTap: (() -> Void)? = nil, hasInteraction: Bool = false) {
+    public init(icon: String, size: Double = 10.0, onTap: (() -> Void)? = nil, hasInteraction: Bool = false) {
         self.iconName = icon
+        self.size = size
         self.onTap = onTap
         self.hasInteraction = hasInteraction
         super.init(frame: .zero)
@@ -43,7 +47,7 @@ public class CircleButton: UIButton {
                 .withRenderingMode(.alwaysTemplate)
                 .applyingSymbolConfiguration(
                     .init(
-                        font: .systemFont(ofSize: 10)
+                        font: .systemFont(ofSize: size)
                     )
                 ),
             for: .normal

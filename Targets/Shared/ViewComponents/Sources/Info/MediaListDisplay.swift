@@ -61,8 +61,6 @@ public class MediaListDisplay: UIView {
             mediaListIndex = index
         }
 
-        print("medialist updating")
-
         contentView.arrangedSubviews
             .forEach { $0.removeFromSuperview() }
 
@@ -82,7 +80,6 @@ public class MediaListDisplay: UIView {
                 mediaItemDisplay.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
             ])
         }
-
     }
 
     // MARK: Layout
@@ -91,7 +88,7 @@ public class MediaListDisplay: UIView {
         NSLayoutConstraint.activate([
             contentView.leadingAnchor.constraint(equalTo: leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            contentView.heightAnchor.constraint(equalTo: heightAnchor)
+            contentView.heightAnchor.constraint(equalTo: heightAnchor, constant: -20)
         ])
     }
 }

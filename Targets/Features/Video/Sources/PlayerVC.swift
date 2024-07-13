@@ -10,7 +10,8 @@ public class PlayerVC: UIViewController {
     var data: MediaItem
     let info: InfoData
     var index: Int
-    
+    var selectedMediaListIndex: Int = 0
+
     let playerVM = PlayerViewModel()
     let subtitleRenderer = SubtitleRenderer()
     let controls = PlayerControlsController()
@@ -52,6 +53,8 @@ public class PlayerVC: UIViewController {
         return true
     }
 
+    var mediaSelector = MediaSelector()
+
     public init(data: MediaItem, info: InfoData, index: Int) {
         self.data = data
         self.info = info
@@ -81,6 +84,16 @@ public class PlayerVC: UIViewController {
         view.addSubview(controls.view)
         controls.didMove(toParent: self)
 
+        mediaSelector = MediaSelector(mediaList: info.mediaList, fallbackImageUrl: info.poster)
+        view.addSubview(mediaSelector)
+        mediaSelector.alpha = 0.0
+
+        mediaSelector.closeButton.onTap = {
+            UIView.animate(withDuration: 0.2) {
+                self.mediaSelector.alpha = 0.0
+            }
+        }
+
         controls.delegate = self
         customVideoPlayer.pictureInPictureController?.delegate = self
 
@@ -102,7 +115,12 @@ public class PlayerVC: UIViewController {
             controls.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             controls.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             controls.view.topAnchor.constraint(equalTo: view.topAnchor),
-            controls.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            controls.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+            mediaSelector.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            mediaSelector.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            mediaSelector.topAnchor.constraint(equalTo: view.topAnchor),
+            mediaSelector.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
@@ -307,6 +325,9 @@ public class PlayerVC: UIViewController {
         list.count > index {
             let mediaItem = list[index]
             data = mediaItem
+            DispatchQueue.main.async {
+                self.controls.subtitleLabel.text = mediaItem.title ?? "Episode \(mediaItem.number.removeTrailingZeros())"
+            }
             store.send(.view(.onAppear(data.url)))
         }
 
@@ -545,6 +566,12 @@ extension PlayerVC: PlayerControlsDelegate {
             playerVM.player.pause()
         } else {
             playerVM.player.play()
+        }
+    }
+
+    func showMediaSelector() {
+        UIView.animate(withDuration: 0.2) {
+            self.mediaSelector.alpha = 1.0
         }
     }
 
