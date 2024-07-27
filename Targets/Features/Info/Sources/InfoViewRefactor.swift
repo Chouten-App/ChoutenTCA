@@ -77,6 +77,7 @@ public class InfoViewRefactor: LoadableViewControllerBase {
                 success.doneLoading = self.store.doneLoading
 
                 success.infoData = infoData
+                success.currentModuleType = self.store.currentModuleType
 
                 success.updateData()
 

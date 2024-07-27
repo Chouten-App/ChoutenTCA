@@ -8,7 +8,7 @@
 import Foundation
 import JavaScriptCore
 
-public struct SearchResultInfo: Codable, Equatable {
+public struct SearchResultInfo: Codable, Equatable, Hashable {
     public var count: Int?
     public var pages: Int
     public var next: String?
@@ -34,7 +34,7 @@ public struct SearchResultInfo: Codable, Equatable {
     }
 }
 
-public struct SearchResult: Codable, Equatable {
+public struct SearchResult: Codable, Equatable, Hashable {
     public var info: SearchResultInfo
     public var results: [SearchData]
 
@@ -62,23 +62,27 @@ public struct SearchResult: Codable, Equatable {
 
         var searchDataArray: [SearchData] = []
         for searchItem in dataArray {
+            print(searchItem["url"])
             guard let url = searchItem["url"] as? String,
-                  let title = searchItem["title"] as? String,
-                  let img = searchItem["poster"] as? String,
+                  let titlesValue = searchItem["titles"] as? [String: String],
+                  let primaryTitle = titlesValue["primary"],
+                  let poster = searchItem["poster"] as? String,
                   let indicatorText = searchItem["indicator"] as? String else {
                 continue
             }
+
+            let titles = Titles(primary: primaryTitle, secondary: titlesValue["secondary"])
 
             let currentCount = searchItem["current"] as? Int
             let totalCount = searchItem["total"] as? Int
 
             let value = SearchData(
                 url: url,
-                img: img,
-                title: title,
-                indicatorText: indicatorText,
-                currentCount: currentCount ?? -1,
-                totalCount: totalCount ?? -1
+                poster: poster,
+                titles: titles,
+                indicator: indicatorText,
+                current: currentCount,
+                total: totalCount
             )
             searchDataArray.append(value)
         }
@@ -87,49 +91,54 @@ public struct SearchResult: Codable, Equatable {
     }
 }
 
-public struct SearchData: Codable, Equatable {
+public struct SearchData: Codable, Equatable, Hashable {
     public let url: String
-    public let img: String
-    public let title: String
-    public let indicatorText: String
-    public let currentCount: Int
-    public let totalCount: Int
+    public let poster: String
+    public let titles: Titles
+    public let indicator: String
+    public let current: Int?
+    public let total: Int?
 
-    public init(url: String, img: String, title: String, indicatorText: String, currentCount: Int, totalCount: Int) {
+    public init(url: String, poster: String, titles: Titles, indicator: String, current: Int?, total: Int?) {
         self.url = url
-        self.img = img
-        self.title = title
-        self.indicatorText = indicatorText
-        self.currentCount = currentCount
-        self.totalCount = totalCount
+        self.poster = poster
+        self.titles = titles
+        self.indicator = indicator
+        self.current = current
+        self.total = total
     }
 
     public init?(jsValue: JSValue) {
         guard
             let url = jsValue["url"]?.toString(),
-            let img = jsValue["img"]?.toString(),
-            let title = jsValue["title"]?.toString(),
-            let indicatorText = jsValue["indicatorText"]?.toString(),
-            let currentCount = jsValue["currentCount"]?.toInt32(),
-            let totalCount = jsValue["totalCount"]?.toInt32()
+            let poster = jsValue["poster"]?.toString(),
+            let titlesValue = jsValue["titles"],
+            let titles = Titles(jsValue: titlesValue),
+            let indicator = jsValue["indicator"]?.toString()
         else {
+            print("Failed to convert Search data.")
             return nil
         }
 
+        let current = jsValue["current"]?.toInt32()
+        let total = jsValue["total"]?.toInt32()
+
         self.url = url
-        self.img = img
-        self.title = title
-        self.indicatorText = indicatorText
-        self.currentCount = Int(currentCount)
-        self.totalCount = Int(totalCount)
+        self.poster = poster
+        self.titles = titles
+        self.indicator = indicator
+        // swiftlint:disable force_unwrapping
+        self.current = current != nil ? Int(current!) : nil
+        self.total = total != nil ? Int(total!) : nil
+        // swiftlint:enable force_unwrapping
     }
 
     public static let sample = Self(
         url: "",
-        img: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg",
-        title: "Title",
-        indicatorText: "Text",
-        currentCount: 1,
-        totalCount: 12
+        poster: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg",
+        titles: Titles(primary: "Title", secondary: nil),
+        indicator: "Text",
+        current: 1,
+        total: 12
     )
 }

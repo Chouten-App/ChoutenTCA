@@ -177,7 +177,7 @@ public class PlayerVC: UIViewController {
                                     self.view.layoutIfNeeded()
                                 }
                             }
-                            
+
                             if (time.seconds / item.asset.duration.seconds >= 0.8) && !isShowingNextEpisodeButton {
                                 isShowingNextEpisodeButton = true
                                 showNextEpisodeButton()

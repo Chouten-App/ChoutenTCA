@@ -6,6 +6,7 @@
 //
 
 import Architecture
+import RelayClient
 import SharedModels
 import UIKit
 import Video
@@ -20,6 +21,7 @@ public class SuccessInfoVC: UIViewController {
 
     public weak var delegate: SuccessInfoVCDelegate?
     var infoData: InfoData
+    var currentModuleType: ModuleType = .video
 
     var doneLoading = false
 
@@ -318,10 +320,34 @@ extension SuccessInfoVC: MediaListDelegate {
             return
         }
 
-        let landscapeVC = PlayerVC(data: data, info: infoData, index: index)
-        landscapeVC.modalPresentationStyle = .fullScreen
-        navController.navigationBar.isHidden = true
-        navController.present(landscapeVC, animated: true, completion: nil)
+        switch currentModuleType {
+        case .video:
+            let landscapeVC = PlayerVC(data: data, info: infoData, index: index)
+            landscapeVC.modalPresentationStyle = .fullScreen
+            navController.navigationBar.isHidden = true
+            navController.present(landscapeVC, animated: true, completion: nil)
+        case .book:
+            print("Open Reader")
+            // find media items list
+            var mediaItems: [MediaItem] = []
+            if let paginationWithItem = infoData.mediaList
+                .flatMap({ $0.pagination })
+                .first(where: { pagination in
+                    pagination.items.contains(where: { $0 == data })
+                }) {
+
+                // Do something with the pagination
+                mediaItems = paginationWithItem.items
+            } else {
+                print("Pagination containing the item not found.")
+            }
+
+            let readerVC = ReaderViewController(infoData: infoData, item: data, index: index, mediaItems: mediaItems)
+            navController.navigationBar.isHidden = true
+            navController.pushViewController(readerVC, animated: true)
+        default:
+            break
+        }
     }
 }
 

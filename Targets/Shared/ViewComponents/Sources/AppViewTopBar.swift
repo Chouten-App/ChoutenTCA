@@ -87,18 +87,12 @@ public class AppViewTopBar: UIView {
     }
 
     private func setupConstraints() {
-        let scenes = UIApplication.shared.connectedScenes
-        let windowScene = scenes.first as? UIWindowScene
-        let window = windowScene?.windows.first
-
-        let topPadding = window?.safeAreaInsets.top ?? 0.0
-
         NSLayoutConstraint.activate([
             wrapper.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width + 2),
             wrapper.leadingAnchor.constraint(equalTo: leadingAnchor, constant: -1),
             wrapper.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 1),
             wrapper.topAnchor.constraint(equalTo: topAnchor, constant: -1),
-            wrapper.heightAnchor.constraint(equalToConstant: max(topPadding + 64, 64)),
+            wrapper.bottomAnchor.constraint(equalTo: bottomAnchor),
 
             blurView.leadingAnchor.constraint(equalTo: wrapper.leadingAnchor),
             blurView.trailingAnchor.constraint(equalTo: wrapper.trailingAnchor),

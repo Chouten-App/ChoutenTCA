@@ -67,9 +67,13 @@ public class MediaListDisplay: UIView {
         let list = infoData.mediaList[mediaListIndex]
         let pagination = list.pagination[paginationIndex]
         let items = pagination.items
+
+        let watchedUrls = DatabaseManager.shared.fetchWatchedURLs()
+        print("Watched URLs: \(watchedUrls)")
+
         for index in 0..<items.count {
             let item: MediaItem = items[index]
-            let mediaItemDisplay = MediaItemDisplay(item: item, index: index)
+            let mediaItemDisplay = MediaItemDisplay(item: item, index: index, watched: watchedUrls.contains(item.url))
 
             mediaItemDisplay.delegate = self
 

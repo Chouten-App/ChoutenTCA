@@ -9,6 +9,5 @@ let project = Project.feature(
     .shared.viewComponents.project,
     .shared.sharedModels.project,
     .externalDependencies.composableArchitecture.target,
-    .clients.dataClient.project
   ]
 )

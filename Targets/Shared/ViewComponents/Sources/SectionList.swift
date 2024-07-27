@@ -13,14 +13,14 @@ public class SectionList: UIView {
     let section: DiscoverSection
 
     override public init(frame: CGRect) {
-        self.section = .init(title: "", list: [])
+        self.section = .init(title: "", type: 0, list: [])
         super.init(frame: frame)
         configure()
         setConstraints()
     }
 
     public required init?(coder: NSCoder) {
-        self.section = .init(title: "", list: [])
+        self.section = .init(title: "", type: 0, list: [])
         super.init(coder: coder)
         configure()
         setConstraints()

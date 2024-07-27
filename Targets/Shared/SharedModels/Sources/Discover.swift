@@ -8,7 +8,7 @@
 import Foundation
 import JavaScriptCore
 
-public struct Label: Codable, Equatable {
+public struct Label: Codable, Equatable, Hashable {
     public let text: String
     public let color: String
 
@@ -36,23 +36,25 @@ public struct Label: Codable, Equatable {
     }
 }
 
-public struct DiscoverData: Codable, Equatable {
+public struct DiscoverData: Codable, Equatable, Hashable {
     public let url: String
     public let titles: Titles
     public let poster: String
     public let description: String
     public let label: Label
     public let indicator: String
+    public let isWidescreen: Bool
     public let current: Int?
     public let total: Int?
 
-    public init(url: String, titles: Titles, description: String, poster: String, label: Label, indicator: String, current: Int?, total: Int?) {
+    public init(url: String, titles: Titles, description: String, poster: String, label: Label, indicator: String, isWidescreen: Bool = false, current: Int?, total: Int?) {
         self.url = url
         self.titles = titles
         self.description = description
         self.poster = poster
         self.label = label
         self.indicator = indicator
+        self.isWidescreen = isWidescreen
         self.current = current
         self.total = total
     }
@@ -65,13 +67,16 @@ public struct DiscoverData: Codable, Equatable {
             let description = jsValue["description"]?.toString(),
             let label = jsValue["label"],
             let indicator = jsValue["indicator"]?.toString(),
-            let current = jsValue["current"]?.toInt32(),
-            let total = jsValue["total"]?.toInt32(),
             let titlesValue = Titles(jsValue: titles),
             let labelValue = Label(jsValue: label)
         else {
             return nil
         }
+
+        let isWidescreen = jsValue["isWidescreen"]?.toBool()
+
+        let current = jsValue["current"]?.toInt32()
+        let total = jsValue["total"]?.toInt32()
 
         // let iconText = jsValue["iconText"]?.toString()
 
@@ -81,23 +86,29 @@ public struct DiscoverData: Codable, Equatable {
         self.poster = poster
         self.label = labelValue
         self.indicator = indicator
-        self.current = Int(current)
-        self.total = Int(total)
+        self.isWidescreen = isWidescreen ?? false
+        // swiftlint:disable force_unwrapping
+        self.current = current != nil ? Int(current!) : nil
+        self.total = total != nil ? Int(total!) : nil
+        // swiftlint:enable force_unwrapping
     }
 }
 
-public struct DiscoverSection: Codable, Equatable {
+public struct DiscoverSection: Codable, Equatable, Hashable {
     public let title: String
+    public let type: Int // 0 = Carousel, 1 = List
     public let list: [DiscoverData]
 
-    public init(title: String, list: [DiscoverData]) {
+    public init(title: String, type: Int, list: [DiscoverData]) {
         self.title = title
+        self.type = type
         self.list = list
     }
 
     public init?(jsValue: JSValue) {
         guard
             let title = jsValue["title"]?.toString(),
+            let type = jsValue["type"]?.toInt32(),
             let dataList = jsValue["list"]?.toArray()
         else {
             return nil
@@ -111,11 +122,13 @@ public struct DiscoverSection: Codable, Equatable {
         }
 
         self.title = title
+        self.type = Int(type)
         self.list = discoverDataList
     }
 
     public static let sampleSection = Self(
         title: "Section",
+        type: 0,
         list: [
             DiscoverData(
                 url: "",

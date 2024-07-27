@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import GRDB
 import JavaScriptCore
 
 public struct InfoData: Codable, Equatable, Sendable {
@@ -155,27 +156,29 @@ public struct Pagination: Codable, Equatable, Sendable {
     }
 }
 
-public struct MediaItem: Codable, Equatable, Hashable, Sendable {
+public struct MediaItem: Codable, Equatable, Hashable, Sendable, FetchableRecord, PersistableRecord {
     public let url: String
     public let number: Double
     public let title: String?
-    public let language: String?
-    public let description: String?
     public let thumbnail: String?
+    public let description: String?
+    public let indicator: String?
+    public var isWatched = false
 
-    public init(url: String, number: Double, title: String? = nil, language: String? = nil, description: String? = nil, thumbnail: String? = nil) {
+    public init(url: String, number: Double, title: String? = nil, thumbnail: String? = nil, description: String? = nil, indicator: String? = nil, isWatched: Bool = false) {
         self.url = url
         self.number = number
         self.title = title
-        self.language = language
-        self.description = description
         self.thumbnail = thumbnail
+        self.description = description
+        self.indicator = indicator
+        self.isWatched = isWatched
     }
 
-    public static let sample = Self(url: "", number: 1.0, title: "Title", description: "Description", thumbnail: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg")
+    public static let sample = Self(url: "", number: 1.0, title: "Title", thumbnail: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg", description: "Description")
 }
 
-public struct Titles: Codable, Equatable, Sendable {
+public struct Titles: Codable, Equatable, Sendable, Hashable {
     public let primary: String
     public let secondary: String?
 
@@ -369,10 +372,10 @@ extension MediaItem {
         }
 
         let title = jsValue["title"]?.toString()
-        let language = jsValue["language"]?.toString()
+        let indicator = jsValue["indicator"]?.toString()
         let description = jsValue["description"]?.toString()
         let image = jsValue["thumbnail"]?.toString()
 
-        self.init(url: url, number: number, title: title, language: language, description: description, thumbnail: image)
+        self.init(url: url, number: number, title: title, thumbnail: image, description: description, indicator: indicator)
     }
 }

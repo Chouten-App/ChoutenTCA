@@ -14,7 +14,6 @@ let project = Project.feature(
     .shared.viewComponents.project,
     .externalDependencies.composableArchitecture.target,
     .externalDependencies.nuke.target,
-    .clients.dataClient.project,
     .clients.repoClient.project
   ]
 )

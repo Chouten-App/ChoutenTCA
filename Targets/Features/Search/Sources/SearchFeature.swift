@@ -39,6 +39,7 @@ public struct SearchFeature: Reducer {
         @dynamicMemberLookup
         public enum ViewAction: SendableAction {
             case onAppear
+            case clearResult
             case setQuery(_ value: String)
             case clearQuery
             case search
@@ -68,8 +69,13 @@ public struct SearchFeature: Reducer {
           switch viewAction {
           case .onAppear:
               return .none
+          case .clearResult:
+              state.result = nil
+              return .none
           case .setQuery(let value):
               state.query = value
+              state.result = nil
+              if value.isEmpty { return .none }
               return .send(.view(.search))
           case .clearQuery:
               state.query = ""
@@ -95,6 +101,8 @@ public struct SearchFeature: Reducer {
                     !state.result!.results.isEmpty else {
                   state.result = value
                   state.status = .success
+
+                  print(value)
                   return .none
               }
               state.result!.results += value.results

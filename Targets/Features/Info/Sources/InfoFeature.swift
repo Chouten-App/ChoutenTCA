@@ -22,6 +22,8 @@ public struct InfoFeature: Reducer {
         // swiftlint:enable redundant_optional_initialization
         public var doneLoading = false
 
+        public var currentModuleType: ModuleType = .video
+
         public init() { }
     }
 
@@ -37,6 +39,7 @@ public struct InfoFeature: Reducer {
             case setSelectedSeason(_ newIndex: Int, data: [MediaList])
             case setInfoData(_ data: InfoData)
             case setMediaList(_ data: [MediaList])
+            case setCurrentModuleType(_ type: ModuleType)
         }
 
         @CasePathable
@@ -63,6 +66,8 @@ public struct InfoFeature: Reducer {
               return .merge(
                   .run { send in
                       do {
+                          let type = try relayClient.getCurrentModuleType()
+                          await send(.view(.setCurrentModuleType(type)))
                           let data = try await self.relayClient.info(url)
                           print(data)
                           await send(.view(.setInfoData(data)))
@@ -106,6 +111,8 @@ public struct InfoFeature: Reducer {
           case .setInfoData(let data):
               state.infoData = data
 
+              print(data.seasons)
+
               if let url = data.seasons.first(where: { $0.selected == true })?.url {
                   return .send(.view(.fetchMedia(url)))
               } else if let url = data.seasons.first?.url {
@@ -118,6 +125,9 @@ public struct InfoFeature: Reducer {
           case .setMediaList(let data):
               state.infoData?.mediaList = data
               state.doneLoading = true
+              return .none
+          case .setCurrentModuleType(let type):
+              state.currentModuleType = type
               return .none
           }
         }

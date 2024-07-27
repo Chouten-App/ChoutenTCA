@@ -75,10 +75,18 @@ public class Response: Codable {
     }
 }
 
+public enum ModuleType {
+    case video
+    case book
+    case text
+}
+
 // swiftlint:disable type_body_length
 class Relay: ObservableObject {
     let logger = Logger(subsystem: "com.inumaki.Chouten", category: "RelayClient")
     static let shared = Relay()
+
+    var type: ModuleType = .video
 
     // swiftlint:disable redundant_type_annotation
     var context: JSContext = JSContext()
@@ -94,6 +102,31 @@ class Relay: ObservableObject {
         context.exceptionHandler = { _, exception in
             // Handle JavaScript exceptions
             print(exception?.toString() ?? "Unknown error.")
+        }
+    }
+
+    func checkModuleType() {
+        let typeCheckScript = """
+        function checkContent() {
+            if(typeof instance.sources === 'function' && typeof instance.streams === 'function') { return "video" }
+            else if(typeof instance.pages === 'function') { return "book" }
+        }
+        """
+        context.evaluateScript(typeCheckScript)
+
+        let contentType = context.evaluateScript("checkContent()")?.toString()
+        let isBook = context.evaluateScript("typeof instance.pages === 'function'")?.toBool()
+
+        switch contentType {
+        case "video":
+            type = .video
+            print("video module")
+        case "book":
+            type = .book
+            print("book module")
+        default:
+            type = .video
+            print("unknown")
         }
     }
 
@@ -121,6 +154,16 @@ class Relay: ObservableObject {
             let dateString = dateFormatter.string(from: date)
 
             LogManager.shared.log("Log", description: message, type: .error, line: "\(line):\(column)")
+
+            DispatchQueue.main.async {
+                let scenes = UIApplication.shared.connectedScenes
+                let windowScene = scenes.first as? UIWindowScene
+                let window = windowScene?.windows.first
+
+                if let view = window?.rootViewController?.view {
+                    view.showErrorDisplay(message: "Relay", description: message, type: .error)
+                }
+            }
 
             print("ERROR: \(message)")
             print("Time: \(dateString)")
@@ -378,6 +421,8 @@ class Relay: ObservableObject {
     func createModuleInstance() {
         // Access the TestModule class from the context
         context.evaluateScript("const instance = new source.default();")
+
+        checkModuleType()
     }
 
     func resetModule() {
@@ -387,6 +432,14 @@ class Relay: ObservableObject {
 
         context.exceptionHandler = { _, exception in
             // Handle JavaScript exceptions
+            let scenes = UIApplication.shared.connectedScenes
+            let windowScene = scenes.first as? UIWindowScene
+            let window = windowScene?.windows.first
+            
+            if let view = window?.rootViewController?.view {
+                view.showErrorDisplay(message: exception?.toString() ?? "")
+            }
+
             print(exception?.toString() ?? "Unknown error.")
         }
     }
@@ -411,6 +464,7 @@ class Relay: ObservableObject {
 
                 for listingDict in listingsArray {
                     guard let title = listingDict["title"] as? String,
+                          let type = listingDict["type"] as? Int,
                           let dataList = listingDict["data"] as? [[String: Any]] else {
                         print("failing discover data array")
                         continue
@@ -447,7 +501,7 @@ class Relay: ObservableObject {
                         }
                     }
 
-                    let discoverSection = DiscoverSection(title: title, list: discoverDataList)
+                    let discoverSection = DiscoverSection(title: title, type: type, list: discoverDataList)
                     discoverSections.append(discoverSection)
                 }
 
@@ -456,6 +510,13 @@ class Relay: ObservableObject {
                 print("Failed to get 'listings' array from JavaScript response.")
             }
         } catch {
+            let scenes = UIApplication.shared.connectedScenes
+            let windowScene = scenes.first as? UIWindowScene
+            let window = windowScene?.windows.first
+
+            if let view = window?.rootViewController?.view {
+                view.showErrorDisplay(message: "Discover", description: error.localizedDescription, type: .error)
+            }
             print(error.localizedDescription)
         }
         return []

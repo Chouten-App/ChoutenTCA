@@ -7,14 +7,12 @@
 
 import Architecture
 import Combine
-import DataClient
 import RepoClient
 import SharedModels
 import SwiftUI
 
 @Reducer
 public struct AppFeature: Reducer {
-    @Dependency(\.dataClient) var dataClient
     @Dependency(\.repoClient) var repoClient
 
     @ObservableState

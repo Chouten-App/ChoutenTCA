@@ -120,23 +120,7 @@ public class ThemeManager {
     }
     // swiftlint:enable function_parameter_count
 
-    func applyTheme(fromFile path: String) {
-//        guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else { return }
-//        do {
-//            if let themeDict = try JSONSerialization.jsonObject(with: data, options: []) as? [String: String] {
-//                let bg = UIColor(hex: themeDict["bg"] ?? "#FFFFFF")
-//                let container = UIColor(hex: themeDict["container"] ?? "#D3D3D3")
-//                let overlay = UIColor(hex: themeDict["overlay"] ?? "#A9A9A9")
-//                let fg = UIColor(hex: themeDict["fg"] ?? "#000000")
-//                let border = UIColor(hex: themeDict["border"] ?? "#808080")
-//                let accent = UIColor(hex: themeDict["accent"] ?? "#0000FF")
-//
-//                applyTheme(bg: bg, container: container, overlay: overlay, fg: fg, border: border, accent: accent)
-//            }
-//        } catch {
-//            print("Failed to load theme: \(error)")
-//        }
-    }
+    func applyTheme(fromFile path: String) { }
 }
 
 extension UIColor {

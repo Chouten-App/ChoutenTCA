@@ -132,7 +132,7 @@ public class SearchCard: UIView {
         // Assuming SearchData properties match SectionCard properties
 
         if let data {
-            let imageUrlString = data.img
+            let imageUrlString = data.poster
             if let imageUrl = URL(string: imageUrlString) {
                 ImagePipeline.shared.loadImage(with: imageUrl) { result in
                     do {
@@ -143,10 +143,12 @@ public class SearchCard: UIView {
                     }
                 }
             }
-            
-            titleLabel.text = data.title
-            countLabel.text = "\(data.currentCount)/\(data.totalCount)"
-            indicatorLabel.text = data.indicatorText
+
+            titleLabel.text = data.titles.primary
+            // swiftlint:disable force_unwrapping
+            countLabel.text = "\(data.current != nil ? String(data.current!) : "~")/\(data.total != nil ? String(data.total!) : "~")"
+            // swiftlint:enable force_unwrapping
+            indicatorLabel.text = data.indicator
         }
     }
 }

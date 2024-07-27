@@ -38,7 +38,6 @@ public enum Features: String, CaseIterable, QualifiedName {
 
 public enum Clients: String, CaseIterable, QualifiedName {
   case repoClient
-  case dataClient
   case fileClient
   case moduleClient
   case relayClient
@@ -72,4 +71,5 @@ extension ExternalDependencies {
   public static let tagged = Self(.external(name: "Tagged"))
   public static let texture = Self(.external(name: "Texture"))
   public static let zipFoundation = Self(.external(name: "ZIPFoundation"))
+  public static let grdb = Self(.external(name: "GRDB"))
 }

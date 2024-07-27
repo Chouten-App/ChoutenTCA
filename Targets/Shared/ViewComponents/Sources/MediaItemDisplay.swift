@@ -12,8 +12,9 @@ import UIKit
 
 class MediaItemDisplay: UIView {
 
-    let mediaItem: MediaItem
+    var mediaItem: MediaItem
     let index: Int
+    var watched: Bool
 
     // swiftlint:disable lower_acl_than_parent
     public weak var delegate: MediaItemDelegate?
@@ -22,6 +23,7 @@ class MediaItemDisplay: UIView {
     override init(frame: CGRect) {
         self.mediaItem = MediaItem.sample
         self.index = 0
+        self.watched = false
         super.init(frame: frame)
         configure()
         setConstraints()
@@ -30,14 +32,16 @@ class MediaItemDisplay: UIView {
     required init?(coder: NSCoder) {
         self.mediaItem = MediaItem.sample
         self.index = 0
+        self.watched = false
         super.init(coder: coder)
         configure()
         setConstraints()
     }
 
-    init(item: MediaItem, index: Int) {
+    init(item: MediaItem, index: Int, watched: Bool = false) {
         self.mediaItem = item
         self.index = index
+        self.watched = watched
         super.init(frame: .zero)
         configure()
         setConstraints()
@@ -172,6 +176,12 @@ class MediaItemDisplay: UIView {
         let onTap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         self.isUserInteractionEnabled = true
         self.addGestureRecognizer(onTap)
+
+        let longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+        longPressGestureRecognizer.minimumPressDuration = 0.2
+        self.addGestureRecognizer(longPressGestureRecognizer)
+
+        self.alpha = watched ? 0.5 : 1.0
     }
 
     private func setConstraints() {
@@ -220,4 +230,29 @@ class MediaItemDisplay: UIView {
     @objc func handleTap() {
         self.delegate?.tapped(mediaItem, index: index)
     }
+
+    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        switch gesture.state {
+        case .began:
+            // Set the watched property and update the database immediately
+            self.watched = true
+            self.mediaItem.isWatched = true
+            DatabaseManager.shared.updateMediaItem(self.mediaItem)
+
+            // Perform the animation
+            UIView.animate(withDuration: 0.2) {
+                self.alpha = 0.5
+            }
+        case .changed:
+            // Perform the animation
+            UIView.animate(withDuration: 0.2) {
+                self.alpha = 0.5
+            }
+        case .ended, .cancelled:
+            break
+        default:
+            break
+        }
+    }
+
 }

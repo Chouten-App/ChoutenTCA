@@ -102,11 +102,11 @@ extension JSValue {
                         }
 
                         let title = item["title"] as? String
-                        let language = item["language"] as? String
+                        let indicator = item["indicator"] as? String
                         let description = item["description"] as? String
                         let image = item["thumbnail"] as? String
 
-                        let mediaItem = MediaItem(url: url, number: number, title: title, language: language, description: description, thumbnail: image)
+                        let mediaItem = MediaItem(url: url, number: number, title: title, thumbnail: image, description: description, indicator: indicator)
 
                         mediaItems.append(mediaItem)
                     }

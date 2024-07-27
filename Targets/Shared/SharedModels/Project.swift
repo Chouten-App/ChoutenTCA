@@ -5,6 +5,7 @@ import ProjectDescriptionHelpers
 let project = Project.shared(
   .sharedModels,
   dependencies: [
-    .externalDependencies.composableArchitecture.target
+    .externalDependencies.composableArchitecture.target,
+    .externalDependencies.grdb.target
   ]
 )

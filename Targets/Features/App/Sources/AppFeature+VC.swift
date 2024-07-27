@@ -6,9 +6,10 @@
 //
 
 import Architecture
-import DataClient
 import Discover
 import Home
+import Info
+import Network
 import Repo
 import Search
 import Settings
@@ -26,6 +27,25 @@ public class AppViewController: UIViewController {
     let topBar = AppViewTopBar()
     let tabBar = CustomTabbar()
     let moduleSelector = ModalViewController()
+
+    let monitor = NWPathMonitor()
+
+    var isOffline = false
+
+    let offlineBanner: UIView = {
+        let view = UIView()
+        view.backgroundColor = ThemeManager.shared.getColor(for: .accent)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    let offlineTitle: UILabel = {
+        let label = UILabel()
+        label.text = "Offline"
+        label.font = .systemFont(ofSize: 16, weight: .semibold)
+        label.textColor = ThemeManager.shared.getColor(for: .fg)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
 
     var selectedTab: Int = 0
 
@@ -56,6 +76,7 @@ public class AppViewController: UIViewController {
             initialState: .init(),
             reducer: { AppFeature() }
         )
+
         super.init(nibName: nil, bundle: nil)
         NotificationCenter.default.addObserver(forName: .changedModule, object: nil, queue: nil) { notification in
             if let result = notification.object as? Module {
@@ -64,6 +85,25 @@ public class AppViewController: UIViewController {
                 self.moduleSelector.selectedModuleTitle.text = result.name
             } else {
                 print("Notification received without a valid result.")
+            }
+        }
+
+        let queue = DispatchQueue.global(qos: .background)
+        monitor.start(queue: queue)
+
+        monitor.pathUpdateHandler = { path in
+            if path.status == .satisfied {
+                print("User is online")
+                self.isOffline = false
+                DispatchQueue.main.async {
+                    self.view.layoutIfNeeded()
+                }
+            } else {
+                print("User is offline")
+                self.isOffline = true
+                DispatchQueue.main.async {
+                    self.view.layoutIfNeeded()
+                }
             }
         }
     }
@@ -76,6 +116,7 @@ public class AppViewController: UIViewController {
         super.viewDidLoad()
 
         view.backgroundColor = ThemeManager.shared.getColor(for: .bg)
+        topBar.blurView.alpha = 0.0
 
         for index in 0..<tabs.count {
             let tab = tabs[index]
@@ -89,7 +130,7 @@ public class AppViewController: UIViewController {
         setupConstraints()
 
         if let discoverView = tabs[1] as? DiscoverView {
-            discoverView.scrollView.delegate = self
+            discoverView.collectionView.delegate = self
         }
 
         observe { [weak self] in
@@ -130,6 +171,8 @@ public class AppViewController: UIViewController {
         topBar.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tabBar)
         view.addSubview(topBar)
+        offlineBanner.addSubview(offlineTitle)
+        view.addSubview(offlineBanner)
     }
 
     private func setupConstraints() {
@@ -152,16 +195,25 @@ public class AppViewController: UIViewController {
             tabBar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             tabBar.heightAnchor.constraint(equalToConstant: max(bottomPadding + 52, 72)),
 
+            offlineBanner.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            offlineBanner.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            offlineBanner.topAnchor.constraint(equalTo: view.topAnchor),
+            offlineBanner.heightAnchor.constraint(equalToConstant: isOffline ? topPadding + 30 : 0),
+
+            offlineTitle.centerXAnchor.constraint(equalTo: offlineBanner.centerXAnchor),
+            offlineTitle.bottomAnchor.constraint(equalTo: offlineBanner.bottomAnchor, constant: -12),
+
             // TopBar constraints
             topBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             topBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            topBar.topAnchor.constraint(equalTo: view.topAnchor),
-            topBar.heightAnchor.constraint(equalToConstant: max(topPadding + 64, 72))
+            topBar.topAnchor.constraint(equalTo: offlineBanner.bottomAnchor),
+            topBar.heightAnchor.constraint(equalToConstant: 64 + (isOffline ? 0 : topPadding))
         ])
 
     }
 
     deinit {
+        monitor.cancel()
         NotificationCenter.default.removeObserver(self)
         for tab in tabs {
             tab.removeFromParent()
@@ -269,11 +321,47 @@ extension AppViewController: CustomTabbarDelegate {
     }
 }
 
-extension AppViewController: UIScrollViewDelegate {
+extension AppViewController: UIScrollViewDelegate, UICollectionViewDelegate {
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let offsetY = -scrollView.contentOffset.y - 100
+        let offsetY = -scrollView.contentOffset.y - 40
 
         topBar.blurView.alpha = -offsetY / 60
+    }
+
+    public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let scenes = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = scenes.windows.first,
+              let navController = window.rootViewController as? UINavigationController else {
+            return
+        }
+
+        guard let discoverView = tabs[1] as? DiscoverView else {
+            return
+        }
+
+        guard let data = discoverView.dataSource?.itemIdentifier(for: indexPath) else {
+            return
+        }
+
+        let tempVC = InfoViewRefactor(url: data.url)
+
+        navController.navigationBar.isHidden = true
+        navController.pushViewController(tempVC, animated: true)
+    }
+
+    // Fade in new cells
+    public func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        cell.alpha = 0
+        UIView.animate(withDuration: 0.2) {
+            cell.alpha = 1
+        }
+    }
+
+    // Fade out removed cells
+    public func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        UIView.animate(withDuration: 0.2) {
+            cell.alpha = 0
+        }
     }
 }
 

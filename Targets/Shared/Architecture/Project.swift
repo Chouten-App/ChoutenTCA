@@ -7,6 +7,8 @@ let project = Project.shared(
   dependencies: [
     .externalDependencies.casePaths.target,
     .externalDependencies.composableArchitecture.target,
-    .shared.foundationHelpers.project
+    .externalDependencies.grdb.target,
+    .shared.foundationHelpers.project,
+    .shared.sharedModels.project
   ]
 )

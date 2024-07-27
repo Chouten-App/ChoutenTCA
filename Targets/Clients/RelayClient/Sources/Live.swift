@@ -120,10 +120,10 @@ extension RelayClient: DependencyKey {
             },
             info: { url in
                 log("Info", description: "Fetching Info Data.")
+                
+                do {
+                    let value = try await Relay.shared.callAsyncFunction("instance.info('\(url)')")
 
-                let value = try? await Relay.shared.callAsyncFunction("instance.info('\(url)')")
-
-                if let value {
                     log("Info", description: "Converting jsValue to InfoData.")
                     if let info = InfoData(jsValue: value) {
                         return info
@@ -131,17 +131,17 @@ extension RelayClient: DependencyKey {
 
                     log("Info", description: "Converting the jsValue to InfoData failed.", type: .error)
                     throw RelayError.infoConversionFailed
+                } catch {
+                    log("Info", description: error.localizedDescription, type: .error)
+                    throw RelayError.infoFunctionFailed
                 }
-
-                log("Info", description: "Info function failed to return a value.", type: .error)
-                throw RelayError.infoFunctionFailed
             },
             search: { url, page in
                 log("Search", description: "Fetching Search Data.")
 
-                let value = try? await Relay.shared.callAsyncFunction("instance.search('\(url)', \(page))")
+                do {
+                    let value = try await Relay.shared.callAsyncFunction("instance.search('\(url)', \(page))")
 
-                if let value {
                     log("Search", description: "Converting jsValue to SearchResult.")
                     if let searchResult = SearchResult(jsValue: value) {
                         return searchResult
@@ -149,10 +149,10 @@ extension RelayClient: DependencyKey {
 
                     log("Search", description: "Converting the jsValue to SearchResult failed.", type: .error)
                     throw RelayError.searchConversionFailed
+                } catch {
+                    log("Search", description: error.localizedDescription, type: .error)
+                    throw RelayError.searchFunctionFailed
                 }
-
-                log("Search", description: "Search function failed to return a value.", type: .error)
-                throw RelayError.searchFunctionFailed
             },
             discover: {
                 log("Discover", description: "Fetching Discover Data.")
@@ -161,9 +161,9 @@ extension RelayClient: DependencyKey {
             media: { url in
                 log("Media", description: "Fetching Media Data.")
 
-                let value = try? await Relay.shared.callAsyncFunction("instance.media('\(url)')")
+                do {
+                    let value = try await Relay.shared.callAsyncFunction("instance.media('\(url)')")
 
-                if let value {
                     log("Media", description: "Converting jsValue to Media List.")
                     if let mediaList = value.toMediaListArray() {
                         return mediaList
@@ -171,17 +171,17 @@ extension RelayClient: DependencyKey {
 
                     log("Media", description: "Converting the jsValue to Media List failed.", type: .error)
                     throw RelayError.mediaConversionFailed
+                } catch {
+                    log("Media", description: error.localizedDescription, type: .error)
+                    throw RelayError.mediaFunctionFailed
                 }
-
-                log("Media", description: "Media function failed to return a value.", type: .error)
-                throw RelayError.mediaFunctionFailed
             },
             sources: { url in
                 log("Sources", description: "Fetching Sources Data.")
 
-                let value = try? await Relay.shared.callAsyncFunction("instance.sources('\(url)')")
+                do {
+                    let value = try await Relay.shared.callAsyncFunction("instance.sources('\(url)')")
 
-                if let value {
                     log("Sources", description: "Converting jsValue to Sources List.")
                     if let servers = value.toSourceDataArray() {
                         return servers
@@ -189,27 +189,43 @@ extension RelayClient: DependencyKey {
 
                     log("Sources", description: "Converting the jsValue to Sources List failed.", type: .error)
                     throw RelayError.mediaConversionFailed
-                }
 
-                log("Sources", description: "Sources function failed to return a value.", type: .error)
-                throw "Sources error: \(url)"
+                } catch {
+                    log("Sources", description: error.localizedDescription, type: .error)
+                    throw "Source error: \(error.localizedDescription)"
+                }
             },
             streams: { url in
                 log("Streams", description: "Fetching Streams Data.")
 
-                let value = try? await Relay.shared.callAsyncFunction("instance.streams('\(url)')")
+                do {
+                    let value = try await Relay.shared.callAsyncFunction("instance.streams('\(url)')")
 
-                if let value {
                     log("Streams", description: "Converting jsValue to Streams Data.")
                     return MediaStream(jsValue: value)
+                } catch {
+                    log("Streams", description: error.localizedDescription, type: .error)
+                    throw "Streams error: \(error.localizedDescription)"
                 }
+            },
+            pages: { url in
+                log("Pages", description: "Fetching Chapter pages.")
 
-                log("Streams", description: "Streams function failed to return a value.", type: .error)
+                do {
+                    let value = try await Relay.shared.callAsyncFunction("instance.pages('\(url)')")
 
-                throw "Streams error: \(url)"
+                    log("Pages", description: "Converting jsValue to pages array.")
+                    return value.toArray() as? [String] ?? []
+                } catch {
+                    log("Pages", description: error.localizedDescription, type: .error)
+                    throw "Pages error: \(error.localizedDescription)"
+                }
             },
             importFromFile: { fileUrl in
                 throw "\(fileUrl)"
+            },
+            getCurrentModuleType: {
+                return Relay.shared.type
             }
         )
     }()
