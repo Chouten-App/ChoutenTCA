@@ -76,8 +76,7 @@ public struct InfoData: Codable, Equatable, Sendable {
                                 url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
                                 number: 1.0,
                                 title: "Movie",
-                                description: nil,
-                                thumbnail: "https://www.protocol.com/media-library/big-buck-bunny.png?id=28250459&width=1245&height=700&quality=85&coordinates=0%2C0%2C0%2C0"
+                                thumbnail: "https://www.protocol.com/media-library/big-buck-bunny.png?id=28250459&width=1245&height=700&quality=85&coordinates=0%2C0%2C0%2C0", description: nil
                             )
                         ]
                     )
@@ -111,7 +110,7 @@ public struct InfoData: Codable, Equatable, Sendable {
                         id: "",
                         title: "",
                         items: [
-                            MediaItem(url: "", number: 1.0, title: "Title", description: "Description", thumbnail: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg")
+                            MediaItem(url: "", number: 1.0, title: "Title", thumbnail: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg", description: "Description")
                         ]
                     )
                 ]

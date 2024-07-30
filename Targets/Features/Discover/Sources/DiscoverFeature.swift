@@ -8,6 +8,7 @@
 import Architecture
 import Combine
 import RelayClient
+import DatabaseClient
 @preconcurrency import SharedModels
 import SwiftUI
 
@@ -58,7 +59,6 @@ public struct DiscoverFeature: Reducer {
                   .run { send in
                       do {
                           let data = try await self.relayClient.discover()
-                          print(data)
                           await send(.view(.setDiscoverSections(data)))
                       } catch {
                           print(error.localizedDescription)

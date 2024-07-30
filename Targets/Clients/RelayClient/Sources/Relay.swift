@@ -510,12 +510,12 @@ class Relay: ObservableObject {
                 print("Failed to get 'listings' array from JavaScript response.")
             }
         } catch {
-            let scenes = UIApplication.shared.connectedScenes
+            let scenes = await UIApplication.shared.connectedScenes
             let windowScene = scenes.first as? UIWindowScene
-            let window = windowScene?.windows.first
+            let window = await windowScene?.windows.first
 
-            if let view = window?.rootViewController?.view {
-                view.showErrorDisplay(message: "Discover", description: error.localizedDescription, type: .error)
+            if let view = await window?.rootViewController?.view {
+                await view.showErrorDisplay(message: "Discover", description: error.localizedDescription, type: .error)
             }
             print(error.localizedDescription)
         }
