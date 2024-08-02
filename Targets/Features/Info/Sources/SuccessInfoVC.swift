@@ -186,7 +186,7 @@ public class SuccessInfoVC: UIViewController {
         seasonSelector.layer.zPosition = 20
         seasonSelector.delegate = self
         
-        extraInfoDisplay.bookmarkButton.addTarget(self, action: #selector(bookmarkButtonTapped), for: .touchUpInside)
+        headerDisplay.bookmarkButton.addTarget(self, action: #selector(bookmarkButtonTapped), for: .touchUpInside)
 
         view.addSubview(seasonSelector)
 

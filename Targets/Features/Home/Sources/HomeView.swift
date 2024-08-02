@@ -127,38 +127,37 @@ public class HomeView: UIViewController {
                 return self.configure(ListCell.self, with: data, for: indexPath)
             }
         }
-
+        
         dataSource?.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
-            guard let sectionHeader = collectionView.dequeueReusableSupplementaryView(
-                ofKind: kind,
-                withReuseIdentifier: SectionHeader.reuseIdentifier,
-                for: indexPath
-            ) as? SectionHeader else {
-                return nil
+            guard let self = self else { return nil }
+
+            if kind == UICollectionView.elementKindSectionHeader {
+                let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: SectionHeader.reuseIdentifier, for: indexPath) as! SectionHeader
+
+                guard let section = self.dataSource?.snapshot().sectionIdentifiers[indexPath.section] else {
+                    return nil
+                }
+                
+                headerView.label.text = section.title
+                return headerView
             }
 
-            guard let firstData = self?.dataSource?.itemIdentifier(for: indexPath) else {
-                return nil
-            }
-
-            guard let section = self?.dataSource?.snapshot().sectionIdentifier(containingItem: firstData) else {
-                return nil
-            }
-
-            sectionHeader.label.text = section.title
-            return sectionHeader
+            return nil
         }
     }
 
     func reloadData() {
         var snapshot = NSDiffableDataSourceSnapshot<HomeSection, HomeData>()
-        snapshot.appendSections(self.store.collections)
-
-        for section in self.store.collections {
-            snapshot.appendItems(section.list, toSection: section)
+            
+        if !self.store.collections.isEmpty {
+            snapshot.appendSections(self.store.collections)
+            
+            for section in self.store.collections {
+                snapshot.appendItems(section.list, toSection: section)
+            }
         }
 
-        dataSource?.apply(snapshot)
+        dataSource?.apply(snapshot, animatingDifferences: true)
     }
 
     func createCompositionalLayout() -> UICollectionViewLayout {
