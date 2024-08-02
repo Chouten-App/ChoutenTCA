@@ -20,6 +20,7 @@ let project = Project.feature(
     .shared.architecture.project,
     .externalDependencies.composableArchitecture.target,
     .shared.sharedModels.project,
+    .shared.viewComponents.project,
     .clients.databaseClient.project
   ]
 )

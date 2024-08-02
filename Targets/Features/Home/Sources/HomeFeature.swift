@@ -30,6 +30,7 @@ public struct HomeFeature: Reducer {
         public enum ViewAction: SendableAction {
             case onAppear
             case setCollections(_ data: [HomeSection])
+            case createCollection(_ name: String)
         }
 
         @CasePathable
@@ -62,6 +63,7 @@ public struct HomeFeature: Reducer {
                           let data = try await self.databaseClient.fetchCollections();
                           
                           await send(.view(.setCollections(data)))
+                          print("Collection count: \(data.count)")
                       } catch {
                           print(error.localizedDescription)
                       }
@@ -70,6 +72,15 @@ public struct HomeFeature: Reducer {
           case .setCollections(let data):
               state.collections = data
               return .none
+          case .createCollection(let name):
+              return .run { send in
+                  do {
+                      print("Creating collection for \(name)...")
+                      try await self.databaseClient.createCollection(name)
+                  } catch {
+                      print(error.localizedDescription)
+                  }
+              }
           }
         }
       }

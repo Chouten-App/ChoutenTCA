@@ -31,6 +31,15 @@ public class ExtraInfoDisplay: UIView {
         label.numberOfLines = 9
         return label
     }()
+    
+    public let bookmarkButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "bookmark.fill"), for: .normal) // Use the bookmark icon
+        button.tintColor = ThemeManager.shared.getColor(for: .accent) // Adjust color as needed
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+
 
     // MARK: Lifecycle
 
@@ -65,6 +74,7 @@ public class ExtraInfoDisplay: UIView {
             stack.addArrangedSubview(tagsDisplay)
         }
         stack.addArrangedSubview(descriptionLabel)
+        stack.addArrangedSubview(bookmarkButton)
 
         addSubview(stack)
     }
@@ -79,6 +89,7 @@ public class ExtraInfoDisplay: UIView {
             stack.addArrangedSubview(tagsDisplay)
         }
         stack.addArrangedSubview(descriptionLabel)
+        stack.addArrangedSubview(bookmarkButton)
 
         let paragraphStyle = NSMutableParagraphStyle()
         let attstr = NSMutableAttributedString(string: infoData.description)
@@ -102,5 +113,10 @@ public class ExtraInfoDisplay: UIView {
                 tagsDisplay.heightAnchor.constraint(equalToConstant: 24)
             ])
         }
+        
+        NSLayoutConstraint.activate([
+            bookmarkButton.widthAnchor.constraint(equalToConstant: 24), // Set the size of the bookmark icon
+            bookmarkButton.heightAnchor.constraint(equalToConstant: 24)
+        ])
     }
 }

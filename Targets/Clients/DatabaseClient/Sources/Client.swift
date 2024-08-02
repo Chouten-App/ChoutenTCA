@@ -12,10 +12,12 @@ import SharedModels
 // MARK: - DatabaseClient
 
 public struct DatabaseClient: Sendable {
-    public let initDB: () async -> Void
-    public let createCollection: (_ name: String) async -> String
-    public let fetchCollections: () async -> [HomeSection]
-    public let fetchCollection: (_ id: String) async -> [MediaItem]
+    public let initDB: @Sendable () async -> Void
+    public let createCollection: @Sendable (_ name: String) async -> String
+    public let fetchCollection: @Sendable (_ id: String) async -> CollectionData?
+    public let fetchCollections: @Sendable () async -> [HomeSection]
+    public let isInCollection: @Sendable(_ collectionId: String, _ moduleId: String, _ infoData: CollectionItem) async -> Bool
+    public let addToCollection: @Sendable (_ collectionId: String, _ moduleId: String, _ infoData: CollectionItem) async -> Void
 }
 
 extension DependencyValues {
@@ -23,4 +25,9 @@ extension DependencyValues {
         get { self[DatabaseClient.self] }
         set { self[DatabaseClient.self] = newValue }
     }
+}
+
+public struct CollectionData: Codable, Equatable, Hashable {
+    let uuid: String;
+    let name: String;
 }

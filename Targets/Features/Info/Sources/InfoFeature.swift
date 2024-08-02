@@ -7,12 +7,14 @@
 
 import Architecture
 import Combine
+import DatabaseClient
 import RelayClient
 import SharedModels
 import SwiftUI
 
 @Reducer
 public struct InfoFeature: Reducer {
+    @Dependency(\.databaseClient) var databaseClient
     @Dependency(\.relayClient) var relayClient
 
     @ObservableState
@@ -23,6 +25,10 @@ public struct InfoFeature: Reducer {
         public var doneLoading = false
 
         public var currentModuleType: ModuleType = .video
+        
+        public var url: String = ""
+        
+        public var collections: [HomeSection] = []
 
         public init() { }
     }
@@ -40,6 +46,8 @@ public struct InfoFeature: Reducer {
             case setInfoData(_ data: InfoData)
             case setMediaList(_ data: [MediaList])
             case setCurrentModuleType(_ type: ModuleType)
+            case setCollections(_ data: [HomeSection])
+            case addToCollection(_ section: HomeSection)
         }
 
         @CasePathable
@@ -63,14 +71,18 @@ public struct InfoFeature: Reducer {
         case let .view(viewAction):
           switch viewAction {
           case .onAppear(let url):
+              state.url = url
               return .merge(
                   .run { send in
                       do {
                           let type = try relayClient.getCurrentModuleType()
                           await send(.view(.setCurrentModuleType(type)))
                           let data = try await self.relayClient.info(url)
-                          print(data)
+                          
+                          let collections = await self.databaseClient.fetchCollections();
+                          
                           await send(.view(.setInfoData(data)))
+                          await send(.view(.setCollections(collections)))
                       } catch {
                           print(error.localizedDescription)
                       }
@@ -81,7 +93,6 @@ public struct InfoFeature: Reducer {
                   .run { send in
                       do {
                           let data = try await self.relayClient.media(url)
-                          print(data)
                           await send(.view(.setMediaList(data)))
                       } catch {
                           print(error.localizedDescription)
@@ -108,11 +119,18 @@ public struct InfoFeature: Reducer {
                   // swiftlint:enable force_unwrapping
               }
               return .send(.view(.setMediaList(data)))
+          case .addToCollection(let section):
+              print("Adding to collection! This is for debugging, but the url is \(state.url)")
+              let infoData = CollectionItem(infoData: state.infoData!, url: state.url)
+              return .run { send in
+                  await self.databaseClient.addToCollection(section.id, "", infoData)
+              }
+          case .setCollections(let data):
+              state.collections = data
+              return .none
           case .setInfoData(let data):
               state.infoData = data
-
-              print(data.seasons)
-
+              
               if let url = data.seasons.first(where: { $0.selected == true })?.url {
                   return .send(.view(.fetchMedia(url)))
               } else if let url = data.seasons.first?.url {

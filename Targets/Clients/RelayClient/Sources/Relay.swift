@@ -496,8 +496,6 @@ class Relay: ObservableObject {
                                 total: total
                             )
                             discoverDataList.append(discoverData)
-                        } else {
-                            print(dataItem)
                         }
                     }
 

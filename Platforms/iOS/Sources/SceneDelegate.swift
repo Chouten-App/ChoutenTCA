@@ -147,7 +147,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func handleOpenURL(_ url: URL) {
-        print(url)
+        //print(url)
         // NotificationCenter.default.post(name: .sharedJson, object: nil, userInfo: ["url": url])
     }
 

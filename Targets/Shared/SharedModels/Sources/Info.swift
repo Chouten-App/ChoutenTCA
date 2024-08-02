@@ -9,6 +9,16 @@ import Foundation
 import GRDB
 import JavaScriptCore
 
+public struct CollectionItem: Codable, Equatable, Sendable {
+    public var infoData: InfoData
+    public var url: String
+    
+    public init(infoData: InfoData, url: String) {
+        self.infoData = infoData
+        self.url = url
+    }
+}
+
 public struct InfoData: Codable, Equatable, Sendable {
     public let titles: Titles
     public let tags: [String]

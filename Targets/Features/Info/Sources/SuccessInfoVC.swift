@@ -15,10 +15,11 @@ import Book
 
 public protocol SuccessInfoVCDelegate: AnyObject {
     func fetchMedia(url: String, newIndex: Int)
+    func fetchCollections() -> [HomeSection]
+    func addItemToCollection(collection: HomeSection)
 }
 
 public class SuccessInfoVC: UIViewController {
-
     public weak var delegate: SuccessInfoVCDelegate?
     var infoData: InfoData
     var currentModuleType: ModuleType = .video
@@ -184,16 +185,10 @@ public class SuccessInfoVC: UIViewController {
         topBar.layer.zPosition = 10
         seasonSelector.layer.zPosition = 20
         seasonSelector.delegate = self
+        
+        extraInfoDisplay.bookmarkButton.addTarget(self, action: #selector(bookmarkButtonTapped), for: .touchUpInside)
 
         view.addSubview(seasonSelector)
-
-        // view.addSubview(blurOverlay)
-
-//            // TEMP
-//            let readerVC = ReaderView()
-//            addChild(readerVC)
-//            readerVC.view?.layer.zPosition = 1000
-//            view.addSubview(readerVC.view)
 
         setupConstraints()
 
@@ -206,6 +201,29 @@ public class SuccessInfoVC: UIViewController {
                 self.seasonSelector.alpha = 1.0
             }
         }
+    }
+    
+    @objc func bookmarkButtonTapped() {
+        let collections = delegate?.fetchCollections() ?? []
+        let alert = UIAlertController(title: "Select Collection", message: "Choose a collection to add the item to:", preferredStyle: .actionSheet)
+
+        for collection in collections {
+            let action = UIAlertAction(title: collection.title, style: .default) { _ in
+                self.delegate?.addItemToCollection(collection: collection)
+            }
+            alert.addAction(action)
+        }
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        // For iPad compatibility
+        if let popoverController = alert.popoverPresentationController {
+            popoverController.sourceView = self.view
+            popoverController.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+            popoverController.permittedArrowDirections = []
+        }
+
+        present(alert, animated: true, completion: nil)
     }
 
     // MARK: Layout
@@ -238,12 +256,7 @@ public class SuccessInfoVC: UIViewController {
             seasonSelector.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             seasonSelector.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             seasonSelector.topAnchor.constraint(equalTo: view.topAnchor),
-            seasonSelector.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
-//            blurOverlay.topAnchor.constraint(equalTo: view.topAnchor),
-//            blurOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-//            blurOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-//            blurOverlay.heightAnchor.constraint(equalToConstant: 120)
+            seasonSelector.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
 

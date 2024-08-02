@@ -26,6 +26,8 @@ public class HomeView: UIViewController {
         return label
     }()
     
+    let addButton = CircleButton(icon: "plus");
+    
     public init() {
         store = .init(
             initialState: .init(),
@@ -34,6 +36,8 @@ public class HomeView: UIViewController {
         super.init(nibName: nil, bundle: nil)
 
         store.send(.view(.onAppear))
+        print(store.collections.count)
+        reloadData()
     }
 
     required init?(coder: NSCoder) {
@@ -66,8 +70,14 @@ public class HomeView: UIViewController {
         collectionView.contentInset = UIEdgeInsets(top: 40, left: 0, bottom: 0, right: 0)
         collectionView.showsVerticalScrollIndicator = false
         collectionView.showsHorizontalScrollIndicator = false
+        
+        addButton.isUserInteractionEnabled = true
+        addButton.onTap = {
+            self.addButtonTapped()
+        }
 
         view.addSubview(collectionView)
+        view.addSubview(addButton)
 
         // register cells
         collectionView.register(CarouselCell.self, forCellWithReuseIdentifier: CarouselCell.reuseIdentifier)
@@ -99,7 +109,12 @@ public class HomeView: UIViewController {
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 40),
-            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -140)
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -140),
+            
+            addButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            addButton.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 60),
+            addButton.widthAnchor.constraint(equalToConstant: 80),
+            addButton.heightAnchor.constraint(equalToConstant: 80)
         ])
     }
     
@@ -199,6 +214,27 @@ public class HomeView: UIViewController {
         layoutSection.boundarySupplementaryItems = [layoutSectionHeader]
 
         return layoutSection
+    }
+    
+    @objc func addButtonTapped() {
+        let alertController = UIAlertController(title: "New Collection", message: "Enter a name for the new collection", preferredStyle: .alert)
+        alertController.addTextField { textField in
+            textField.placeholder = "Collection Name"
+        }
+        
+        let createAction = UIAlertAction(title: "Create", style: .default) { [weak self] _ in
+            guard let self = self, let textField = alertController.textFields?.first, let name = textField.text, !name.isEmpty else {
+                return
+            }
+            self.store.send(.view(.createCollection(name)))
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        
+        alertController.addAction(createAction)
+        alertController.addAction(cancelAction)
+        
+        self.present(alertController, animated: true, completion: nil)
     }
 
     override public func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {

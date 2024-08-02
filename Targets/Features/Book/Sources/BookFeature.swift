@@ -66,7 +66,6 @@ public struct BookFeature: Reducer {
           case .onAppear:
               return .send(.view(.loadChapter(url: state.item.url, number: state.item.number)))
           case let .loadChapter(url, number):
-              print(number)
               if state.chapters[number] != nil { return .none }
               return .merge(
                   .run { send in

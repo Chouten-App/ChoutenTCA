@@ -82,17 +82,19 @@ extension DatabaseClient: DependencyKey {
                     let dbQueue = try DatabaseQueue(path: dbPath)
                     
                     try dbQueue.write { db in
-                        try db.create(table: "collection-\(randomId)") { t in
+                        let collectionTableName = "collection-\(randomId)"
+                        let itemsTableName = "items-\(randomId)"
+                        
+                        try db.create(table: collectionTableName) { t in
                             t.column("uuid", .text).primaryKey()
                             t.column("name", .text).notNull()
                         }
                         
-                        try db.create(table: "items-\(randomId)") { t in
+                        try db.create(table: itemsTableName) { t in
                             t.column("id", .integer).primaryKey()
-                            t.column("collection_uuid", .text).notNull().references("collection-\(randomId)", onDelete: .cascade)
+                            t.column("collection_uuid", .text).notNull().references(collectionTableName, onDelete: .cascade)
                             t.column("moduleId", .text).notNull()
                             t.column("infoData", .jsonText).notNull()
-                            t.column("mediaInfo", .jsonText).notNull()
                         }
                     }
                 } catch {
@@ -104,9 +106,8 @@ extension DatabaseClient: DependencyKey {
                     let dbPath = try fetchDatabasePath()
                     let dbQueue = try DatabaseQueue(path: dbPath)
                     try dbQueue.write { db in
-                        try db.execute(literal: """
-                            INSERT INTO 'collection-\(randomId)' (uuid, name) VALUES (\(randomId), \(name)
-                        """)
+                        let collectionTableName = "collection-\(randomId)"
+                        try db.execute(sql: "INSERT INTO '\(collectionTableName)' (uuid, name) VALUES (?, ?)", arguments: [randomId, name])
                         print("Successfully created collection for \(name). ID: \(randomId)")
                     }
                 } catch {
@@ -116,71 +117,97 @@ extension DatabaseClient: DependencyKey {
                 
                 return randomId;
             },
+            fetchCollection: { id in
+                do {
+                    let dbPath = try fetchDatabasePath()
+                    let dbQueue = try DatabaseQueue(path: dbPath)
+                    
+                    return try dbQueue.read { db in
+                        let items = try Row.fetchAll(db, sql: "SELECT * FROM 'collection-\(id)'")
+                        
+                        return CollectionData(uuid: "", name: "")
+                    }
+                } catch {
+                    print("Error fetching collection data for \(id)!")
+                    print("\(error)")
+                }
+                return nil;
+            },
             fetchCollections: {
                 do {
                     let dbPath = try fetchDatabasePath()
                     let dbQueue = try DatabaseQueue(path: dbPath)
                     return try dbQueue.read { db in
-                        // Fetch all collection table names
+                        // Fetch collection table name matching collection_uuid
                         let tables = try String.fetchAll(db, sql: """
                             SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'collection-%'
                         """)
                         
                         var collections: [HomeSection] = []
                         
-                        for table in tables {
-                            let items = try Row.fetchAll(db, sql: "SELECT * FROM '\(table)'")
-                            if (items.count < 5) {
-                                continue;
-                            }
-                            
-                            var data: [HomeData] = []
-                            for row in items {
-                                let stringItem: String = row["mediaInfo"]
-                                do {
-                                    let item = try JSONDecoder().decode(MediaItem.self, from: stringItem.data(using: .utf8)!)
-                                    let homeData = HomeData(url: item.url, titles: Titles(primary: item.title ?? "", secondary: nil), description: item.description ?? "", poster: item.thumbnail ?? "", label: Label(text: "Test", color: ""), indicator: "Thing", current: nil, total: nil)
-                                    data.append(homeData)
-                                } catch {
-                                    continue
+                        for collectionTable in tables {
+                            // Fetch collection data
+                            let collectionItems = try Row.fetchAll(db, sql: "SELECT * FROM '\(collectionTable)'")
+                            for row in collectionItems {
+                                var section = HomeSection(id: row["uuid"], title: row["name"], type: 1, list: [])
+
+                                // Fetch items associated with the collection
+                                let itemsTable = "items-\(row["uuid"]!)" // Assuming items table follows this pattern
+                                let items = try Row.fetchAll(db, sql: "SELECT * FROM '\(itemsTable)'")
+
+                                var data: [HomeData] = []
+                                for itemRow in items {
+                                    let stringItem: String = itemRow["infoData"]
+                                    do {
+                                        let item = try JSONDecoder().decode(CollectionItem.self, from: stringItem.data(using: .utf8)!)
+                                        let homeData = HomeData(
+                                            url: item.url,
+                                            titles: Titles(primary: item.infoData.titles.primary, secondary: item.infoData.titles.secondary ?? ""),
+                                            description: item.infoData.description,
+                                            poster: item.infoData.poster,
+                                            label: Label(text: "Test", color: ""),
+                                            indicator: "Thing",
+                                            current: nil,
+                                            total: nil
+                                        )
+                                        data.append(homeData)
+                                    } catch {
+                                        continue
+                                    }
                                 }
+
+                                section.list = data
+                                collections.append(section)
                             }
-                            var section: HomeSection = HomeSection(title: "Test", type: 0, list: data)
-                            collections.append(section)
                         }
                         
-                        return collections;
+                        print(collections)
+
+                        return collections
                     }
                 } catch {
                     print("Error fetching collections!")
                     print("\(error)")
-                    
+
                     return []
                 }
             },
-            fetchCollection: { id in
+            isInCollection: { collectionId, moduleId, infoData in
+                return true
+            },
+            addToCollection: { collectionId, moduleId, infoData in
                 do {
                     let dbPath = try fetchDatabasePath()
                     let dbQueue = try DatabaseQueue(path: dbPath)
-                    return try dbQueue.read { db in
-                        let items = try Row.fetchAll(db, sql: "SELECT * FROM 'collection-\(id)'")
-                        
-                        var data: [MediaItem] = []
-                        for row in items {
-                            let item: String = row["mediaInfo"]
-                            do {
-                                data.append(try JSONDecoder().decode(MediaItem.self, from: item.data(using: .utf8)!))
-                            } catch {
-                                continue
-                            }
-                        }
-                        return data
+                    try dbQueue.write { db in
+                        try db.execute(sql: """
+                            INSERT INTO 'items-\(collectionId)' (collection_uuid, moduleId, infoData) VALUES (?, ?, ?);
+                        """, arguments: [collectionId, moduleId, try? JSONEncoder().encode(infoData)])
+                        print("Successfully added item to the collection for \(infoData.infoData.titles.primary). ID: \(collectionId)")
                     }
                 } catch {
-                    print("Error fetching collection for \(id)!")
+                    print("Error adding to collection!")
                     print("\(error)")
-                    
-                    return []
                 }
             }
         )

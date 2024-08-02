@@ -8,11 +8,13 @@
 import Foundation
 
 public struct HomeSection: Codable, Equatable, Hashable {
+    public let id: String
     public let title: String
     public let type: Int // 0 = Carousel, 1 = List
-    public let list: [HomeData]
+    public var list: [HomeData]
 
-    public init(title: String, type: Int, list: [HomeData]) {
+    public init(id: String, title: String, type: Int, list: [HomeData]) {
+        self.id = id
         self.title = title
         self.type = type
         self.list = list

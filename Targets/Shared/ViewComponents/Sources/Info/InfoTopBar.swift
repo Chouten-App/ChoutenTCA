@@ -150,13 +150,5 @@ public class InfoTopBar: UIView {
             titleLabel.leadingAnchor.constraint(equalTo: marqueeWrapper.leadingAnchor),
             titleLabel.trailingAnchor.constraint(equalTo: marqueeWrapper.trailingAnchor)
         ])
-
-//        let gradientMaskLayer = CAGradientLayer()
-//        gradientMaskLayer.frame = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 180)
-//
-//        gradientMaskLayer.colors = [UIColor.white.cgColor, UIColor.white.withAlphaComponent(0.8).cgColor, UIColor.clear.cgColor]
-//        gradientMaskLayer.locations = [0, 0.6, 1]
-//
-//        blurView.layer.mask = gradientMaskLayer
     }
 }
