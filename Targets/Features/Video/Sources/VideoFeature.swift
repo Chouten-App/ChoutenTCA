@@ -89,7 +89,6 @@ public struct VideoFeature: Reducer {
               return .merge(
                   .run { send in
                       do {
-                          print("running source code.")
                           let sources = try await relayClient.streams(url)
                           await send(.view(.setSources(sources)))
                       } catch {
@@ -99,7 +98,6 @@ public struct VideoFeature: Reducer {
               )
           case .setSources(let data):
               state.videoData = data
-              print(data)
               state.status = .success
               return .none
           }

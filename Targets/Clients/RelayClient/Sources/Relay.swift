@@ -18,12 +18,10 @@ extension JSContext {
     public func callAsyncFunction(_ key: String) async throws -> JSValue {
         try await withCheckedThrowingContinuation { continuation in
             let onFulfilled: @convention(block) (JSValue) -> Void = { value in
-                print("fulfilled")
                 continuation.resume(returning: value)
             }
 
             let onRejected: @convention(block) (JSValue) -> Void = { reason in
-                print("rejected")
                 let error = NSError(domain: key, code: 0, userInfo: [NSLocalizedDescriptionKey: "\(reason)"])
                 continuation.resume(throwing: error)
             }
@@ -120,13 +118,10 @@ class Relay: ObservableObject {
         switch contentType {
         case "video":
             type = .video
-            print("video module")
         case "book":
             type = .book
-            print("book module")
         default:
             type = .video
-            print("unknown")
         }
     }
 
@@ -227,7 +222,6 @@ class Relay: ObservableObject {
                 if let error = error {
                     reject?.call(withArguments: [error.localizedDescription])
                 } else if let response = value {
-                    print("Received cookies: \(response)")
                     // Convert response to JSValue
                     let jsResponse = self.convertToJSValue(response, in: context, with: url)
                     resolve?.call(withArguments: [jsResponse])
@@ -285,7 +279,6 @@ class Relay: ObservableObject {
 
     func callWebviewInternal(url: String, completion: @escaping ([String: Any]?, Error?) -> Void) {
         DispatchQueue.main.async {
-            print("Calling Webview")
 //            DispatchQueue.global(qos: .background).asyncAfter(deadline: DispatchTime.now() + 4) {
 //                completion(["HM": "HM"], nil)
 //            }
@@ -454,8 +447,6 @@ class Relay: ObservableObject {
     }
 
     func getDiscover() async -> [DiscoverSection] {
-        print("running discover")
-
         do {
             let value = try await context.callAsyncFunction("instance.discover()")
 
@@ -466,7 +457,6 @@ class Relay: ObservableObject {
                     guard let title = listingDict["title"] as? String,
                           let type = listingDict["type"] as? Int,
                           let dataList = listingDict["data"] as? [[String: Any]] else {
-                        print("failing discover data array")
                         continue
                     }
 

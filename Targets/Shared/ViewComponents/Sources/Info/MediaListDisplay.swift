@@ -69,7 +69,6 @@ public class MediaListDisplay: UIView {
         let items = pagination.items
 
         let watchedUrls = DatabaseManager.shared.fetchWatchedURLs()
-        print("Watched URLs: \(watchedUrls)")
 
         for index in 0..<items.count {
             let item: MediaItem = items[index]

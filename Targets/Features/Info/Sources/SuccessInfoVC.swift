@@ -340,7 +340,6 @@ extension SuccessInfoVC: MediaListDelegate {
             navController.navigationBar.isHidden = true
             navController.present(landscapeVC, animated: true, completion: nil)
         case .book:
-            print("Open Reader")
             // find media items list
             var mediaItems: [MediaItem] = []
             if let paginationWithItem = infoData.mediaList

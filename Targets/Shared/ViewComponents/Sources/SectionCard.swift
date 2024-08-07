@@ -192,7 +192,6 @@ class SectionCard: UIView {
     }
 
     @objc func handleTap() {
-        print("tapped")
         delegate?.didTap(data)
     }
 }

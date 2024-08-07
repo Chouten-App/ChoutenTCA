@@ -81,7 +81,6 @@ public struct BookFeature: Reducer {
           case .appendChapter(let data):
               state.lastAppendedChapter = data
               if let chapterNumber = data.first?.chapter {
-                  print("appended")
                   state.chapters[chapterNumber] = data
               }
               return .none

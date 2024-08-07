@@ -135,8 +135,6 @@ class TopBar: UIView {
 }
 
 public class SettingsView: UIViewController {
-//    var store: Store<SettingsFeature.State, SettingsFeature.Action>
-
     let stack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical

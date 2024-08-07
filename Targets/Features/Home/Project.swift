@@ -17,6 +17,7 @@ let project = Project.feature(
 let project = Project.feature(
   .home,
   dependencies: [
+    .features.info.project,
     .shared.architecture.project,
     .externalDependencies.composableArchitecture.target,
     .shared.sharedModels.project,

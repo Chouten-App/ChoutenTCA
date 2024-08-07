@@ -6,12 +6,13 @@
 //
 
 import Architecture
+import Info
 import SharedModels
 import UIKit
 import ViewComponents
 
 class CarouselCell: UICollectionViewCell, SelfConfiguringCell {
-    static let reuseIdentifier: String = "CarouselCell"
+    static let reuseIdentifier: String = "CarouselCellHome"
 
     var data: HomeData? = nil
 
@@ -23,6 +24,7 @@ class CarouselCell: UICollectionViewCell, SelfConfiguringCell {
         view.contentMode = .scaleAspectFill
         view.clipsToBounds = true
         view.translatesAutoresizingMaskIntoConstraints = false
+        view.isUserInteractionEnabled = true
         return view
     }()
 
@@ -199,10 +201,10 @@ extension CarouselCell: UIGestureRecognizerDelegate {
             return
         }
 
-        //let tempVC = InfoViewRefactor(url: data.url)
+        let tempVC = InfoViewRefactor(url: data.url)
 
-        //navController.navigationBar.isHidden = true
-        //navController.pushViewController(tempVC, animated: true)
+        navController.navigationBar.isHidden = true
+        navController.pushViewController(tempVC, animated: true)
     }
 
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {

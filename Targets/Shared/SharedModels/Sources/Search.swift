@@ -62,7 +62,6 @@ public struct SearchResult: Codable, Equatable, Hashable {
 
         var searchDataArray: [SearchData] = []
         for searchItem in dataArray {
-            print(searchItem["url"])
             guard let url = searchItem["url"] as? String,
                   let titlesValue = searchItem["titles"] as? [String: String],
                   let primaryTitle = titlesValue["primary"],

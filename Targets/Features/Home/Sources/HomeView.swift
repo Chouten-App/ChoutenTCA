@@ -6,6 +6,7 @@
 //
 
 import Architecture
+import Info
 import Combine
 import ComposableArchitecture
 import UIKit
@@ -36,7 +37,6 @@ public class HomeView: UIViewController {
         super.init(nibName: nil, bundle: nil)
 
         store.send(.view(.onAppear))
-        print(store.collections.count)
         reloadData()
     }
 
@@ -108,7 +108,7 @@ public class HomeView: UIViewController {
         NSLayoutConstraint.activate([
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 40),
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 60),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -140),
             
             addButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
@@ -247,5 +247,9 @@ public class HomeView: UIViewController {
     func updateAppearance() {
         view.backgroundColor = ThemeManager.shared.getColor(for: .bg)
         soonLabel.textColor = ThemeManager.shared.getColor(for: .fg)
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }

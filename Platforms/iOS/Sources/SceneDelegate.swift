@@ -153,8 +153,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     @objc func handleUpdatedSelectedModule(_ notification: Notification) {
         // Handle the notification here
-        print("SceneDelegate received notification from ViewController")
-
         do {
             if let moduleId = userDefaults.string(forKey: "selectedModuleId") {
                 let modulePath = try repoClient.getModulePathForId(id: moduleId)

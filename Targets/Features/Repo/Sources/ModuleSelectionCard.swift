@@ -99,7 +99,6 @@ public class ModuleSelectionCard: UIView {
             .appendingPathComponent("Modules")
             .appendingPathComponent(module.id)
             .appendingPathComponent("icon.jpg") {
-            print("Loading \(imageUrl)")
             let imageData = try? Data(contentsOf: imageUrl)
 
             if let imageData {

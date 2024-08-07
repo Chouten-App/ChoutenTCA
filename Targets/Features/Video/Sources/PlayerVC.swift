@@ -294,10 +294,6 @@ public class PlayerVC: UIViewController {
         guard let startTime = self.nextEpisodeStartTime else { return }
         let elapsed = Date().timeIntervalSince(startTime)
         let progress = elapsed / self.nextEpisodeDuration
-        print("Progress: \(progress)")
-        print("Button frame: \(self.controls.nextEpisodeButton.frame)")
-        print("Button bounds: \(self.controls.nextEpisodeButton.bounds)")
-        print("Progress frame: \(self.controls.nextEpisodeProgress.frame)")
 
         DispatchQueue.main.async {
             self.controls.nextEpisodeProgress.transform = CGAffineTransform(
@@ -318,7 +314,6 @@ public class PlayerVC: UIViewController {
     }
 
     @objc func nextEpisode() {
-        print("Next episode")
         playerVM.player.replaceCurrentItem(with: nil)
         index += 1
         if let list = info.mediaList.first?.pagination.first?.items,
@@ -354,7 +349,6 @@ public class PlayerVC: UIViewController {
         guard let sender = timer.userInfo as? UITapGestureRecognizer else { return }
         let location = sender.location(in: sender.view)
         let xPosition = location.x
-        print("Single tap at x position: \(xPosition)")
 
         // Perform additional actions with xPosition if needed
         showUI.toggle()
@@ -386,7 +380,6 @@ public class PlayerVC: UIViewController {
     @objc func handleDoubleTap(_ sender: UITapGestureRecognizer) {
         let location = sender.location(in: sender.view)
         let xPosition = location.x
-        print("Double tap at x position: \(xPosition)")
 
         let thirdOfScreenWidth = UIScreen.main.bounds.width / 3
 
@@ -482,7 +475,6 @@ public class PlayerVC: UIViewController {
 
         // Get the current size of the window (PiP window size)
         let pipWindowSize = window.frame.size
-        print(pipWindowSize)
 
         // pip seems to have padding of 11 px (checked on iphone 12)
         let maxPipWindowWidth = UIScreen.main.bounds.height - 22

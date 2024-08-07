@@ -77,7 +77,6 @@ public class SeasonSelectorView: UIView {
 
         for index in 0..<seasonData.count {
             let data = seasonData[index]
-            print(data)
 
             if data.selected == true {
                 selectedSeason = index

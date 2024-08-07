@@ -9,7 +9,7 @@ import Architecture
 import UIKit
 
 class SectionHeader: UICollectionReusableView {
-    static let reuseIdentifier: String = "SectionHeader"
+    static let reuseIdentifier: String = "SectionHeaderHome"
 
     let label: UILabel = {
         let label = UILabel()

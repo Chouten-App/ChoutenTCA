@@ -104,7 +104,6 @@ extension RepoClient: DependencyKey {
 
                 do {
                     var json = try JSONDecoder().decode(RepoMetadata.self, from: data)
-                    print(json)
 
                     // install the data in the repo folder
                     let fileManager = FileManager.default
@@ -250,8 +249,6 @@ extension RepoClient: DependencyKey {
                     includingPropertiesForKeys: [.isDirectoryKey],
                     options: .skipsHiddenFiles
                 )
-
-                print(subdirectories)
 
                 var modules: [Module] = []
 

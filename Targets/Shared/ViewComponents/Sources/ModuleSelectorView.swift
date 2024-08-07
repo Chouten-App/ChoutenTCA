@@ -175,8 +175,6 @@ public class ModuleSelectorView: UIViewController, UIScrollViewDelegate, ModuleC
 
         let centeredIndex = Int(scrollView.contentOffset.x / scrollView.frame.width)
 
-        print(centeredIndex)
-
         if centeredIndex < repos.count {
             let centeredRepo = repos[centeredIndex]
 

@@ -73,8 +73,6 @@ public class InfoViewRefactor: LoadableViewControllerBase {
             guard let self else { return }
 
             if let infoData = self.store.infoData, let success = self.successViewController as? SuccessInfoVC {
-                print("updating info")
-
                 success.doneLoading = self.store.doneLoading
 
                 success.infoData = infoData

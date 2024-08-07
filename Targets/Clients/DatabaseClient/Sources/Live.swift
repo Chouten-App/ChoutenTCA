@@ -166,7 +166,7 @@ extension DatabaseClient: DependencyKey {
                                             description: item.infoData.description,
                                             poster: item.infoData.poster,
                                             label: Label(text: "Test", color: ""),
-                                            indicator: "Thing",
+                                            indicator: "\(item.infoData.yearReleased)",
                                             current: nil,
                                             total: nil
                                         )
@@ -180,8 +180,6 @@ extension DatabaseClient: DependencyKey {
                                 collections.append(section)
                             }
                         }
-                        
-                        print(collections)
 
                         return collections
                     }

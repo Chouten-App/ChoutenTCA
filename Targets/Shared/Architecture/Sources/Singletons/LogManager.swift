@@ -34,7 +34,6 @@ public class LogManager {
     }
 
     public func getLogs() -> [Log] {
-        print(logs)
         return logs
     }
 }
