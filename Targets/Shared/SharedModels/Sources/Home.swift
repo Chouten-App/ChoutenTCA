@@ -19,6 +19,12 @@ public struct HomeSection: Codable, Equatable, Hashable {
         self.type = type
         self.list = list
     }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(title)
+        hasher.combine(type)
+    }
 }
 
 public struct HomeSectionChecks: Codable, Equatable, Hashable {
@@ -32,6 +38,7 @@ public struct HomeSectionChecks: Codable, Equatable, Hashable {
 }
 
 public struct HomeData: Codable, Equatable, Hashable {
+    public let id: String
     public let url: String
     public let titles: Titles
     public let poster: String
@@ -42,7 +49,8 @@ public struct HomeData: Codable, Equatable, Hashable {
     public let current: Int?
     public let total: Int?
     
-    public init(url: String, titles: Titles, description: String, poster: String, label: Label, indicator: String, isWidescreen: Bool = false, current: Int?, total: Int?) {
+    public init(id: String = UUID().uuidString, url: String, titles: Titles, description: String, poster: String, label: Label, indicator: String, isWidescreen: Bool = false, current: Int?, total: Int?) {
+        self.id = id
         self.url = url
         self.titles = titles
         self.description = description
@@ -52,5 +60,19 @@ public struct HomeData: Codable, Equatable, Hashable {
         self.isWidescreen = isWidescreen
         self.current = current
         self.total = total
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(url)
+        hasher.combine(titles)
+        hasher.combine(poster)
+        hasher.combine(description)
+        hasher.combine(label)
+        hasher.combine(indicator)
+    }
+    
+    public static func == (lhs: HomeData, rhs: HomeData) -> Bool {
+        return lhs.id == rhs.id
     }
 }

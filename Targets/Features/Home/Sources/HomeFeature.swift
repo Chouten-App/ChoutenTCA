@@ -49,40 +49,40 @@ public struct HomeFeature: Reducer {
     public init() { }
 
     @ReducerBuilder<State, Action> public var body: some ReducerOf<Self> {
-      Reduce { state, action in
+        Reduce { state, action in
         switch action {
-        case let .view(viewAction):
-          switch viewAction {
-          case .onAppear:
-              state.collections = []
-              return .merge(
-                  .run { send in
-                      do {
-                          try await self.databaseClient.initDB()
-                          
-                          let data = try await self.databaseClient.fetchCollections();
-                          
-                          await send(.view(.setCollections(data)))
-                          print("Collection count: \(data.count)")
-                      } catch {
-                          print(error.localizedDescription)
-                      }
-                  }
-              )
-          case .setCollections(let data):
-              state.collections = data
-              return .none
-          case .createCollection(let name):
-              return .run { send in
-                  do {
-                      print("Creating collection for \(name)...")
-                      try await self.databaseClient.createCollection(name)
-                  } catch {
-                      print(error.localizedDescription)
-                  }
-              }
-          }
+            case let .view(viewAction):
+                switch viewAction {
+                case .onAppear:
+                    state.collections = []
+                    return .merge(
+                        .run { send in
+                            do {
+                                try await self.databaseClient.initDB()
+                                
+                                let data = try await self.databaseClient.fetchCollections();
+                                
+                                await send(.view(.setCollections(data)))
+                                print("Collection count: \(data.count)")
+                            } catch {
+                                print(error.localizedDescription)
+                            }
+                        }
+                    )
+                case .setCollections(let data):
+                    state.collections = data
+                    return .none
+                case .createCollection(let name):
+                    return .run { send in
+                        do {
+                            print("Creating collection for \(name)...")
+                            try await self.databaseClient.createCollection(name)
+                        } catch {
+                            print(error.localizedDescription)
+                        }
+                    }
+                }
+            }
         }
-      }
     }
 }
