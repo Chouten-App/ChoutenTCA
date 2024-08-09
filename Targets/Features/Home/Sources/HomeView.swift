@@ -18,6 +18,7 @@ public class HomeView: UIViewController {
     
     public var collectionView: UICollectionView!
     public var dataSource: UICollectionViewDiffableDataSource<HomeSection, HomeData>?
+    private var refreshControl = UIRefreshControl()
     
     let soonLabel: UILabel = {
         let label = UILabel()
@@ -71,6 +72,9 @@ public class HomeView: UIViewController {
         collectionView.showsVerticalScrollIndicator = false
         collectionView.showsHorizontalScrollIndicator = false
         
+        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+        collectionView.refreshControl = refreshControl
+        
         addButton.isUserInteractionEnabled = true
         addButton.onTap = {
             self.addButtonTapped()
@@ -87,6 +91,12 @@ public class HomeView: UIViewController {
             forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
             withReuseIdentifier: SectionHeader.reuseIdentifier
         )
+    }
+    
+    @objc private func handleRefresh() {
+        store.send(.view(.onAppear))  // Re-trigger .onAppear to fetch data
+        reloadData()
+        refreshControl.endRefreshing()  // Stop the refresh control
     }
     
     func configure<T: SelfConfiguringCell>(_ cellType: T.Type, with data: HomeData, for indexPath: IndexPath) -> T {
