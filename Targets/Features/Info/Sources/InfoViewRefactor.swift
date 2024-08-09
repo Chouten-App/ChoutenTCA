@@ -122,11 +122,19 @@ extension InfoViewRefactor: SuccessInfoVCDelegate {
         return store.collections
     }
     
+    public func fetchIsInCollections() -> [HomeSectionChecks] {
+        return store.isInCollections
+    }
+    
     public func addItemToCollection(collection: HomeSection) {
         store.send(.view(.addToCollection(collection)))
     }
     
     public func fetchMedia(url: String, newIndex: Int) {
         store.send(.view(.fetchNewSeason(url, newIndex: newIndex)))
+    }
+    
+    public func removeFromCollection(collection: HomeSection) {
+        store.send(.view(.removeFromCollection(collection)))
     }
 }

@@ -191,7 +191,27 @@ extension DatabaseClient: DependencyKey {
                 }
             },
             isInCollection: { collectionId, moduleId, infoData in
-                return true
+                do {
+                    let dbPath = try fetchDatabasePath()
+                    let dbQueue = try DatabaseQueue(path: dbPath)
+                    
+                    return try dbQueue.read { db in
+                        // Query to check if the item is in the collection
+                        let itemExists = try Bool.fetchOne(db, sql: """
+                            SELECT EXISTS (
+                                SELECT 1
+                                FROM 'items-\(collectionId)'
+                                WHERE moduleId = ? AND infoData->>'url' = ?
+                            )
+                        """, arguments: [moduleId, infoData.url])
+                        
+                        return itemExists ?? false
+                    }
+                } catch {
+                    print("Error checking if item is in collection!")
+                    print("\(error)")
+                    return false
+                }
             },
             addToCollection: { collectionId, moduleId, infoData in
                 do {
@@ -205,6 +225,23 @@ extension DatabaseClient: DependencyKey {
                     }
                 } catch {
                     print("Error adding to collection!")
+                    print("\(error)")
+                }
+            },
+            removeFromCollection: { collectionId, moduleId, infoData in
+                do {
+                    let dbPath = try fetchDatabasePath()
+                    let dbQueue = try DatabaseQueue(path: dbPath)
+                    
+                    // For some reason, if I include the moduleId and the moduleId string length is 0, it won't work lol
+                    try dbQueue.write { db in
+                        try db.execute(sql: """
+                            DELETE FROM 'items-\(collectionId)' WHERE infoData->>'url' = ?
+                        """, arguments: [infoData.url])
+                        print("Successfully delete item from collection for \(infoData.infoData.titles.primary). ID: \(collectionId)")
+                    }
+                } catch {
+                    print("Error removing from collection!")
                     print("\(error)")
                 }
             }

@@ -331,6 +331,7 @@ class Relay: ObservableObject {
                     print("Rejected the promise. Reason: \(error.localizedDescription)")
                     reject.call(withArguments: [error.localizedDescription])
                 } else if let response = response {
+                    /*
                     self.logger.info("""
                     ------------
                     🌐 URL Response 🌐
@@ -340,6 +341,7 @@ class Relay: ObservableObject {
                     Headers: \(response.headers)
                     Response Body: \(response.body)
                     """)
+                     */
                     let jsResponse = JSValue.fromRequestResponse(response, in: context)
                     resolve.call(withArguments: [jsResponse as Any])
                 }

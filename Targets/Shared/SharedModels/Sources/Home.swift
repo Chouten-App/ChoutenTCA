@@ -21,6 +21,16 @@ public struct HomeSection: Codable, Equatable, Hashable {
     }
 }
 
+public struct HomeSectionChecks: Codable, Equatable, Hashable {
+    public let id: String
+    public let isInCollection: Bool
+
+    public init(id: String, isInCollection: Bool) {
+        self.id = id
+        self.isInCollection = isInCollection
+    }
+}
+
 public struct HomeData: Codable, Equatable, Hashable {
     public let url: String
     public let titles: Titles
