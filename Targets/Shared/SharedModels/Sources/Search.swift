@@ -92,6 +92,7 @@ public struct SearchResult: Codable, Equatable, Hashable {
 }
 
 public struct SearchData: Codable, Equatable, Hashable {
+    public let id: UUID
     public let url: String
     public let poster: String
     public let titles: Titles
@@ -100,6 +101,7 @@ public struct SearchData: Codable, Equatable, Hashable {
     public let total: Int?
 
     public init(url: String, poster: String, titles: Titles, indicator: String, current: Int?, total: Int?) {
+        self.id = UUID()
         self.url = url
         self.poster = poster
         self.titles = titles
@@ -122,6 +124,8 @@ public struct SearchData: Codable, Equatable, Hashable {
 
         let current = jsValue["current"]?.toInt32()
         let total = jsValue["total"]?.toInt32()
+
+        self.id = UUID()
 
         self.url = url
         self.poster = poster

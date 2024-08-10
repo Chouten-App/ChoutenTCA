@@ -19,6 +19,8 @@ public class DiscoverView: UIViewController {
 
     public var collectionView: UICollectionView!
 
+    let loadingView = DiscoverLoadingView()
+
     public var dataSource: UICollectionViewDiffableDataSource<DiscoverSection, DiscoverData>?
 
     public init() {
@@ -44,10 +46,13 @@ public class DiscoverView: UIViewController {
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createCompositionalLayout())
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.clipsToBounds = false
-        collectionView.backgroundColor = ThemeManager.shared.getColor(for: .bg)
+        collectionView.backgroundColor = .clear
         collectionView.contentInset = UIEdgeInsets(top: 40, left: 0, bottom: 0, right: 0)
         collectionView.showsVerticalScrollIndicator = false
         collectionView.showsHorizontalScrollIndicator = false
+
+        view.addSubview(loadingView.view)
+        addChild(loadingView)
 
         view.addSubview(collectionView)
 
@@ -66,6 +71,8 @@ public class DiscoverView: UIViewController {
             guard let self else { return }
 
             if !store.discoverSections.isEmpty {
+                loadingView.view.removeFromSuperview()
+                loadingView.removeFromParent()
                 reloadData()
             }
         }
@@ -80,7 +87,12 @@ public class DiscoverView: UIViewController {
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 40),
-            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -140)
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -140),
+
+            loadingView.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            loadingView.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            loadingView.view.topAnchor.constraint(equalTo: view.topAnchor),
+            loadingView.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
 
@@ -95,6 +107,10 @@ public class DiscoverView: UIViewController {
 
     func createDataSource() {
         dataSource = UICollectionViewDiffableDataSource<DiscoverSection, DiscoverData>(collectionView: collectionView) { collectionView, indexPath, data in
+            if self.store.discoverSections.isEmpty {
+                return self.configure(ListCell.self, with: data, for: indexPath)
+            }
+
             switch self.store.discoverSections[indexPath.section].type {
             case 0:
                 return self.configure(CarouselCell.self, with: data, for: indexPath)
@@ -133,7 +149,9 @@ public class DiscoverView: UIViewController {
             snapshot.appendItems(section.list, toSection: section)
         }
 
-        dataSource?.apply(snapshot)
+        if snapshot.numberOfItems > 0 {
+            dataSource?.apply(snapshot)
+        }
     }
 
     func createCompositionalLayout() -> UICollectionViewLayout {

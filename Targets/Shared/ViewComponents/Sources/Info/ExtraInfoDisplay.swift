@@ -81,7 +81,7 @@ public class ExtraInfoDisplay: UIView {
         stack.addArrangedSubview(descriptionLabel)
 
         let paragraphStyle = NSMutableParagraphStyle()
-        let attstr = NSMutableAttributedString(string: infoData.description)
+        let attstr = NSMutableAttributedString(string: infoData.sanitizedDescription)
         paragraphStyle.hyphenationFactor = 1.0
         attstr.addAttribute(.paragraphStyle, value: paragraphStyle, range: NSRange(0..<attstr.length))
         descriptionLabel.attributedText = attstr

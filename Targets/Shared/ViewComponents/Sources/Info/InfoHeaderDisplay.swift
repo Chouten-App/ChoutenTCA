@@ -95,7 +95,7 @@ public class InfoHeaderDisplay: UIView {
         if imageUrlString.isEmpty {
             imageUrlString = infoData.poster
         }
-        self.bannerImage.setAsyncImage(url: imageUrlString)
+        // self.bannerImage.setAsyncImage(url: imageUrlString)
 
         view.addSubview(gradientView)
 
@@ -123,27 +123,27 @@ public class InfoHeaderDisplay: UIView {
         detailsView.addArrangedSubview(posterImage)
 
         let posterUrlString = infoData.poster
-        self.posterImage.setAsyncImage(url: posterUrlString)
+        // self.posterImage.setAsyncImage(url: posterUrlString)
 
         // titles
         titlesStack.axis = .vertical
         titlesStack.translatesAutoresizingMaskIntoConstraints = false
 
-        secondaryTitle.text = infoData.titles.secondary ?? "N/A"
+        // secondaryTitle.text = infoData.titles.secondary ?? "N/A"
         secondaryTitle.textColor = ThemeManager.shared.getColor(for: .fg)
         secondaryTitle.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
         secondaryTitle.alpha = 0.7
 
-        primaryTitle.text = infoData.titles.primary
+        // primaryTitle.text = infoData.titles.primary
         primaryTitle.textColor = ThemeManager.shared.getColor(for: .fg)
         primaryTitle.font = UIFont.systemFont(ofSize: 22, weight: .bold)
         primaryTitle.numberOfLines = 2
 
-        statusLabel.text = infoData.status ?? "N/A"
+        // statusLabel.text = infoData.status ?? "N/A"
         statusLabel.textColor = ThemeManager.shared.getColor(for: .accent)
         statusLabel.font = UIFont.systemFont(ofSize: 14, weight: .bold)
 
-        ratingLabel.text = "10.0"
+        // ratingLabel.text = "10.0"
         ratingLabel.textColor = ThemeManager.shared.getColor(for: .fg)
         ratingLabel.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
         ratingLabel.numberOfLines = 0

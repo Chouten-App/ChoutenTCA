@@ -161,11 +161,11 @@ class MediaItemDisplay: UIView {
         // set data
         titleLabel.text = mediaItem.title ?? "Episode \(mediaItem.number.removeTrailingZeros())"
         subtitleLabel.text = "Episode \(mediaItem.number.removeTrailingZeros())"
-        descriptionLabel.text = mediaItem.description
-        indicatorLabel.text = mediaItem.language
+        descriptionLabel.text = mediaItem.sanitizedDescription
+        indicatorLabel.text = mediaItem.indicator
 
         indicatorWrapper.addSubview(indicatorLabel)
-        if mediaItem.language != nil {
+        if mediaItem.indicator != nil {
             mainView.addSubview(indicatorWrapper)
         }
 
@@ -205,7 +205,7 @@ class MediaItemDisplay: UIView {
             titleLabel.trailingAnchor.constraint(equalTo: verticalStack.trailingAnchor)
         ])
 
-        if mediaItem.language != nil {
+        if mediaItem.indicator != nil {
             NSLayoutConstraint.activate([
                 indicatorWrapper.trailingAnchor.constraint(equalTo: mainView.trailingAnchor, constant: -8),
                 indicatorWrapper.topAnchor.constraint(equalTo: mainView.topAnchor, constant: 8),

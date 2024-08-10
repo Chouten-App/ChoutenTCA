@@ -8,6 +8,7 @@
 import Architecture
 import Combine
 import ComposableArchitecture
+import Info
 import RelayClient
 import SharedModels
 import UIKit
@@ -85,6 +86,7 @@ public class SearchView: UIViewController {
         header.translatesAutoresizingMaskIntoConstraints = false
 
         header.textField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        header.textField.addTarget(self, action: #selector(textFieldShouldReturn(_:)), for: .editingDidEndOnExit)
 
         view.addSubview(collectionView)
         view.addSubview(header)
@@ -194,6 +196,11 @@ public class SearchView: UIViewController {
             snapshot.appendItems(searchResults.results, toSection: 0)
         }
         dataSource?.apply(snapshot, animatingDifferences: true)
+    }
+
+    @objc func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
     }
 
     @objc func textFieldDidChange(_ textField: UITextField) {

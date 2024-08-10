@@ -166,11 +166,11 @@ public class PlayerVC: UIViewController {
                         ) { [weak self] time in
                             guard let self = self else { return }
 
-                            // update subtitles
-                            self.subtitleRenderer.updateSubtitles(for: time)
-
                             self.controls.currentTimeLabel.text = self.formatTime(time.seconds)
                             if let duration = playerVM.duration {
+                                // update subtitles
+                                self.subtitleRenderer.updateSubtitles(for: time)
+
                                 self.view.layoutIfNeeded()
                                 UIView.animate(withDuration: 0.1) {
                                     self.controls.progressBar.updateProgress(time.seconds / duration)
@@ -179,8 +179,8 @@ public class PlayerVC: UIViewController {
                             }
 
                             if (time.seconds / item.asset.duration.seconds >= 0.8) && !isShowingNextEpisodeButton {
-                                isShowingNextEpisodeButton = true
-                                showNextEpisodeButton()
+                                // isShowingNextEpisodeButton = true
+                                // showNextEpisodeButton()
                             }
                         }
                     self.controls.data = store.videoData
@@ -450,8 +450,7 @@ public class PlayerVC: UIViewController {
     }
 
     @objc func handleLongPress(_ sender: UILongPressGestureRecognizer) {
-        let location = sender.location(in: sender.view)
-        let xPosition = location.x
+        if !playerVM.isPlaying { return }
 
         switch sender.state {
         case .began:
@@ -576,7 +575,9 @@ extension PlayerVC: PlayerControlsDelegate {
     }
 
     func navigateBack() {
+        playerVM.player.replaceCurrentItem(with: nil)
         showBlackOverlay()
+
         shouldForceLandscape = false
 
         self.applyGeometryUpdate(interfaceOrientation: .portrait)

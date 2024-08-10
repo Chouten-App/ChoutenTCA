@@ -186,7 +186,7 @@ class CarouselCell: UICollectionViewCell, SelfConfiguringCell {
 
         primaryLabel.text = data.titles.primary
         secondaryLabel.text = data.titles.secondary
-        descriptionLabel.text = data.description
+        descriptionLabel.text = data.sanitizedDescription
         iconText.text = data.indicator
     }
 }

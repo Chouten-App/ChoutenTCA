@@ -21,6 +21,19 @@ public struct InfoData: Codable, Equatable, Sendable {
     public var seasons: [SeasonData]
     public var mediaList: [MediaList]
 
+    public var sanitizedDescription: String {
+        let regexPattern = "<[^>]+>"
+
+        do {
+            let regex = try NSRegularExpression(pattern: regexPattern, options: .caseInsensitive)
+            let range = NSRange(location: 0, length: description.count)
+            let cleanedString = regex.stringByReplacingMatches(in: description, options: [], range: range, withTemplate: "")
+            return cleanedString
+        } catch {
+            return description
+        }
+    }
+
     public init(titles: Titles, tags: [String], description: String, poster: String, banner: String?, status: String?, mediaType: String, yearReleased: Int, seasons: [SeasonData], mediaList: [MediaList]) {
         self.titles = titles
         self.tags = tags
@@ -76,8 +89,7 @@ public struct InfoData: Codable, Equatable, Sendable {
                                 url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
                                 number: 1.0,
                                 title: "Movie",
-                                description: nil,
-                                thumbnail: "https://www.protocol.com/media-library/big-buck-bunny.png?id=28250459&width=1245&height=700&quality=85&coordinates=0%2C0%2C0%2C0"
+                                thumbnail: "https://www.protocol.com/media-library/big-buck-bunny.png?id=28250459&width=1245&height=700&quality=85&coordinates=0%2C0%2C0%2C0", description: nil
                             )
                         ]
                     )
@@ -111,7 +123,7 @@ public struct InfoData: Codable, Equatable, Sendable {
                         id: "",
                         title: "",
                         items: [
-                            MediaItem(url: "", number: 1.0, title: "Title", description: "Description", thumbnail: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg")
+                            MediaItem(url: "", number: 1.0, title: "Title", thumbnail: "https://cdn.pixabay.com/photo/2019/07/22/20/36/mountains-4356017_1280.jpg", description: "Description")
                         ]
                     )
                 ]
@@ -146,10 +158,10 @@ public struct MediaList: Codable, Equatable, Sendable {
 
 public struct Pagination: Codable, Equatable, Sendable {
     public let id: String
-    public let title: String
+    public let title: String?
     public let items: [MediaItem]
 
-    public init(id: String, title: String, items: [MediaItem]) {
+    public init(id: String, title: String?, items: [MediaItem]) {
         self.id = id
         self.title = title
         self.items = items
@@ -164,6 +176,23 @@ public struct MediaItem: Codable, Equatable, Hashable, Sendable, FetchableRecord
     public let description: String?
     public let indicator: String?
     public var isWatched = false
+
+    public var sanitizedDescription: String? {
+        let regexPattern = "<[^>]+>"
+
+        if let description {
+            do {
+                let regex = try NSRegularExpression(pattern: regexPattern, options: .caseInsensitive)
+                let range = NSRange(location: 0, length: description.count)
+                let cleanedString = regex.stringByReplacingMatches(in: description, options: [], range: range, withTemplate: "")
+                return cleanedString
+            } catch {
+                return description
+            }
+        } else {
+            return description
+        }
+    }
 
     public init(url: String, number: Double, title: String? = nil, thumbnail: String? = nil, description: String? = nil, indicator: String? = nil, isWatched: Bool = false) {
         self.url = url

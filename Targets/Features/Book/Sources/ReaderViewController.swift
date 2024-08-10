@@ -5,14 +5,17 @@
 //  Created by Inumaki on 17.07.24.
 //
 
+import Combine
 import ComposableArchitecture
+import Nuke
 import SharedModels
 import UIKit
 import ViewComponents
-import Nuke
 
 public class ReaderViewController: UIViewController {
     let store: StoreOf<BookFeature>
+    var viewStore: ViewStoreOf<BookFeature>
+    private var cancellables: Set<AnyCancellable> = []
 
     var collectionView: UICollectionView!
     var dataSource: UICollectionViewDiffableDataSource<Section, ImageModel>!
@@ -33,8 +36,9 @@ public class ReaderViewController: UIViewController {
 
     var showControls = true
     var isDragging = false
+    var configured = false
 
-    var loadedInitialData: Bool = false
+    var loadedInitialData = false
     var lastChapterLength = 0
 
     public init(infoData: InfoData, item: MediaItem, index: Int, mediaItems: [MediaItem]) {
@@ -42,20 +46,44 @@ public class ReaderViewController: UIViewController {
             initialState: .init(infoData: infoData, item: item, index: index, mediaItems: mediaItems),
             reducer: { BookFeature() }
         )
+        viewStore = ViewStore(store, observe: { state in
+            return state
+        })
         super.init(nibName: nil, bundle: nil)
 
         currentIndex = index
         lastFetchedIndex = index
 
-        observe { [weak self] in
-            guard let self else { return }
-
-            if store.chapters.count == 1 {
-                loadInitialData()
-            } else if store.chapters.count > 1 {
-                addData()
+        viewStore.publisher.autoReaderMode
+            .sink { [weak self] readerMode in
+                if let readerMode {
+                    print(readerMode)
+                    self?.mode = readerMode
+                    self?.configure()
+                    self?.configured = true
+                }
             }
-        }
+            .store(in: &cancellables)
+
+        viewStore.publisher.chapters
+            .sink { [weak self] chapters in
+                if self?.configured == true {
+                    if chapters.count == 1 {
+                        self?.loadInitialData()
+                    } else if chapters.count > 1 {
+                        self?.addData()
+                    }
+                }
+            }
+            .store(in: &cancellables)
+
+//        observe { [weak self] in
+//            guard let self else { return }
+//
+//            if store.autoReaderMode != nil {
+//
+//            }
+//        }
     }
 
     public required init?(coder: NSCoder) {
@@ -69,6 +97,13 @@ public class ReaderViewController: UIViewController {
 
         prefetcher = ImagePrefetcher()
 
+        mode = store.autoReaderMode ?? .rtl
+
+        self.view.addSubview(controls)
+        controls.layer.zPosition = 100
+    }
+
+    func configure() {
         let layout = mode == .rtl ? CustomCollectionViewFlowLayout() : UICollectionViewFlowLayout()
 
         layout.minimumLineSpacing = 0.0
@@ -97,7 +132,6 @@ public class ReaderViewController: UIViewController {
         controls.seekbar.delegate = self
 
         self.view.addSubview(collectionView)
-        self.view.addSubview(controls)
 
         NSLayoutConstraint.activate([
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -117,6 +151,45 @@ public class ReaderViewController: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(toggleControls))
         // collectionView.addGestureRecognizer(tapGesture)
         self.controls.blackOverlay.addGestureRecognizer(tapGesture)
+
+        controls.readerModeButton.onTap = {
+            if self.mode == .webtoon {
+                self.controls.readerModeButton.imageView.image = UIImage(named: "horizontal")
+                self.mode = .ltr
+            } else {
+                self.controls.readerModeButton.imageView.image = UIImage(named: "webtoon")
+                self.mode = .webtoon
+            }
+
+            self.updateCollectionView()
+        }
+
+        controls.moreButton.onTap = {
+            UIView.animate(withDuration: 0.2) {
+                self.controls.readerModeButton.alpha = self.controls.readerModeButton.alpha == 0.0 ? 1.0 : 0.0
+            }
+        }
+    }
+
+    func updateCollectionView() {
+        collectionView.isPagingEnabled = self.mode != .webtoon
+        if let flowLayout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            flowLayout.scrollDirection = mode == .webtoon || mode == .verticalPaged ? .vertical : .horizontal
+            let visibleCells = collectionView.visibleCells
+            if let firstCell = visibleCells.first {
+                if let indexPath = collectionView.indexPath(for: firstCell as UICollectionViewCell) {
+                    if let attributes = self.collectionView.layoutAttributesForItem(at: indexPath) {
+                        let targetOffset = CGPoint(
+                            x: attributes.frame.origin.x - (self.collectionView.bounds.size.width / 2) + (attributes.frame.size.width / 2),
+                            y: self.collectionView.contentOffset.y
+                        )
+
+                        self.collectionView.setContentOffset(targetOffset, animated: false)
+                    }
+                }
+            }
+            flowLayout.invalidateLayout()
+        }
     }
 
     @objc func toggleControls() {
@@ -151,10 +224,10 @@ public class ReaderViewController: UIViewController {
 
             if imageModel.isFirstChapter {
                 // swiftlint:disable force_cast
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "chapterFooter", for: indexPath) as! FirstChapterCell
-                // swiftlint:enable force_cast
-                cell.configure(imageModel.currentChapter)
-                return cell
+                if let firstCell = collectionView.dequeueReusableCell(withReuseIdentifier: "chapterFooter", for: indexPath) as? FirstChapterCell {
+                    firstCell.configure(imageModel.currentChapter)
+                    return firstCell
+                }
             }
 
             if indexPath.item == totalItemsInSection {
@@ -236,14 +309,15 @@ public class ReaderViewController: UIViewController {
                     chapter: store.item.number,
                     currentChapter: store.item.title ?? "Chapter \(store.item.number.removeTrailingZeros())",
                     nextChapter: nextItem?.title
-                    ?? "Chapter \(nextItem?.number.removeTrailingZeros())"
+                    ?? "Chapter \(String(describing: nextItem?.number.removeTrailingZeros()))"
                 )
             ],
             toSection: .chapter(store.item.number)
         )
+
         self.dataSource.apply(snapshot, animatingDifferences: false) {
             // Scroll to the first cell of the initially loaded chapter
-            let indexPath = IndexPath(item: self.store.index == 0 ? 1 : 0, section: 1)
+            let indexPath = IndexPath(item: 0, section: 1)
             if let attributes = self.collectionView.layoutAttributesForItem(at: indexPath) {
                 let targetOffset = CGPoint(
                     x: attributes.frame.origin.x - (self.collectionView.bounds.size.width / 2) + (attributes.frame.size.width / 2),
@@ -287,7 +361,7 @@ public class ReaderViewController: UIViewController {
         }
 
         // Insert the new section before the first section
-        var inserted: Bool = false
+        var inserted = false
         if nextMediaItem.number < currentMediaItem.number, let firstSection = snapshot.sectionIdentifiers.first {
             print("Inserting new section: \(newSection) before section: \(String(describing: snapshot.sectionIdentifiers.first))")
             snapshot.insertSections([newSection], beforeSection: firstSection)

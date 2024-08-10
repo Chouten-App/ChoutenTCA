@@ -269,7 +269,7 @@ public class CarouselCard: UIView, UIGestureRecognizerDelegate {
     private func updateData() {
         secondaryLabel.text = data.titles.secondary ?? "N/A"
         primaryLabel.text = data.titles.primary
-        descriptionLabel.text = data.description
+        descriptionLabel.text = data.sanitizedDescription
         iconText.text = data.indicator
     }
 

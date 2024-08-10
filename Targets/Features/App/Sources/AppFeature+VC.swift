@@ -140,7 +140,11 @@ public class AppViewController: UIViewController {
 
             switch store.selected {
             case .home:
-                self.topBar.settingsImage.image = UIImage(named: "pfp")
+                self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
+                self.topBar.settingsImage.image = UIImage(systemName: "person")?
+                    .withRenderingMode(.alwaysTemplate)
+                    .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
+                // self.topBar.settingsImage.image = UIImage(named: "pfp")
             case .discover:
                 self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
                 self.topBar.settingsImage.image = UIImage(systemName: "magnifyingglass")?
