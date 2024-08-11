@@ -26,6 +26,14 @@ public class InfoHeaderDisplay: UIView {
     let primaryTitle = UILabel()
     let statusLabel = UILabel()
     let ratingLabel = UILabel()
+    
+    public let bookmarkButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "bookmark.fill"), for: .normal) // Use the bookmark icon
+        button.tintColor = ThemeManager.shared.getColor(for: .accent) // Adjust color as needed
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
 
     // swiftlint:disable implicitly_unwrapped_optional
     var containerHeightConstraint: NSLayoutConstraint!
@@ -161,6 +169,7 @@ public class InfoHeaderDisplay: UIView {
         horizontalTitlesStack.alignment = .bottom
         horizontalTitlesStack.translatesAutoresizingMaskIntoConstraints = false
 
+        horizontalStack.addArrangedSubview(bookmarkButton)
         horizontalTitlesStack.addArrangedSubview(statusLabel)
         horizontalTitlesStack.addArrangedSubview(ratingLabel)
 
@@ -171,6 +180,8 @@ public class InfoHeaderDisplay: UIView {
         titlesStack.addArrangedSubview(horizontalTitlesStack)
 
         horizontalStack.addArrangedSubview(titlesStack)
+        
+        bookmarkButton.translatesAutoresizingMaskIntoConstraints = false
 
         // Add constraints to push ratingLabel to the trailing edge
         ratingLabel.setContentHuggingPriority(.required, for: .horizontal)
@@ -216,7 +227,10 @@ public class InfoHeaderDisplay: UIView {
 
             horizontalStack.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
 
-            statusSpacer.heightAnchor.constraint(equalToConstant: 20)
+            statusSpacer.heightAnchor.constraint(equalToConstant: 20),
+            
+            bookmarkButton.widthAnchor.constraint(equalToConstant: 24),
+            bookmarkButton.heightAnchor.constraint(equalToConstant: 24)
         ])
 
         containerHeightConstraint = view.heightAnchor.constraint(equalToConstant: 400)

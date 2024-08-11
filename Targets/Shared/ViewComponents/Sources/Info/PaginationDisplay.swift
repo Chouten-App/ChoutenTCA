@@ -113,7 +113,6 @@ class PaginationDisplay: UIView {
     }
 
     @objc func changePagination(_ sender: PaginationTapGesture) {
-        print("Change Pagination")
         selectedPagination = sender.pagination ?? 0
         for index in 0..<contentView.arrangedSubviews.count {
             contentView.arrangedSubviews[index].backgroundColor = index == self.selectedPagination

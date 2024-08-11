@@ -100,8 +100,6 @@ public class CloudflareWebview: UIViewController, WKNavigationDelegate {
         self.urlString = url
         self.completion = completion
 
-        print(url)
-
         if let requestUrl = URL(string: url) {
             let userDefaults = UserDefaults.standard
             userDefaults.set(nil, forKey: "Cookies-\(requestUrl.getDomain() ?? "")")

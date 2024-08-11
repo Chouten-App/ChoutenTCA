@@ -120,7 +120,6 @@ public class SeekBar: UIView {
 
         switch gestureRecognizer.state {
         case .changed:
-            print(translation.x)
             progressTrailingConstraint.constant = min(max(translation.x + self.lastOffset, 0.0), width)
             progress = progressTrailingConstraint.constant / width
             delegate?.seekBar(self, didChangeProgress: progress)

@@ -161,8 +161,6 @@ extension ModuleClient: DependencyKey {
           for module in moduleFolderNames.value {
             let m = getMetadata(folderUrl: documentsDirectory.appendingPathComponent("Modules").appendingPathComponent(module))
 
-            print(m)
-
             if let m {
               list.append(m)
               moduleIds.withValue { $0.append(.init(m.id)) }

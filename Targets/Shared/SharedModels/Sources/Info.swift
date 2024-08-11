@@ -9,6 +9,16 @@ import Foundation
 import GRDB
 import JavaScriptCore
 
+public struct CollectionItem: Codable, Equatable, Sendable {
+    public var infoData: InfoData
+    public var url: String
+    
+    public init(infoData: InfoData, url: String) {
+        self.infoData = infoData
+        self.url = url
+    }
+}
+
 public struct InfoData: Codable, Equatable, Sendable {
     public let titles: Titles
     public let tags: [String]
@@ -258,11 +268,7 @@ extension InfoData {
             return nil
         }
 
-        print(seasonsJSValue)
-
         let seasons: [SeasonData] = seasonsJSValue.toArray().compactMap { element in
-            print(element)
-
             if let jsElement = element as? [String: Any] {
                 guard let name = jsElement["name"] as? String, let url = jsElement["url"] as? String
                 else {

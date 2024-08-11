@@ -32,6 +32,7 @@ public class ExtraInfoDisplay: UIView {
         return label
     }()
 
+
     // MARK: Lifecycle
 
     public init(infoData: InfoData) {

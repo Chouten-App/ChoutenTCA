@@ -56,7 +56,6 @@ final class SearchViewCell: UICollectionViewCell {
     }
 
     @objc func navigateToInfo() {
-        print("pressed")
         if let data {
             let scenes = UIApplication.shared.connectedScenes
 

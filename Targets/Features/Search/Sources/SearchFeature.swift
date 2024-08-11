@@ -102,7 +102,6 @@ public struct SearchFeature: Reducer {
                   state.result = value
                   state.status = .success
 
-                  print(value)
                   return .none
               }
               state.result!.results += value.results
@@ -118,8 +117,6 @@ public struct SearchFeature: Reducer {
               if !state.loading {
                   state.page += 1
                   state.loading = true
-
-                  print("pagination")
 
                   return .send(.view(.search))
               }

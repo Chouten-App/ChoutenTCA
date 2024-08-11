@@ -267,7 +267,6 @@ public class RepoInstallPopup: UIViewController {
             guard let self else { return }
 
             if let metadata = store.installRepoMetadata {
-                print(metadata)
                 // remove titleCard
                 noUrlBox.removeFromSuperview()
 
@@ -404,7 +403,6 @@ public class RepoInstallPopup: UIViewController {
         modulesStack.arrangedSubviews.forEach { view in
             if let moduleCard = view as? ModuleSelectionCard {
                 moduleCard.selected = selectedModules.contains(moduleCard.module.id)
-                print(moduleCard.selected)
                 UIView.animate(withDuration: 0.2) {
                     moduleCard.reload()
                 }
@@ -421,7 +419,6 @@ public class RepoInstallPopup: UIViewController {
             }
         }
 
-        print(selectedModules)
         updateSelectedModules()
     }
 }
@@ -437,7 +434,6 @@ extension RepoInstallPopup: UITextFieldDelegate {
         // Call at the end
         if let text = textField.text {
             // User input goes here.
-            print(text)
             store.send(.view(.fetch(url: text)))
             // store.send(.view(.install(url: text)))
         }

@@ -105,7 +105,6 @@ public class ModuleCard: UIView {
             .appendingPathComponent(repoId)
             .appendingPathComponent("Modules")
             .appendingPathComponent(module.id) {
-            print("Loading \(imageUrl)")
 
             if let jpgData = try? Data(contentsOf: imageUrl.appendingPathComponent("icon.jpg")) {
                 let image = UIImage(data: jpgData)

@@ -38,8 +38,6 @@ class SearchCollectionView: UICollectionView, UICollectionViewDataSource, UIColl
         self.showsVerticalScrollIndicator = false // Hide vertical scroll indicator
         self.showsHorizontalScrollIndicator = false // Hide horizontal scroll indicator
         self.collectionViewLayout = layout // Set custom layout
-
-        print("collection view initialized")
     }
 
     override init(frame: CGRect, collectionViewLayout layout: UICollectionViewLayout) {
@@ -71,7 +69,6 @@ class SearchCollectionView: UICollectionView, UICollectionViewDataSource, UIColl
     }
 
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        print("should show footer")
 
         guard kind == UICollectionView.elementKindSectionFooter else {
             return UICollectionReusableView()

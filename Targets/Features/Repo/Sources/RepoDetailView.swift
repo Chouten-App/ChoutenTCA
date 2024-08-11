@@ -442,7 +442,6 @@ class RepoDetailView: UIViewController {
 
             // check if new version exists
             if let availableVersion = repo.modules?.first { $0.id == module.id }?.version {
-                print(availableVersion)
                 switch module.version.compare(availableVersion, options: .numeric) {
                 case .orderedSame:
                     module.state = .upToDate

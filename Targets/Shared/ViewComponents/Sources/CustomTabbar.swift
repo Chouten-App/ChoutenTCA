@@ -86,15 +86,12 @@ public class CustomTabbar: UIView {
 
     @objc func handleTap(_ sender: UITapGestureRecognizer) {
         guard let index = sender.index else { return }
-        // Now you have access to the tapped index
-        print("Tapped index:", index)
+        
         let oldTabView = tabStack.subviews[selectedTab]
         let selectedTabView = tabStack.subviews[index]
 
         UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) { // Adjust duration as needed
             self.delegate?.didSelectTab(index)
-
-            print(selectedTabView.frame.minX)
 
             self.indicatorOffset.constant = selectedTabView.frame.minX
             self.circleOffset.constant = selectedTabView.frame.minX

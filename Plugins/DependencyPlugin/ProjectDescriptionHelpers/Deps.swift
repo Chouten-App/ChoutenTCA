@@ -39,6 +39,7 @@ public enum Features: String, CaseIterable, QualifiedName {
 public enum Clients: String, CaseIterable, QualifiedName {
   case repoClient
   case fileClient
+  case databaseClient
   case moduleClient
   case relayClient
 

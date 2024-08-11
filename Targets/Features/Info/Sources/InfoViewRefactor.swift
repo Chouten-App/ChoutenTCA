@@ -35,6 +35,7 @@ public class InfoViewRefactor: LoadableViewControllerBase {
             initialState: .init(),
             reducer: { InfoFeature() }
         )
+        
         super.init(loadingViewController: loadingInfoVC, errorViewController: errorInfoVC, successViewController: successInfoVC)
 
         store.send(.view(.onAppear(url)))
@@ -72,8 +73,6 @@ public class InfoViewRefactor: LoadableViewControllerBase {
             guard let self else { return }
 
             if let infoData = self.store.infoData, let success = self.successViewController as? SuccessInfoVC {
-                print("updating info")
-
                 success.doneLoading = self.store.doneLoading
 
                 success.infoData = infoData
@@ -119,7 +118,23 @@ public class InfoViewRefactor: LoadableViewControllerBase {
 }
 
 extension InfoViewRefactor: SuccessInfoVCDelegate {
+    public func fetchCollections() -> [HomeSection] {
+        return store.collections
+    }
+    
+    public func fetchIsInCollections() -> [HomeSectionChecks] {
+        return store.isInCollections
+    }
+    
+    public func addItemToCollection(collection: HomeSection) {
+        store.send(.view(.addToCollection(collection)))
+    }
+    
     public func fetchMedia(url: String, newIndex: Int) {
         store.send(.view(.fetchNewSeason(url, newIndex: newIndex)))
+    }
+    
+    public func removeFromCollection(collection: HomeSection) {
+        store.send(.view(.removeFromCollection(collection)))
     }
 }

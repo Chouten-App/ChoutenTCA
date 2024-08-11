@@ -12,6 +12,7 @@ let project = Project.feature(
     .shared.sharedModels.project,
     .externalDependencies.composableArchitecture.target,
     .externalDependencies.nuke.target,
+    .clients.databaseClient.project,
     .clients.relayClient.project
   ]
 )

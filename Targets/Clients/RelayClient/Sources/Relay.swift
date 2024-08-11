@@ -18,12 +18,10 @@ extension JSContext {
     public func callAsyncFunction(_ key: String) async throws -> JSValue {
         try await withCheckedThrowingContinuation { continuation in
             let onFulfilled: @convention(block) (JSValue) -> Void = { value in
-                print("fulfilled")
                 continuation.resume(returning: value)
             }
 
             let onRejected: @convention(block) (JSValue) -> Void = { reason in
-                print("rejected")
                 let error = NSError(domain: key, code: 0, userInfo: [NSLocalizedDescriptionKey: "\(reason)"])
                 continuation.resume(throwing: error)
             }
@@ -120,13 +118,10 @@ class Relay: ObservableObject {
         switch contentType {
         case "video":
             type = .video
-            print("video module")
         case "book":
             type = .book
-            print("book module")
         default:
             type = .video
-            print("unknown")
         }
     }
 
@@ -216,7 +211,6 @@ class Relay: ObservableObject {
                 if let error = error {
                     reject?.call(withArguments: [error.localizedDescription])
                 } else if let response = value {
-                    print("Received cookies: \(response)")
                     // Convert response to JSValue
                     let jsResponse = self.convertToJSValue(response, in: context, with: url)
                     resolve?.call(withArguments: [jsResponse])
@@ -274,7 +268,6 @@ class Relay: ObservableObject {
 
     func callWebviewInternal(url: String, completion: @escaping ([String: Any]?, Error?) -> Void) {
         DispatchQueue.main.async {
-            print("Calling Webview")
 //            DispatchQueue.global(qos: .background).asyncAfter(deadline: DispatchTime.now() + 4) {
 //                completion(["HM": "HM"], nil)
 //            }
@@ -327,6 +320,7 @@ class Relay: ObservableObject {
                     print("Rejected the promise. Reason: \(error.localizedDescription)")
                     reject.call(withArguments: [error.localizedDescription])
                 } else if let response = response {
+                    /*
                     self.logger.info("""
                     ------------
                     🌐 URL Response 🌐
@@ -336,6 +330,7 @@ class Relay: ObservableObject {
                     Headers: \(response.headers)
                     Response Body: \(response.body)
                     """)
+                     */
                     let jsResponse = JSValue.fromRequestResponse(response, in: context)
                     resolve.call(withArguments: [jsResponse as Any])
                 }
@@ -443,8 +438,6 @@ class Relay: ObservableObject {
     }
 
     func getDiscover() async -> [DiscoverSection] {
-        print("running discover")
-
         do {
             let value = try await context.callAsyncFunction("instance.discover()")
 
@@ -455,7 +448,6 @@ class Relay: ObservableObject {
                     guard let title = listingDict["title"] as? String,
                           let type = listingDict["type"] as? Int,
                           let dataList = listingDict["data"] as? [[String: Any]] else {
-                        print("failing discover data array")
                         continue
                     }
 
@@ -485,8 +477,6 @@ class Relay: ObservableObject {
                                 total: total
                             )
                             discoverDataList.append(discoverData)
-                        } else {
-                            print(dataItem)
                         }
                     }
 
@@ -499,12 +489,12 @@ class Relay: ObservableObject {
                 print("Failed to get 'listings' array from JavaScript response.")
             }
         } catch {
-            let scenes = UIApplication.shared.connectedScenes
+            let scenes = await UIApplication.shared.connectedScenes
             let windowScene = scenes.first as? UIWindowScene
-            let window = windowScene?.windows.first
+            let window = await windowScene?.windows.first
 
-            if let view = window?.rootViewController?.view {
-                view.showErrorDisplay(message: "Discover", description: error.localizedDescription, type: .error)
+            if let view = await window?.rootViewController?.view {
+                await view.showErrorDisplay(message: "Discover", description: error.localizedDescription, type: .error)
             }
             print(error.localizedDescription)
         }

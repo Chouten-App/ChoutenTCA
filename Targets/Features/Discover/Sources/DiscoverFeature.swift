@@ -58,7 +58,6 @@ public struct DiscoverFeature: Reducer {
                   .run { send in
                       do {
                           let data = try await self.relayClient.discover()
-                          print(data)
                           await send(.view(.setDiscoverSections(data)))
                       } catch {
                           print(error.localizedDescription)

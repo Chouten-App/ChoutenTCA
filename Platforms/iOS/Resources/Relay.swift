@@ -45,7 +45,6 @@ class Relay: ObservableObject {
     }
 
     func testException() async {
-        print("running servers")
         let response = context.evaluateScript("instance.servers('hm')")
         if let response {
             do {
@@ -57,7 +56,6 @@ class Relay: ObservableObject {
     }
 
     func testDiscover() async {
-        print("running discover")
         do {
             let response = context.evaluateScript("instance.discover()")
             let value = try await response?.value()
@@ -85,7 +83,6 @@ class Relay: ObservableObject {
     }
 
     func testSearch() async {
-        print("running search")
         do {
             let response = context.evaluateScript("instance.search('query')")
             let value = try await response?.value()
@@ -103,7 +100,6 @@ class Relay: ObservableObject {
     }
 
     func testInfo() async {
-        print("running info")
         do {
             let response = context.evaluateScript("instance.info('hm')")
             let value = try await response?.value()
@@ -121,7 +117,6 @@ class Relay: ObservableObject {
     }
 
     func testEpisodes() async {
-        print("running episodes")
         do {
             let response = context.evaluateScript("instance.episodes('hm')")
             let value = try await response?.value()
@@ -174,8 +169,6 @@ class Relay: ObservableObject {
             print("Couldnt find testing.js")
             return
         }
-
-        print("found testing.js")
 
         let commonCodeURL = URL(fileURLWithPath: commonCodePath)
 

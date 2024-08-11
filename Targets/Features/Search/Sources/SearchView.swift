@@ -204,7 +204,6 @@ public class SearchView: UIViewController {
     }
 
     @objc func textFieldDidChange(_ textField: UITextField) {
-        print(textField.text)
         if let queryText = self.header.textField.text {
             UIView.animate(withDuration: 0.2) {
                 self.header.clearButton.alpha = queryText.isEmpty || (self.header.textField.text == nil) ? 0.0 : 1.0
@@ -219,7 +218,6 @@ public class SearchView: UIViewController {
     }
 
     @objc func debounceCall(sender: String) {
-        print(sender)
         if !sender.isEmpty {
             store.send(.view(.setQuery(sender)))
         }
@@ -258,7 +256,6 @@ extension SearchView: UIScrollViewDelegate, UICollectionViewDelegate {
             let scrollViewHeight = scrollView.frame.size.height
 
             if contentOffsetY >= (contentHeight - scrollViewHeight) {
-                print("bottom")
                 self?.store.send(.view(.paginateSearch))
             }
             t.invalidate()
