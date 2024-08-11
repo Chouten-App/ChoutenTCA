@@ -47,6 +47,19 @@ public struct DiscoverData: Codable, Equatable, Hashable {
     public let current: Int?
     public let total: Int?
 
+    public var sanitizedDescription: String {
+        let regexPattern = "<[^>]+>"
+
+        do {
+            let regex = try NSRegularExpression(pattern: regexPattern, options: .caseInsensitive)
+            let range = NSRange(location: 0, length: description.count)
+            let cleanedString = regex.stringByReplacingMatches(in: description, options: [], range: range, withTemplate: "")
+            return cleanedString
+        } catch {
+            return description
+        }
+    }
+
     public init(url: String, titles: Titles, description: String, poster: String, label: Label, indicator: String, isWidescreen: Bool = false, current: Int?, total: Int?) {
         self.url = url
         self.titles = titles

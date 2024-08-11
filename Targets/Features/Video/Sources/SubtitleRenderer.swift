@@ -101,18 +101,28 @@ class SubtitleRenderer: UIView {
 
     private func parseTimecode(_ timecode: String) -> Double {
         let components = timecode.components(separatedBy: ":")
-        guard components.count == 2 else {
+
+        switch components.count {
+        case 2:
+            let minutes = Int(components[0]) ?? 0
+            let secondsAndMilliseconds = components[1].components(separatedBy: ".")
+            let seconds = Int(secondsAndMilliseconds[0]) ?? 0
+            let milliseconds = Int(secondsAndMilliseconds[1]) ?? 0
+
+            let totalSeconds = Double(minutes * 60 + seconds) + Double(milliseconds) / 1000.0
+            return totalSeconds
+        case 3:
+            let hours = Int(components[0]) ?? 0
+            let minutes = Int(components[1]) ?? 0
+            let secondsAndMilliseconds = components[2].components(separatedBy: ".")
+            let seconds = Int(secondsAndMilliseconds[0]) ?? 0
+            let milliseconds = Int(secondsAndMilliseconds[1]) ?? 0
+
+            let totalSeconds = Double(hours * 3600 + minutes * 60 + seconds) + Double(milliseconds) / 1000.0
+            return totalSeconds
+        default:
             return .zero
         }
-
-        //let hours = Int(components[0]) ?? 0
-        let minutes = Int(components[0]) ?? 0
-        let secondsAndMilliseconds = components[1].components(separatedBy: ".")
-        let seconds = Int(secondsAndMilliseconds[0]) ?? 0
-        let milliseconds = Int(secondsAndMilliseconds[1]) ?? 0
-
-        let totalSeconds = Double(minutes * 60 + seconds) + Double(milliseconds) / 1000.0
-        return totalSeconds
     }
 
     func updateSubtitles(for time: CMTime) {
@@ -120,6 +130,7 @@ class SubtitleRenderer: UIView {
 
         for subtitle in subtitles {
             if time.seconds >= subtitle.start + offset && time.seconds <= subtitle.end + offset {
+                print("Subtitle text: \(subtitle.text)\nSubtitle Start: \(subtitle.start)\nTime: \(time.seconds)")
                 newSubtitles.insert(subtitle)
             }
         }

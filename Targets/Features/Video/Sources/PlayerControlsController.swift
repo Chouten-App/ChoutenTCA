@@ -251,7 +251,7 @@ class PlayerControlsController: UIViewController {
         }
 
         mediaSelectorButton.onTap = {
-            self.delegate?.showMediaSelector()
+            // self.delegate?.showMediaSelector()
         }
 
         settingsButton.menu = {

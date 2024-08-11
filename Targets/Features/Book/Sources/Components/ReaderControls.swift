@@ -19,6 +19,7 @@ class ReaderControls: UIView {
     }()
 
     let backButton = CircleButton(icon: "chevron.left")
+    let moreButton = CircleButton(icon: "ellipsis")
 
     let titleLabel: UILabel = {
         let label = UILabel()
@@ -50,6 +51,9 @@ class ReaderControls: UIView {
         return label
     }()
 
+    let readerModeButton = ReaderButton("horizontal")
+    let settingsButton = ReaderButton(systemName: "slider.horizontal.below.rectangle")
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         configure()
@@ -71,11 +75,25 @@ class ReaderControls: UIView {
 
         titleWrapper.addSubview(titleLabel)
 
+        readerModeButton.alpha = 0.0
+
         addSubview(blackOverlay)
         addSubview(backButton)
         addSubview(titleWrapper)
+        addSubview(moreButton)
+        addSubview(readerModeButton)
+        // addSubview(settingsButton)
         addSubview(seekbar)
         addSubview(pagesLabel)
+
+        backButton.onTap = {
+            let scenes = UIApplication.shared.connectedScenes
+            if let windowScene = scenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let navController = window.rootViewController as? UINavigationController {
+                navController.popViewController(animated: true)
+            }
+        }
     }
 
     private func setupConstraints() {
@@ -101,6 +119,16 @@ class ReaderControls: UIView {
             titleLabel.leadingAnchor.constraint(equalTo: titleWrapper.leadingAnchor, constant: 16),
             titleLabel.trailingAnchor.constraint(equalTo: titleWrapper.trailingAnchor, constant: -16),
             titleLabel.centerYAnchor.constraint(equalTo: titleWrapper.centerYAnchor),
+            titleLabel.widthAnchor.constraint(lessThanOrEqualToConstant: UIScreen.main.bounds.width - 40 - 64 - 24),
+
+            moreButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+            moreButton.topAnchor.constraint(equalTo: topAnchor, constant: topPadding + 20),
+
+            // settingsButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+            // settingsButton.topAnchor.constraint(equalTo: titleWrapper.bottomAnchor, constant: 12),
+
+            readerModeButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+            readerModeButton.topAnchor.constraint(equalTo: titleWrapper.bottomAnchor, constant: 12),
 
             seekbar.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
             seekbar.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),

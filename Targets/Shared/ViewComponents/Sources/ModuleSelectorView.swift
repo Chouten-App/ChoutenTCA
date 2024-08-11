@@ -173,7 +173,7 @@ public class ModuleSelectorView: UIViewController, UIScrollViewDelegate, ModuleC
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard scrollView == repoSwitcherScroll else { return }
 
-        let centeredIndex = Int(scrollView.contentOffset.x / scrollView.frame.width)
+        let centeredIndex = Int((scrollView.contentOffset.x / scrollView.frame.width).rounded())
 
         if centeredIndex < repos.count {
             let centeredRepo = repos[centeredIndex]

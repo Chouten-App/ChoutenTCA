@@ -171,22 +171,11 @@ class Relay: ObservableObject {
         context.setObject(consoleError, forKeyedSubscript: "consoleError" as NSString)
         context.evaluateScript("""
             function getStackDetails() {
-                var error = new Error();
-                var stack = error.stack.split("\\n")[2];
-                var match = stack.match(/(\\w+\\.js):(\\d+):(\\d+)/);
-                if (match) {
-                    return {
-                        url: match[1],
-                        line: parseInt(match[2], 10),
-                        column: parseInt(match[3], 10)
-                    };
-                } else {
-                    return {
-                        url: "",
-                        line: 0,
-                        column: 0
-                    };
-                }
+                return {
+                    url: "hm",
+                    line: 0,
+                    column: 0
+                };
             }
 
             console.log = function(message) {

@@ -88,10 +88,10 @@ extension JSValue {
                 var pagination = [Pagination]()
                 for itemDict in listDictArray {
                     guard let id = itemDict["id"] as? String,
-                          let title = itemDict["title"] as? String,
                           let itemsDict = itemDict["items"] as? [[String: Any]] else {
                         continue
                     }
+                    let title = itemDict["title"] as? String
                     var mediaItems = [MediaItem]()
                     for item in itemsDict {
                         guard

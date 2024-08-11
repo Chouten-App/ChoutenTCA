@@ -6,11 +6,14 @@
 //
 
 import Architecture
+import Info
 import SharedModels
 import UIKit
 
 class SearchCell: UICollectionViewCell {
     static let reuseIdentifier: String = "SearchCell"
+
+    var data: SearchData? = nil
 
     let imageView: UIImageView = {
         let view = UIImageView()
@@ -77,6 +80,10 @@ class SearchCell: UICollectionViewCell {
 
         stackView.setCustomSpacing(4, after: imageView)
 
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        contentView.isUserInteractionEnabled = true
+        contentView.addGestureRecognizer(tapGestureRecognizer)
+
         NSLayoutConstraint.activate([
             imageView.widthAnchor.constraint(equalToConstant: 100),
             imageView.heightAnchor.constraint(equalToConstant: 150),
@@ -100,6 +107,7 @@ class SearchCell: UICollectionViewCell {
     }
 
     public func configure(with data: SearchData) {
+        self.data = data
         imageView.setAsyncImage(url: data.poster)
 
         indicatorLabel.text = data.indicator
@@ -111,5 +119,19 @@ class SearchCell: UICollectionViewCell {
         if data.indicator.isEmpty {
             indicator.alpha = 0.0
         }
+    }
+
+    @objc func handleTap() {
+        guard let scenes = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = scenes.windows.first,
+              let navController = window.rootViewController as? UINavigationController,
+            let data else {
+            return
+        }
+
+        let tempVC = InfoViewRefactor(url: data.url)
+
+        navController.navigationBar.isHidden = true
+        navController.pushViewController(tempVC, animated: true)
     }
 }
