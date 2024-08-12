@@ -11,6 +11,7 @@ import SharedModels
 import UIKit
 import Video
 import ViewComponents
+import ComposableArchitecture
 import Book
 
 public protocol SuccessInfoVCDelegate: AnyObject {
@@ -205,30 +206,19 @@ public class SuccessInfoVC: UIViewController {
         }
     }
     
-    /*
     @objc func bookmarkButtonTapped() {
-        let collections = delegate?.fetchCollections() ?? []
-        let alert = UIAlertController(title: "Select Collection", message: "Choose a collection to add the item to:", preferredStyle: .actionSheet)
+        let collectionMenuVC = CollectionMenuVC()
+        collectionMenuVC.delegate = self
 
-        for collection in collections {
-            let action = UIAlertAction(title: collection.title, style: .default) { _ in
-                self.delegate?.addItemToCollection(collection: collection)
-            }
-            alert.addAction(action)
+        if let sheet = collectionMenuVC.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
         }
 
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
-        // For iPad compatibility
-        if let popoverController = alert.popoverPresentationController {
-            popoverController.sourceView = self.view
-            popoverController.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
-            popoverController.permittedArrowDirections = []
-        }
-
-        present(alert, animated: true, completion: nil)
+        present(collectionMenuVC, animated: true, completion: nil)
     }
-     */
+    /*
     @objc func bookmarkButtonTapped() {
         guard let collections = delegate?.fetchCollections(),
               let isInCollections = delegate?.fetchIsInCollections() else {
@@ -263,6 +253,7 @@ public class SuccessInfoVC: UIViewController {
 
         present(alert, animated: true, completion: nil)
     }
+     */
 
     // MARK: Layout
     private func setupConstraints() {
@@ -418,5 +409,174 @@ extension SuccessInfoVC: SeasonSelectorDelegate {
 extension SuccessInfoVC: SeasonDisplayDelegate {
     public func didChangePagination(to index: Int) {
         self.mediaListDisplay.updateData(with: index)
+    }
+}
+
+extension SuccessInfoVC: CollectionMenuVCDelegate {
+    func fetchCollections() -> [SharedModels.HomeSection] {
+        return self.delegate!.fetchCollections()
+    }
+    
+    func fetchIsInCollections() -> [SharedModels.HomeSectionChecks] {
+        return self.delegate!.fetchIsInCollections()
+    }
+    
+    func addItemToCollection(collection: SharedModels.HomeSection) {
+        return self.delegate!.addItemToCollection(collection: collection)
+    }
+    
+    func removeFromCollection(collection: SharedModels.HomeSection) {
+        return self.delegate!.removeFromCollection(collection: collection)
+    }
+}
+
+protocol CollectionMenuVCDelegate: AnyObject {
+    func fetchCollections() -> [HomeSection]
+    func fetchIsInCollections() -> [HomeSectionChecks]
+    func addItemToCollection(collection: HomeSection)
+    func removeFromCollection(collection: HomeSection)
+}
+
+class CollectionMenuVC: UIViewController {
+    weak var delegate: CollectionMenuVCDelegate?
+
+    private var collections: [HomeSection] = []
+    private var isInCollections: [HomeSectionChecks] = []
+
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Collections"
+        label.font = UIFont.boldSystemFont(ofSize: 20)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
+    private let tableView = UITableView()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        view.backgroundColor = UIColor.systemBackground
+        setupUI()
+        loadCollectionsData()
+    }
+
+    private func setupUI() {
+        // Add title label
+        view.addSubview(titleLabel)
+        NSLayoutConstraint.activate([
+            titleLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 16),
+            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+        ])
+
+        // Setup table view
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.register(CollectionCell.self, forCellReuseIdentifier: "CollectionCell")
+        view.addSubview(tableView)
+
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
+
+    private func loadCollectionsData() {
+        guard let delegate = delegate else { return }
+        collections = delegate.fetchCollections()
+        isInCollections = delegate.fetchIsInCollections()
+        tableView.reloadData()
+    }
+}
+
+extension CollectionMenuVC: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return collections.count
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CollectionCell", for: indexPath) as! CollectionCell
+        let collection = collections[indexPath.row]
+        let isInCollection = isInCollections[indexPath.row].isInCollection
+
+        cell.configure(with: collection.title, isInCollection: isInCollection)
+        return cell
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let collection = collections[indexPath.row]
+        let isInCollection = isInCollections[indexPath.row].isInCollection
+
+        if isInCollection {
+            delegate?.removeFromCollection(collection: collection)
+        } else {
+            delegate?.addItemToCollection(collection: collection)
+        }
+
+        // Toggle the state
+        isInCollections[indexPath.row].isInCollection.toggle()
+
+        // Update the cell
+        tableView.reloadRows(at: [indexPath], with: .automatic)
+    }
+}
+
+// Custom UITableViewCell with circular radio button
+class CollectionCell: UITableViewCell {
+    private let titleLabel = UILabel()
+    private let radioButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.layer.cornerRadius = 12
+        button.layer.borderWidth = 2
+        button.layer.borderColor = UIColor.label.cgColor
+        button.clipsToBounds = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        setupUI()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func setupUI() {
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(radioButton)
+
+        NSLayoutConstraint.activate([
+            radioButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            radioButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            radioButton.widthAnchor.constraint(equalToConstant: 24),
+            radioButton.heightAnchor.constraint(equalToConstant: 24),
+
+            titleLabel.leadingAnchor.constraint(equalTo: radioButton.trailingAnchor, constant: 16),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+        ])
+    }
+
+    func configure(with title: String, isInCollection: Bool) {
+        titleLabel.text = title
+        updateRadioButton(isInCollection: isInCollection)
+    }
+
+    private func updateRadioButton(isInCollection: Bool) {
+        if isInCollection {
+            radioButton.setTitle("✓", for: .normal)
+            radioButton.backgroundColor = UIColor.label
+            radioButton.setTitleColor(UIColor.systemBackground, for: .normal)
+        } else {
+            radioButton.setTitle("", for: .normal)
+            radioButton.backgroundColor = UIColor.clear
+        }
     }
 }

@@ -29,7 +29,7 @@ public struct HomeSection: Codable, Equatable, Hashable {
 
 public struct HomeSectionChecks: Codable, Equatable, Hashable {
     public let id: String
-    public let isInCollection: Bool
+    public var isInCollection: Bool
 
     public init(id: String, isInCollection: Bool) {
         self.id = id
