@@ -1,0 +1,846 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1010"
+   version = "1.3">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "93E9E330FC2CE7458D9C925F"
+               BuildableName = "App.framework"
+               BlueprintName = "App"
+               ReferencedContainer = "container:Targets/Features/App/App.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "A69E155827011725235BBB83"
+               BuildableName = "Architecture.framework"
+               BlueprintName = "Architecture"
+               ReferencedContainer = "container:Targets/Shared/Architecture/Architecture.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "CDBD4207B6EFAD8370A2475D"
+               BuildableName = "Book.framework"
+               BlueprintName = "Book"
+               ReferencedContainer = "container:Targets/Features/Book/Book.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "362B9BBE2A166F3A9E2F213F"
+               BuildableName = "CSQLite.framework"
+               BlueprintName = "CSQLite"
+               ReferencedContainer = "container:.build/checkouts/GRDB.swift/GRDB.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "7CB5E98E45FAAF594F8A0F1E"
+               BuildableName = "CasePaths.framework"
+               BlueprintName = "CasePaths"
+               ReferencedContainer = "container:.build/checkouts/swift-case-paths/swift-case-paths.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DBD1C6C6B55C0106C2711D38"
+               BuildableName = "CasePathsMacros"
+               BlueprintName = "CasePathsMacros"
+               ReferencedContainer = "container:.build/checkouts/swift-case-paths/swift-case-paths.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "2AF15A2F94C65C8E773B0226"
+               BuildableName = "Chouten.app"
+               BlueprintName = "Chouten"
+               ReferencedContainer = "container:Platforms/iOS/Chouten.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "A1DFC045089F7370FF821C6F"
+               BuildableName = "Clocks.framework"
+               BlueprintName = "Clocks"
+               ReferencedContainer = "container:.build/checkouts/swift-clocks/swift-clocks.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "62E835EE2C76720CE1A57783"
+               BuildableName = "CombineSchedulers.framework"
+               BlueprintName = "CombineSchedulers"
+               ReferencedContainer = "container:.build/checkouts/combine-schedulers/combine-schedulers.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "BC4117F08C3E566F28BA80F7"
+               BuildableName = "ComposableArchitecture.framework"
+               BlueprintName = "ComposableArchitecture"
+               ReferencedContainer = "container:.build/checkouts/swift-composable-architecture/swift-composable-architecture.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "AE906E2A067FA0ACAD789F11"
+               BuildableName = "ComposableArchitectureMacros"
+               BlueprintName = "ComposableArchitectureMacros"
+               ReferencedContainer = "container:.build/checkouts/swift-composable-architecture/swift-composable-architecture.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "FB5353CF964F76EE56056930"
+               BuildableName = "ConcurrencyExtras.framework"
+               BlueprintName = "ConcurrencyExtras"
+               ReferencedContainer = "container:.build/checkouts/swift-concurrency-extras/swift-concurrency-extras.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "5D71332DAEA508F122BB62C1"
+               BuildableName = "CustomDump.framework"
+               BlueprintName = "CustomDump"
+               ReferencedContainer = "container:.build/checkouts/swift-custom-dump/swift-custom-dump.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "06D5FA6C8EF4FF36396646FC"
+               BuildableName = "DatabaseClient.framework"
+               BlueprintName = "DatabaseClient"
+               ReferencedContainer = "container:Targets/Clients/DatabaseClient/DatabaseClient.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "56E5E7D15D17320671D69B9C"
+               BuildableName = "Dependencies.framework"
+               BlueprintName = "Dependencies"
+               ReferencedContainer = "container:.build/checkouts/swift-dependencies/swift-dependencies.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "E7F33AB21A26F4B64244D7FD"
+               BuildableName = "DependenciesMacros.framework"
+               BlueprintName = "DependenciesMacros"
+               ReferencedContainer = "container:.build/checkouts/swift-dependencies/swift-dependencies.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B6C2866B4487873862C7B958"
+               BuildableName = "DependenciesMacrosPlugin"
+               BlueprintName = "DependenciesMacrosPlugin"
+               ReferencedContainer = "container:.build/checkouts/swift-dependencies/swift-dependencies.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "BB16B6D5C631EAA2FDE1611D"
+               BuildableName = "Discover.framework"
+               BlueprintName = "Discover"
+               ReferencedContainer = "container:Targets/Features/Discover/Discover.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "F9A6075BAB3626AD03D058C6"
+               BuildableName = "FoundationHelpers.framework"
+               BlueprintName = "FoundationHelpers"
+               ReferencedContainer = "container:Targets/Shared/FoundationHelpers/FoundationHelpers.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3ED582F0F3B373C0FB2085D6"
+               BuildableName = "GRDB.framework"
+               BlueprintName = "GRDB"
+               ReferencedContainer = "container:.build/checkouts/GRDB.swift/GRDB.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "52E844066D197E3B81FA748F"
+               BuildableName = "Home.framework"
+               BlueprintName = "Home"
+               ReferencedContainer = "container:Targets/Features/Home/Home.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "210AE3919E1578F6373794C3"
+               BuildableName = "IdentifiedCollections.framework"
+               BlueprintName = "IdentifiedCollections"
+               ReferencedContainer = "container:.build/checkouts/swift-identified-collections/swift-identified-collections.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "CC5DFC91ED15F4DD8783D1D5"
+               BuildableName = "Info.framework"
+               BlueprintName = "Info"
+               ReferencedContainer = "container:Targets/Features/Info/Info.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "6A7B38BD8A72F03E40DC88E0"
+               BuildableName = "InternalCollectionsUtilities.framework"
+               BlueprintName = "InternalCollectionsUtilities"
+               ReferencedContainer = "container:.build/checkouts/swift-collections/swift-collections.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C9E0BC78A0E529700E4AF196"
+               BuildableName = "Nuke.framework"
+               BlueprintName = "Nuke"
+               ReferencedContainer = "container:.build/checkouts/Nuke/Nuke.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "E07053DCBDB7F16C14688195"
+               BuildableName = "OrderedCollections.framework"
+               BlueprintName = "OrderedCollections"
+               ReferencedContainer = "container:.build/checkouts/swift-collections/swift-collections.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D87A673CA6042584AEA9877A"
+               BuildableName = "Perception.framework"
+               BlueprintName = "Perception"
+               ReferencedContainer = "container:.build/checkouts/swift-perception/swift-perception.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "FEF8F0119F315E02A6904938"
+               BuildableName = "PerceptionMacros"
+               BlueprintName = "PerceptionMacros"
+               ReferencedContainer = "container:.build/checkouts/swift-perception/swift-perception.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "52201E1B8E775D8B067EC7D5"
+               BuildableName = "RelayClient.framework"
+               BlueprintName = "RelayClient"
+               ReferencedContainer = "container:Targets/Clients/RelayClient/RelayClient.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C8695E49ABEEA37BA9BB04C1"
+               BuildableName = "Repo.framework"
+               BlueprintName = "Repo"
+               ReferencedContainer = "container:Targets/Features/Repo/Repo.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "856DB084667C9FB8F829C044"
+               BuildableName = "RepoClient.framework"
+               BlueprintName = "RepoClient"
+               ReferencedContainer = "container:Targets/Clients/RepoClient/RepoClient.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C8340F58B0B1AD7EA1B1F833"
+               BuildableName = "Search.framework"
+               BlueprintName = "Search"
+               ReferencedContainer = "container:Targets/Features/Search/Search.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "5CBE5E872A9D294D00FEBD52"
+               BuildableName = "Semver.framework"
+               BlueprintName = "Semver"
+               ReferencedContainer = "container:.build/checkouts/Semver/Semver.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "29C23B3A94882DAAAE23A78D"
+               BuildableName = "Settings.framework"
+               BlueprintName = "Settings"
+               ReferencedContainer = "container:Targets/Features/Settings/Settings.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "BD4F3A7F870460D9E929CF6A"
+               BuildableName = "SharedModels.framework"
+               BlueprintName = "SharedModels"
+               ReferencedContainer = "container:Targets/Shared/SharedModels/SharedModels.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "114FBD9E0C8A1E594FBAE26F"
+               BuildableName = "SwiftBasicFormat.framework"
+               BlueprintName = "SwiftBasicFormat"
+               ReferencedContainer = "container:.build/checkouts/swift-syntax/swift-syntax.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "BAA2DFDEB950C2DAB26247A4"
+               BuildableName = "SwiftCompilerPlugin.framework"
+               BlueprintName = "SwiftCompilerPlugin"
+               ReferencedContainer = "container:.build/checkouts/swift-syntax/swift-syntax.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "E93ACA4C8B15E51B05C2F61D"
+               BuildableName = "SwiftCompilerPluginMessageHandling.framework"
+               BlueprintName = "SwiftCompilerPluginMessageHandling"
+               ReferencedContainer = "container:.build/checkouts/swift-syntax/swift-syntax.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "748FFC58591037186F21E4AF"
+               BuildableName = "SwiftDiagnostics.framework"
+               BlueprintName = "SwiftDiagnostics"
+               ReferencedContainer = "container:.build/checkouts/swift-syntax/swift-syntax.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B81054C7484CA28454D8B4CE"
+               BuildableName = "SwiftOperators.framework"
+               BlueprintName = "SwiftOperators"
+               ReferencedContainer = "container:.build/checkouts/swift-syntax/swift-syntax.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "CB4CE5083ACF4EE5DCEA043E"
+               BuildableName = "SwiftParser.framework"
+               BlueprintName = "SwiftParser"
+               ReferencedContainer = "container:.build/checkouts/swift-syntax/swift-syntax.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DF2FC39D6DEDC29667D46596"
+               BuildableName = "SwiftParserDiagnostics.framework"
+               BlueprintName = "SwiftParserDiagnostics"
+               ReferencedContainer = "container:.build/checkouts/swift-syntax/swift-syntax.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "F625BBB9CD69788B960E4ADB"
+               BuildableName = "SwiftSyntax.framework"
+               BlueprintName = "SwiftSyntax"
+               ReferencedContainer = "container:.build/checkouts/swift-syntax/swift-syntax.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B0A8CAFAE3CA114D679D02CD"
+               BuildableName = "SwiftSyntax509.framework"
+               BlueprintName = "SwiftSyntax509"
+               ReferencedContainer = "container:.build/checkouts/swift-syntax/swift-syntax.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "9B5FEE59760A931CD91D78F3"
+               BuildableName = "SwiftSyntax510.framework"
+               BlueprintName = "SwiftSyntax510"
+               ReferencedContainer = "container:.build/checkouts/swift-syntax/swift-syntax.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "6B23134A13672C26A2911FCE"
+               BuildableName = "SwiftSyntaxBuilder.framework"
+               BlueprintName = "SwiftSyntaxBuilder"
+               ReferencedContainer = "container:.build/checkouts/swift-syntax/swift-syntax.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "43F82D27B454B21563A235E0"
+               BuildableName = "SwiftSyntaxMacroExpansion.framework"
+               BlueprintName = "SwiftSyntaxMacroExpansion"
+               ReferencedContainer = "container:.build/checkouts/swift-syntax/swift-syntax.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "66BC27FFC6C6DA572EEAEC5C"
+               BuildableName = "SwiftSyntaxMacros.framework"
+               BlueprintName = "SwiftSyntaxMacros"
+               ReferencedContainer = "container:.build/checkouts/swift-syntax/swift-syntax.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "1E1BEF9F3C28FB737CD74F83"
+               BuildableName = "SwiftUINavigationCore.framework"
+               BlueprintName = "SwiftUINavigationCore"
+               ReferencedContainer = "container:.build/checkouts/swiftui-navigation/swiftui-navigation.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "E62465CC6D4BC0C4C94E97E0"
+               BuildableName = "Tagged.framework"
+               BlueprintName = "Tagged"
+               ReferencedContainer = "container:.build/checkouts/swift-tagged/swift-tagged.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "49552F1D16DF9C5EDF048D50"
+               BuildableName = "Video.framework"
+               BlueprintName = "Video"
+               ReferencedContainer = "container:Targets/Features/Video/Video.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "6E8B72E2A5BA719C9CE5A96F"
+               BuildableName = "ViewComponents.framework"
+               BlueprintName = "ViewComponents"
+               ReferencedContainer = "container:Targets/Shared/ViewComponents/ViewComponents.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "6D1BFFAE456610AE81A4206D"
+               BuildableName = "XCTestDynamicOverlay.framework"
+               BlueprintName = "XCTestDynamicOverlay"
+               ReferencedContainer = "container:.build/checkouts/xctest-dynamic-overlay/xctest-dynamic-overlay.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "FAD0B38A87525BEBB1521EC9"
+               BuildableName = "ZIPFoundation.framework"
+               BlueprintName = "ZIPFoundation"
+               ReferencedContainer = "container:.build/checkouts/ZIPFoundation/ZIPFoundation.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "324592B1E41473DB71B7DE9A"
+               BuildableName = "ZIPFoundation_ZIPFoundation.bundle"
+               BlueprintName = "ZIPFoundation_ZIPFoundation"
+               ReferencedContainer = "container:.build/checkouts/ZIPFoundation/ZIPFoundation.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "799C5D97FA7841560405B32D"
+               BuildableName = "swift_composable_architecture_ComposableArchitecture.bundle"
+               BlueprintName = "swift-composable-architecture_ComposableArchitecture"
+               ReferencedContainer = "container:.build/checkouts/swift-composable-architecture/swift-composable-architecture.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <Testables>
+      </Testables>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "93E9E330FC2CE7458D9C925F"
+            BuildableName = "App.framework"
+            BlueprintName = "App"
+            ReferencedContainer = "container:Targets/Features/App/App.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "93E9E330FC2CE7458D9C925F"
+            BuildableName = "App.framework"
+            BlueprintName = "App"
+            ReferencedContainer = "container:Targets/Features/App/App.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>

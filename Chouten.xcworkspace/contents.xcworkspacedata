@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <Group
+      location = "group:Platforms"
+      name = "Platforms">
+      <FileRef
+         location = "group:iOS/Chouten.xcodeproj">
+      </FileRef>
+   </Group>
+   <Group
+      location = "group:Targets"
+      name = "Targets">
+      <Group
+         location = "group:Clients"
+         name = "Clients">
+         <FileRef
+            location = "group:DatabaseClient/DatabaseClient.xcodeproj">
+         </FileRef>
+         <FileRef
+            location = "group:RelayClient/RelayClient.xcodeproj">
+         </FileRef>
+         <FileRef
+            location = "group:RepoClient/RepoClient.xcodeproj">
+         </FileRef>
+      </Group>
+      <Group
+         location = "group:Features"
+         name = "Features">
+         <FileRef
+            location = "group:App/App.xcodeproj">
+         </FileRef>
+         <FileRef
+            location = "group:Book/Book.xcodeproj">
+         </FileRef>
+         <FileRef
+            location = "group:Discover/Discover.xcodeproj">
+         </FileRef>
+         <FileRef
+            location = "group:Home/Home.xcodeproj">
+         </FileRef>
+         <FileRef
+            location = "group:Info/Info.xcodeproj">
+         </FileRef>
+         <FileRef
+            location = "group:Repo/Repo.xcodeproj">
+         </FileRef>
+         <FileRef
+            location = "group:Search/Search.xcodeproj">
+         </FileRef>
+         <FileRef
+            location = "group:Settings/Settings.xcodeproj">
+         </FileRef>
+         <FileRef
+            location = "group:Video/Video.xcodeproj">
+         </FileRef>
+      </Group>
+      <Group
+         location = "group:Shared"
+         name = "Shared">
+         <FileRef
+            location = "group:Architecture/Architecture.xcodeproj">
+         </FileRef>
+         <FileRef
+            location = "group:FoundationHelpers/FoundationHelpers.xcodeproj">
+         </FileRef>
+         <FileRef
+            location = "group:SharedModels/SharedModels.xcodeproj">
+         </FileRef>
+         <FileRef
+            location = "group:ViewComponents/ViewComponents.xcodeproj">
+         </FileRef>
+      </Group>
+   </Group>
+   <Group
+      location = "container:"
+      name = "Dependencies">
+      <FileRef
+         location = "group:.build/checkouts/GRDB.swift/GRDB.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/Nuke/Nuke.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/Semver/Semver.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/ZIPFoundation/ZIPFoundation.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/combine-schedulers/combine-schedulers.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/swift-case-paths/swift-case-paths.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/swift-clocks/swift-clocks.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/swift-collections/swift-collections.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/swift-composable-architecture/swift-composable-architecture.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/swift-concurrency-extras/swift-concurrency-extras.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/swift-custom-dump/swift-custom-dump.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/swift-dependencies/swift-dependencies.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/swift-identified-collections/swift-identified-collections.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/swift-perception/swift-perception.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/swift-syntax/swift-syntax.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/swift-tagged/swift-tagged.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/swiftui-navigation/swiftui-navigation.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:.build/checkouts/xctest-dynamic-overlay/xctest-dynamic-overlay.xcodeproj">
+      </FileRef>
+   </Group>
+</Workspace>

@@ -82,7 +82,7 @@ iOSInjectionProject/
 
 ### Projects ###
 *.xcodeproj
-*.xcworkspace
+#*.xcworkspace
 
 ### Tuist ###
 Tuist/Dependencies
