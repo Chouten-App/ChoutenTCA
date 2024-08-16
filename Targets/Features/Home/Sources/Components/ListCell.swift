@@ -66,20 +66,41 @@ class ListCell: UICollectionViewCell, SelfConfiguringCell {
         return label
     }()
     
+    let whiteCircleImageView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(systemName: "circle.fill"))
+        imageView.tintColor = .white
+        imageView.isHidden = true
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    let checkmarkImageView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(systemName: "checkmark.circle.fill"))
+        imageView.tintColor = .systemBlue
+        imageView.isHidden = true
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
     private var tapGestureRecognizer: UITapGestureRecognizer!
     private var longPressGestureRecognizer: UILongPressGestureRecognizer!
 
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        indicator.addSubview(indicatorLabel)
-        imageView.addSubview(indicator)
-
+        contentView.addSubview(imageView)
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(countLabel)
+        contentView.addSubview(whiteCircleImageView)
+        contentView.addSubview(checkmarkImageView)
+        
         let stackView = UIStackView(arrangedSubviews: [imageView, titleLabel, countLabel])
         stackView.axis = .vertical
         stackView.translatesAutoresizingMaskIntoConstraints = false
-
         contentView.addSubview(stackView)
+
+        indicator.addSubview(indicatorLabel)
+        imageView.addSubview(indicator)
 
         stackView.setCustomSpacing(4, after: imageView)
         
@@ -88,7 +109,6 @@ class ListCell: UICollectionViewCell, SelfConfiguringCell {
         tapGestureRecognizer.numberOfTouchesRequired = 1
         tapGestureRecognizer.numberOfTapsRequired = 1
 
-        // Add a UILongPressGestureRecognizer for long press
         longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
         longPressGestureRecognizer.delegate = self
         longPressGestureRecognizer.minimumPressDuration = 0.2
@@ -104,13 +124,23 @@ class ListCell: UICollectionViewCell, SelfConfiguringCell {
             stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor),
 
-            indicator.widthAnchor.constraint(equalTo: indicatorLabel.widthAnchor, constant: 16), // Add some padding if needed
+            indicator.widthAnchor.constraint(equalTo: indicatorLabel.widthAnchor, constant: 16),
             indicator.heightAnchor.constraint(equalTo: indicatorLabel.heightAnchor, constant: 8),
             indicator.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
             indicator.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
 
             indicatorLabel.trailingAnchor.constraint(equalTo: indicator.trailingAnchor, constant: -8),
-            indicatorLabel.topAnchor.constraint(equalTo: indicator.topAnchor, constant: 4)
+            indicatorLabel.topAnchor.constraint(equalTo: indicator.topAnchor, constant: 4),
+            
+            whiteCircleImageView.widthAnchor.constraint(equalToConstant: 32),
+            whiteCircleImageView.heightAnchor.constraint(equalToConstant: 32),
+            whiteCircleImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 4),
+            whiteCircleImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4),
+            
+            checkmarkImageView.widthAnchor.constraint(equalToConstant: 24),
+            checkmarkImageView.heightAnchor.constraint(equalToConstant: 24),
+            checkmarkImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+            checkmarkImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8)
         ])
     }
 
@@ -122,32 +152,44 @@ class ListCell: UICollectionViewCell, SelfConfiguringCell {
         self.data = data
         
         imageView.setAsyncImage(url: data.poster)
-
         indicatorLabel.text = data.indicator
         titleLabel.text = data.titles.primary
-        // swiftlint:disable force_unwrapping
         countLabel.text = "\(data.current != nil ? String(data.current!) : "~")/\(data.total != nil ? String(data.total!) : "~")"
-        // swiftlint:enable force_unwrapping
 
-        if data.indicator.isEmpty {
-            indicator.alpha = 0.0
-        }
+        indicator.alpha = data.indicator.isEmpty ? 0.0 : 1.0
     }
 }
 
 extension ListCell: UIGestureRecognizerDelegate {
     @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
-        guard let scenes = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let window = scenes.windows.first,
-              let navController = window.rootViewController as? UINavigationController,
-              let data else {
-            return
+        if let collectionView = self.superview?.superview as? UICollectionView,
+           let homeView = collectionView.delegate as? HomeView {
+            
+            guard let indexPath = collectionView.indexPath(for: self) else { return }
+            
+            if homeView.isSelectionMode {
+                if collectionView.indexPathsForSelectedItems?.contains(indexPath) == true {
+                    collectionView.deselectItem(at: indexPath, animated: true)
+                    homeView.selectedItems.remove(indexPath)
+                } else {
+                    collectionView.selectItem(at: indexPath, animated: true, scrollPosition: [])
+                    homeView.selectedItems.insert(indexPath)
+                }
+                homeView.updateUIForSelection()
+            } else {
+                // Perform the navigation as usual
+                guard let scenes = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                      let window = scenes.windows.first,
+                      let navController = window.rootViewController as? UINavigationController,
+                      let data = self.data else {
+                    return
+                }
+                
+                let tempVC = InfoViewRefactor(url: data.url)
+                navController.navigationBar.isHidden = true
+                navController.pushViewController(tempVC, animated: true)
+            }
         }
-        
-        let tempVC = InfoViewRefactor(url: data.url)
-
-        navController.navigationBar.isHidden = true
-        navController.pushViewController(tempVC, animated: true)
     }
 
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
@@ -176,5 +218,27 @@ extension ListCell: UIGestureRecognizerDelegate {
         }
         // Otherwise, allow simultaneous recognition for other gestures
         return true
+    }
+    
+    public func setSelected(_ selected: Bool) {
+        DispatchQueue.main.async {
+            if selected {
+                UIView.animate(withDuration: 0.3) {
+                    self.transform = CGAffineTransform(scaleX: 1.02, y: 1.02)
+                    self.checkmarkImageView.isHidden = false
+                    self.whiteCircleImageView.isHidden = false
+                    self.checkmarkImageView.layer.zPosition = 99
+                    self.whiteCircleImageView.layer.zPosition = 99
+                }
+            } else {
+                UIView.animate(withDuration: 0.3) {
+                    self.transform = .identity
+                    self.checkmarkImageView.isHidden = true
+                    self.whiteCircleImageView.isHidden = true
+                    self.checkmarkImageView.layer.zPosition = 0
+                    self.whiteCircleImageView.layer.zPosition = 0
+                }
+            }
+        }
     }
 }

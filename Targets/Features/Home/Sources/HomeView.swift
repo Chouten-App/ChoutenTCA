@@ -6,7 +6,6 @@
 //
 
 import Architecture
-import Info
 import Combine
 import ComposableArchitecture
 import UIKit
@@ -20,6 +19,9 @@ public class HomeView: UIViewController {
     public var dataSource: UICollectionViewDiffableDataSource<HomeSection, HomeData>?
     private var refreshControl = UIRefreshControl()
     
+    public var isSelectionMode: Bool = false
+    public var selectedItems: Set<IndexPath> = []
+    
     let soonLabel: UILabel = {
         let label = UILabel()
         label.text = "Coming Soon!"
@@ -29,6 +31,8 @@ public class HomeView: UIViewController {
     }()
     
     let addButton = CircleButton(icon: "plus");
+    let deleteButton = CircleButton(icon: "trash")
+    let selectButton = CircleButton(icon: "ellipsis")
     
     public init() {
         store = .init(
@@ -71,6 +75,7 @@ public class HomeView: UIViewController {
         collectionView.contentInset = UIEdgeInsets(top: 40, left: 0, bottom: 0, right: 0)
         collectionView.showsVerticalScrollIndicator = false
         collectionView.showsHorizontalScrollIndicator = false
+        collectionView.allowsMultipleSelection = true // Enable multi-selection
         
         refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
         collectionView.refreshControl = refreshControl
@@ -79,11 +84,15 @@ public class HomeView: UIViewController {
         addButton.onTap = {
             self.addButtonTapped()
         }
+        
+        selectButton.addTarget(self, action: #selector(selectButtonTapped), for: .touchUpInside)
+        deleteButton.addTarget(self, action: #selector(deleteSelectedItems), for: .touchUpInside)
 
         view.addSubview(collectionView)
         view.addSubview(addButton)
+        view.addSubview(selectButton)
+        view.addSubview(deleteButton)
 
-        // register cells
         collectionView.register(CarouselCell.self, forCellWithReuseIdentifier: CarouselCell.reuseIdentifier)
         collectionView.register(ListCell.self, forCellWithReuseIdentifier: ListCell.reuseIdentifier)
         collectionView.register(
@@ -91,12 +100,15 @@ public class HomeView: UIViewController {
             forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
             withReuseIdentifier: SectionHeader.reuseIdentifier
         )
+        
+        collectionView.delegate = self
     }
+
     
     @objc private func handleRefresh() {
-        store.send(.view(.onAppear))  // Re-trigger .onAppear to fetch data
+        store.send(.view(.onAppear))
         reloadData()
-        refreshControl.endRefreshing()  // Stop the refresh control
+        refreshControl.endRefreshing()
     }
     
     func configure<T: SelfConfiguringCell>(_ cellType: T.Type, with data: HomeData, for indexPath: IndexPath) -> T {
@@ -124,8 +136,20 @@ public class HomeView: UIViewController {
             addButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             addButton.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 60),
             addButton.widthAnchor.constraint(equalToConstant: 80),
-            addButton.heightAnchor.constraint(equalToConstant: 80)
+            addButton.heightAnchor.constraint(equalToConstant: 80),
+            
+            selectButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            selectButton.bottomAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 100),
+            selectButton.widthAnchor.constraint(equalToConstant: 100),
+            selectButton.heightAnchor.constraint(equalToConstant: 50),
+            
+            deleteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            deleteButton.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 60),
+            deleteButton.widthAnchor.constraint(equalToConstant: 80),
+            deleteButton.heightAnchor.constraint(equalToConstant: 80)
         ])
+        
+        deleteButton.alpha = 0
     }
     
     func createDataSource() {
@@ -245,6 +269,112 @@ public class HomeView: UIViewController {
         
         self.present(alertController, animated: true, completion: nil)
     }
+    
+    @objc private func selectButtonTapped() {
+        isSelectionMode.toggle()
+        
+        if isSelectionMode {
+            collectionView.allowsMultipleSelection = true
+            
+            let initialSelect = self.selectButton.frame
+            
+            UIView.animate(withDuration: 0.3, animations: {
+                self.selectButton.transform = CGAffineTransform(translationX: self.addButton.frame.minX - self.selectButton.frame.minX, y: -5)
+                self.selectButton.setTitle("Done", for: .normal)
+                self.selectButton.imageView?.isHidden = true
+                self.selectButton.backgroundColor = UIColor(.clear)
+                self.selectButton.layer.borderWidth = 0
+                
+                self.addButton.alpha = 0
+                
+                self.deleteButton.transform = CGAffineTransform(translationX: initialSelect.minX - self.deleteButton.frame.minX, y: 0)
+                self.deleteButton.alpha = 1
+            })
+        } else {
+            collectionView.allowsMultipleSelection = false
+            selectedItems.removeAll()
+            
+            UIView.animate(withDuration: 0.3, animations: {
+                self.selectButton.setTitle("", for: .normal)
+                self.selectButton.imageView?.isHidden = false
+                self.selectButton.backgroundColor = ThemeManager.shared.getColor(for: .overlay)
+                self.selectButton.layer.borderWidth = 0.5
+                self.selectButton.transform = .identity
+                
+                self.addButton.alpha = 1
+                
+                self.deleteButton.transform = .identity
+                self.deleteButton.alpha = 0
+            }) { _ in
+                self.collectionView.visibleCells.forEach { cell in
+                    if let listCell = cell as? ListCell,
+                       let _ = self.collectionView.indexPath(for: cell) {
+                        listCell.setSelected(false)
+                    }
+                }
+                
+                self.collectionView.indexPathsForSelectedItems?.forEach { indexPath in
+                    self.collectionView.deselectItem(at: indexPath, animated: false)
+                }
+            }
+            
+            updateUIForSelection()
+        }
+        
+        updateUIForSelection()
+    }
+    
+    @objc private func deleteSelectedItems() {
+        isSelectionMode.toggle()
+        
+        let selectedData = selectedItems.map { indexPath in
+            store.collections[indexPath.section].list[indexPath.item]
+        }
+        
+        // Remove selected items from data source
+        for indexPath in selectedItems {
+            print("Removing \(indexPath)")
+            //store.collections[indexPath.section].list.remove(at: indexPath.item)
+        }
+        
+        // Update collection view
+        reloadData()
+        
+        // Clear selection
+        selectedItems.removeAll()
+        
+        updateUIForSelection()
+        
+        // Optionally: send a delete action to the store
+        // store.send(.view(.deleteItems(selectedData)))
+        
+        collectionView.allowsMultipleSelection = false
+        selectedItems.removeAll()
+        
+        UIView.animate(withDuration: 0.3, animations: {
+            self.selectButton.setTitle("", for: .normal)
+            self.selectButton.imageView?.isHidden = false
+            self.selectButton.backgroundColor = ThemeManager.shared.getColor(for: .overlay)
+            self.selectButton.layer.borderWidth = 0.5
+            self.selectButton.transform = .identity
+            
+            self.addButton.alpha = 1
+            
+            self.deleteButton.transform = .identity
+            self.deleteButton.alpha = 0
+        }) { _ in
+            self.collectionView.visibleCells.forEach { cell in
+                if let listCell = cell as? ListCell,
+                   let _ = self.collectionView.indexPath(for: cell) {
+                    listCell.setSelected(false)
+                }
+            }
+            
+            self.collectionView.indexPathsForSelectedItems?.forEach { indexPath in
+                self.collectionView.deselectItem(at: indexPath, animated: false)
+            }
+        }
+    }
 
     override public func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
@@ -259,7 +389,35 @@ public class HomeView: UIViewController {
         soonLabel.textColor = ThemeManager.shared.getColor(for: .fg)
     }
     
+    public func updateUIForSelection() {
+        deleteButton.isHidden = !isSelectionMode || selectedItems.isEmpty
+        
+        collectionView.visibleCells.forEach { cell in
+            if let listCell = cell as? ListCell,
+               let indexPath = collectionView.indexPath(for: cell) {
+                listCell.setSelected(selectedItems.contains(indexPath))
+            }
+        }
+    }
+    
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
 }
+
+extension HomeView: UICollectionViewDelegate {
+    public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        if isSelectionMode {
+            selectedItems.insert(indexPath)
+            updateUIForSelection()
+        }
+    }
+    
+    public func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        if isSelectionMode {
+            selectedItems.remove(indexPath)
+            updateUIForSelection()
+        }
+    }
+}
+
