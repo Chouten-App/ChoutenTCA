@@ -333,8 +333,7 @@ public class HomeView: UIViewController {
         
         // Remove selected items from data source
         for indexPath in selectedItems {
-            print("Removing \(indexPath)")
-            //store.collections[indexPath.section].list.remove(at: indexPath.item)
+            store.send(.view(.deleteItem(store.collections[indexPath.section].id, store.collections[indexPath.section].list[indexPath.item])))
         }
         
         // Update collection view
@@ -344,9 +343,6 @@ public class HomeView: UIViewController {
         selectedItems.removeAll()
         
         updateUIForSelection()
-        
-        // Optionally: send a delete action to the store
-        // store.send(.view(.deleteItems(selectedData)))
         
         collectionView.allowsMultipleSelection = false
         selectedItems.removeAll()

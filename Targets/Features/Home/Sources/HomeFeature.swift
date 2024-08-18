@@ -31,6 +31,7 @@ public struct HomeFeature: Reducer {
             case onAppear
             case setCollections(_ data: [HomeSection])
             case createCollection(_ name: String)
+            case deleteItem(_ collectionId: String, _ data: HomeData)
         }
 
         @CasePathable
@@ -72,6 +73,15 @@ public struct HomeFeature: Reducer {
                 case .setCollections(let data):
                     state.collections = data
                     return .none
+                case .deleteItem(let collectionId, let data):
+                    return .run { send in
+                        do {
+                            print("Deleting item for \(data.url)")
+                            try await self.databaseClient.removeFromCollection(collectionId, "", CollectionItem(infoData: InfoData(titles: data.titles, tags: [], description: data.description, poster: data.poster, banner: nil, status: nil, mediaType: "", yearReleased: 0, seasons: [], mediaList: []), url: data.url))
+                        } catch {
+                            print(error.localizedDescription)
+                        }
+                    }
                 case .createCollection(let name):
                     return .run { send in
                         do {
