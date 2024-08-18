@@ -19,6 +19,7 @@ public struct DatabaseClient: Sendable {
     public let isInCollection: @Sendable(_ collectionId: String, _ moduleId: String, _ infoData: CollectionItem) async -> Bool
     public let addToCollection: @Sendable (_ collectionId: String, _ moduleId: String, _ infoData: CollectionItem) async -> Void
     public let removeFromCollection: @Sendable (_ collectionId: String, _ moduleId: String, _ infoData: CollectionItem) async -> Void
+    public let removeCollection: @Sendable (_ collectionId: String, _ moduleId: String) async -> Void
 }
 
 extension DependencyValues {

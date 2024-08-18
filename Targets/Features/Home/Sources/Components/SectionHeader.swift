@@ -18,6 +18,17 @@ class SectionHeader: UICollectionReusableView {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+    
+    let deleteButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "trash"), for: .normal)
+        button.tintColor = .red
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.isHidden = true
+        return button
+    }()
+    
+    var onDelete: (() -> Void)?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -27,12 +38,21 @@ class SectionHeader: UICollectionReusableView {
         NSLayoutConstraint.activate([
             label.leadingAnchor.constraint(equalTo: leadingAnchor),
             label.trailingAnchor.constraint(equalTo: trailingAnchor),
-            label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16)
+            label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
+            
+            deleteButton.trailingAnchor.constraint(equalTo: trailingAnchor),
+            deleteButton.centerYAnchor.constraint(equalTo: label.centerYAnchor)
         ])
+        
+        deleteButton.addTarget(self, action: #selector(deleteTapped), for: .touchUpInside)
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    @objc private func deleteTapped() {
+        onDelete?()
     }
     
     func configure(with title: String) {

@@ -238,10 +238,32 @@ extension DatabaseClient: DependencyKey {
                         try db.execute(sql: """
                             DELETE FROM 'items-\(collectionId)' WHERE infoData->>'url' = ?
                         """, arguments: [infoData.url])
-                        print("Successfully delete item from collection for \(infoData.infoData.titles.primary). ID: \(collectionId)")
+                        print("Successfully deleted item from collection for \(infoData.infoData.titles.primary). ID: \(collectionId)")
                     }
                 } catch {
                     print("Error removing from collection!")
+                    print("\(error)")
+                }
+            },
+            removeCollection: { collectionId, moduleId in
+                do {
+                    let dbPath = try fetchDatabasePath()
+                    let dbQueue = try DatabaseQueue(path: dbPath)
+                    
+                    try dbQueue.write { db in
+                        let collectionTableName = "collection-\(collectionId)"
+                        let itemsTableName = "items-\(collectionId)"
+                        
+                        // Delete the collection table
+                        try db.execute(sql: "DROP TABLE IF EXISTS '\(collectionTableName)'")
+                        
+                        // Delete the items table
+                        try db.execute(sql: "DROP TABLE IF EXISTS '\(itemsTableName)'")
+                        
+                        print("Successfully deleted collection and items tables for collectionId: \(collectionId)")
+                    }
+                } catch {
+                    print("Error deleting collection!")
                     print("\(error)")
                 }
             }

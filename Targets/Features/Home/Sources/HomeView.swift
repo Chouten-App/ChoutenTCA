@@ -173,6 +173,11 @@ public class HomeView: UIViewController {
                 }
                 
                 headerView.label.text = section.title
+                
+                headerView.onDelete = {
+                    self.store.send(.view(.deleteCollection(section.id)))
+                }
+                
                 return headerView
             }
 
@@ -272,6 +277,12 @@ public class HomeView: UIViewController {
     
     @objc private func selectButtonTapped() {
         isSelectionMode.toggle()
+        
+        collectionView.visibleSupplementaryViews(ofKind: UICollectionView.elementKindSectionHeader).forEach { view in
+            if let headerView = view as? SectionHeader {
+                headerView.deleteButton.isHidden = !isSelectionMode
+            }
+        }
         
         if isSelectionMode {
             collectionView.allowsMultipleSelection = true

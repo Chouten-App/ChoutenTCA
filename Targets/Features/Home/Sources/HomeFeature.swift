@@ -32,6 +32,7 @@ public struct HomeFeature: Reducer {
             case setCollections(_ data: [HomeSection])
             case createCollection(_ name: String)
             case deleteItem(_ collectionId: String, _ data: HomeData)
+            case deleteCollection(_ collectionId: String)
         }
 
         @CasePathable
@@ -58,16 +59,12 @@ public struct HomeFeature: Reducer {
                     state.collections = []
                     return .merge(
                         .run { send in
-                            do {
-                                try await self.databaseClient.initDB()
-                                
-                                let data = try await self.databaseClient.fetchCollections();
-                                
-                                await send(.view(.setCollections(data)))
-                                print("Collection count: \(data.count)")
-                            } catch {
-                                print(error.localizedDescription)
-                            }
+                            await self.databaseClient.initDB()
+                            
+                            let data = await self.databaseClient.fetchCollections();
+                            
+                            await send(.view(.setCollections(data)))
+                            print("Collection count: \(data.count)")
                         }
                     )
                 case .setCollections(let data):
@@ -75,21 +72,18 @@ public struct HomeFeature: Reducer {
                     return .none
                 case .deleteItem(let collectionId, let data):
                     return .run { send in
-                        do {
-                            print("Deleting item for \(data.url)")
-                            try await self.databaseClient.removeFromCollection(collectionId, "", CollectionItem(infoData: InfoData(titles: data.titles, tags: [], description: data.description, poster: data.poster, banner: nil, status: nil, mediaType: "", yearReleased: 0, seasons: [], mediaList: []), url: data.url))
-                        } catch {
-                            print(error.localizedDescription)
-                        }
+                        print("Deleting item for \(data.url)")
+                        await self.databaseClient.removeFromCollection(collectionId, "", CollectionItem(infoData: InfoData(titles: data.titles, tags: [], description: data.description, poster: data.poster, banner: nil, status: nil, mediaType: "", yearReleased: 0, seasons: [], mediaList: []), url: data.url))
+                    }
+                case .deleteCollection(let collectionId):
+                    return .run { send in
+                        print("Deleting collection for \(collectionId).")
+                        await self.databaseClient.removeCollection(collectionId, "");
                     }
                 case .createCollection(let name):
                     return .run { send in
-                        do {
-                            print("Creating collection for \(name)...")
-                            try await self.databaseClient.createCollection(name)
-                        } catch {
-                            print(error.localizedDescription)
-                        }
+                        print("Creating collection for \(name)...")
+                        await self.databaseClient.createCollection(name)
                     }
                 }
             }
