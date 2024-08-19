@@ -23,6 +23,10 @@ public struct RepoFeature: Reducer {
         public var installRepoMetadata: RepoMetadata? = nil
         // swiftlint:enable redundant_optional_initialization
         public var repos: [RepoMetadata] = []
+        
+        public var isInstalling = false
+        public var progress: Double = 0.0
+        
         public init() { }
     }
 
@@ -39,6 +43,9 @@ public struct RepoFeature: Reducer {
             case installModule(_ metadata: RepoMetadata, id: String)
 
             case setMetadata(_ metadata: RepoMetadata)
+            
+            case setInstalling(_ data: Bool)
+            case updateProgress(_ progress: Double)
         }
 
         @CasePathable
@@ -149,22 +156,36 @@ public struct RepoFeature: Reducer {
                         }
                     )
                 case let .installWithModules(metadata, modules):
-                    do {
-                        // install metadata
-                        try repoClient.installRepoMetadata(metadata)
+                    return .run { send in
+                        await send(.view(.setInstalling(true)))
+                        await send(.view(.updateProgress(0.0)))
+                        do {
+                            // install metadata
+                            try repoClient.installRepoMetadata(metadata)
 
-                        // loop through modules and install them
-                        if let metadataModules = metadata.modules {
-                            for module in metadataModules where modules.contains(where: { $0 == module.id }) {
-                                Task {
+                            // loop through modules and install them
+                            if let metadataModules = metadata.modules {
+                                let totalModules = Double(modules.count)
+                                var currentProgress = 0.1
+                                var currentIndex = 0
+                                
+                                for module in metadataModules where modules.contains(where: { $0 == module.id }) {
                                     try await repoClient.installModule(metadata, module.id)
+                                    
+                                    currentIndex += 1
+                                    currentProgress = CGFloat(currentIndex) / totalModules
+                                    await send(.view(.updateProgress(currentProgress)))
+                                    
+                                    print("Installed module \(module.id)")
                                 }
                             }
+                            
+                            await send(.view(.updateProgress(1.0)))
+                        } catch {
+                            print(error.localizedDescription)
                         }
-                    } catch {
-                        print(error.localizedDescription)
+                        //await send(.view(.setInstalling(false)))
                     }
-                    return .none
                 case let .installModule(metadata, id):
                     return .run { _ in
                         do {
@@ -174,9 +195,16 @@ public struct RepoFeature: Reducer {
                             print(error.localizedDescription)
                         }
                     }
+                case .setInstalling(let data):
+                    state.isInstalling = data
+                    return .none
                 case .setMetadata(let metadata):
                     state.installRepoMetadata = metadata
                     return .none
+                    
+                case .updateProgress(let progress):
+                   state.progress = progress
+                   return .none
                 }
             }
         }
