@@ -10,7 +10,7 @@ import UIKit
 
 public class CircleButton: UIButton {
 
-    public let iconName: String
+    public var iconName: String
     public let size: Double
     public var onTap: (() -> Void)?
     public var hasInteraction: Bool

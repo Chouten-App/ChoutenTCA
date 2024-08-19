@@ -54,6 +54,7 @@ public class InfoTopBar: UIView {
     }()
 
     let backButton = CircleButton(icon: "chevron.left")
+    public var bookmarkButton = CircleButton(icon: "bookmark")
 
     public let titleLabel: UILabel = {
         let label           = UILabel()
@@ -66,6 +67,14 @@ public class InfoTopBar: UIView {
     }()
 
     let horizontalStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.isUserInteractionEnabled = true
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+    
+    let titleHorizontalStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
         stack.isUserInteractionEnabled = true
@@ -94,10 +103,12 @@ public class InfoTopBar: UIView {
     }
 
     private func configure() {
-
+        titleHorizontalStack.addArrangedSubview(titleLabel)
+        titleHorizontalStack.addArrangedSubview(bookmarkButton)
+        
         marqueeWrapper.clipsToBounds = true
         marqueeWrapper.translatesAutoresizingMaskIntoConstraints = false
-        marqueeWrapper.addSubview(titleLabel)
+        marqueeWrapper.addSubview(titleHorizontalStack)
 
         translatesAutoresizingMaskIntoConstraints = false
 
@@ -146,9 +157,9 @@ public class InfoTopBar: UIView {
             marqueeWrapper.leadingAnchor.constraint(equalTo: backButton.trailingAnchor, constant: 12),
             marqueeWrapper.trailingAnchor.constraint(equalTo: blurView.trailingAnchor, constant: -20),
 
-            titleLabel.centerYAnchor.constraint(equalTo: marqueeWrapper.centerYAnchor),
-            titleLabel.leadingAnchor.constraint(equalTo: marqueeWrapper.leadingAnchor),
-            titleLabel.trailingAnchor.constraint(equalTo: marqueeWrapper.trailingAnchor)
+            titleHorizontalStack.centerYAnchor.constraint(equalTo: marqueeWrapper.centerYAnchor),
+            titleHorizontalStack.leadingAnchor.constraint(equalTo: marqueeWrapper.leadingAnchor),
+            titleHorizontalStack.trailingAnchor.constraint(equalTo: marqueeWrapper.trailingAnchor)
         ])
     }
 }

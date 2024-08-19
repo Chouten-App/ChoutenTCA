@@ -191,9 +191,7 @@ class SubtitleRenderer: UIView {
         bottomConstraint = stack.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -20)
 
         NSLayoutConstraint.activate([
-            // swiftlint:disable force_unwrapping
             bottomConstraint!,
-            // swiftlint:enable force_unwrapping
             stack.centerXAnchor.constraint(equalTo: centerXAnchor)
         ])
     }

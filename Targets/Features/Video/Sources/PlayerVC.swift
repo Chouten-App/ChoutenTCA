@@ -242,14 +242,6 @@ public class PlayerVC: UIViewController {
         }
     }
 
-//    override public func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-//        super.viewWillTransition(to: size, with: coordinator)
-//        showBlackOverlay()
-//        coordinator.animate(alongsideTransition: nil) { [weak self] _ in
-//            self?.hideBlackOverlay()
-//        }
-//    }
-
     private func showBlackOverlay() {
         let overlayView = UIView(frame: view.bounds)
         overlayView.backgroundColor = .black
@@ -307,7 +299,6 @@ public class PlayerVC: UIViewController {
         // self.progressBar.setProgress(Float(progress), animated: true)
 
         if progress >= 1.0 {
-            // Invalidate the display link once the progress is complete
             self.nextEpisodeDisplayLink?.invalidate()
             self.nextEpisodeDisplayLink = nil
         }

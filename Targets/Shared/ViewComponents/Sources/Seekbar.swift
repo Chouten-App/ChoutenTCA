@@ -117,17 +117,20 @@ public class SeekBar: UIView {
         }
 
         let translation = gestureRecognizer.translation(in: self)
+        let sensitivityFactor: CGFloat = 0.5
 
         switch gestureRecognizer.state {
         case .changed:
-            progressTrailingConstraint.constant = min(max(translation.x + self.lastOffset, 0.0), width)
+            let adjustedTranslation = translation.x * sensitivityFactor
+            progressTrailingConstraint.constant = min(max(adjustedTranslation + self.lastOffset, 0.0), width)
             progress = progressTrailingConstraint.constant / width
             delegate?.seekBar(self, didChangeProgress: progress)
             self.layoutIfNeeded()
         case .ended:
             isDragging = false
 
-            progressTrailingConstraint.constant = min(max(translation.x + lastOffset, 0.0), width)
+            let adjustedTranslation = translation.x * sensitivityFactor
+            progressTrailingConstraint.constant = min(max(adjustedTranslation + lastOffset, 0.0), width)
             progress = progressTrailingConstraint.constant / width
             delegate?.seekBar(self, didChangeProgress: progress)
 
@@ -138,7 +141,7 @@ public class SeekBar: UIView {
                 self.layoutIfNeeded() // Forces layout update immediately to animate smoothly
             }
 
-            lastOffset = min(max(translation.x + self.lastOffset, 0.0), width)
+            lastOffset = min(max(adjustedTranslation + self.lastOffset, 0.0), width)
         default:
             break
         }

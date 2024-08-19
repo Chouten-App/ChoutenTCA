@@ -31,6 +31,8 @@ public struct InfoFeature: Reducer {
         public var collections: [HomeSection] = []
         
         public var isInCollections: [HomeSectionChecks] = []
+        
+        public var isInAnyCollection = false
 
         public init() { }
     }
@@ -51,6 +53,7 @@ public struct InfoFeature: Reducer {
             case setCollections(_ data: [HomeSection])
             case setIsInCollections(_ data: [HomeSectionChecks])
             case updateIsInCollections
+            case updateIsInAnyCollection( _ data: Bool)
             case addToCollection(_ section: HomeSection)
             case removeFromCollection(_ section: HomeSection)
         }
@@ -156,13 +159,23 @@ public struct InfoFeature: Reducer {
                         let collections = await self.databaseClient.fetchCollections();
                         var isInCollections: [HomeSectionChecks] = []
                         
+                        var isInAnyCollection = false
+                        
                         for section in collections {
                             let isInCollection = section.list.contains { $0.url == url }
+                            if isInCollection {
+                                isInAnyCollection = true
+                            }
+                            
                             isInCollections.append(HomeSectionChecks(id: section.id, isInCollection: isInCollection))
                         }
                         
+                        await send(.view(.updateIsInAnyCollection(isInAnyCollection)))
                         await send(.view(.setIsInCollections(isInCollections)))
                     }
+                case .updateIsInAnyCollection(let data):
+                    state.isInAnyCollection = data
+                    return .none
                 case .setInfoData(let data):
                     state.infoData = data
                     

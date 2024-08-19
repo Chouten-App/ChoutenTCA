@@ -18,6 +18,7 @@ public protocol SuccessInfoVCDelegate: AnyObject {
     func fetchMedia(url: String, newIndex: Int)
     func fetchCollections() -> [HomeSection]
     func fetchIsInCollections() -> [HomeSectionChecks]
+    func fetchIsInAnyCollection() -> Bool
     func addItemToCollection(collection: HomeSection)
     func removeFromCollection(collection: HomeSection)
 }
@@ -73,6 +74,10 @@ public class SuccessInfoVC: UIViewController {
     }
 
     public func updateData() {
+        if (delegate?.fetchIsInAnyCollection() == true) {
+            topBar.bookmarkButton = CircleButton(icon: "bookmark.fill")
+        }
+        
         topBar.titleLabel.text = infoData.titles.primary
 
         headerDisplay.infoData = infoData
@@ -189,7 +194,7 @@ public class SuccessInfoVC: UIViewController {
         seasonSelector.layer.zPosition = 20
         seasonSelector.delegate = self
         
-        headerDisplay.bookmarkButton.addTarget(self, action: #selector(bookmarkButtonTapped), for: .touchUpInside)
+        topBar.bookmarkButton.addTarget(self, action: #selector(bookmarkButtonTapped), for: .touchUpInside)
 
         view.addSubview(seasonSelector)
 

@@ -52,19 +52,6 @@ public class InfoViewRefactor: LoadableViewControllerBase {
     override public func viewDidLoad() {
         super.viewDidLoad()
 
-        // view.addSubview(loadingInfoVC.view)
-        // addChild(loadingInfoVC)
-
-//        let activityIndicator = UIActivityIndicatorView(style: .medium)
-//        activityIndicator.color ThemeManager.shared.getColor(for: .fg)
-//
-//        // Center the activity indicator in the view
-//        activityIndicator.center = loadingInfoVC.view.center
-//
-//        loadingInfoVC.view.addSubview(activityIndicator)
-//
-//        activityIndicator.startAnimating()
-
         view.backgroundColor = ThemeManager.shared.getColor(for: .bg)
 
         successInfoVC.delegate = self
@@ -124,6 +111,10 @@ extension InfoViewRefactor: SuccessInfoVCDelegate {
     
     public func fetchIsInCollections() -> [HomeSectionChecks] {
         return store.isInCollections
+    }
+    
+    public func fetchIsInAnyCollection() -> Bool {
+        return store.isInAnyCollection
     }
     
     public func addItemToCollection(collection: HomeSection) {
