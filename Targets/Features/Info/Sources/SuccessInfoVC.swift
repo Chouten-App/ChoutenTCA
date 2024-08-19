@@ -218,42 +218,6 @@ public class SuccessInfoVC: UIViewController {
 
         present(collectionMenuVC, animated: true, completion: nil)
     }
-    /*
-    @objc func bookmarkButtonTapped() {
-        guard let collections = delegate?.fetchCollections(),
-              let isInCollections = delegate?.fetchIsInCollections() else {
-            return
-        }
-
-        let alert = UIAlertController(title: "Manage Collections", message: "Toggle the collections for this item:", preferredStyle: .actionSheet)
-
-        for (index, collection) in collections.enumerated() {
-            let isInCollection = isInCollections[index].isInCollection
-            let actionTitle = "\(collection.title) \(isInCollection ? "✓" : "")"
-            
-            let action = UIAlertAction(title: actionTitle, style: .default) { _ in
-                if isInCollection {
-                    self.delegate?.removeFromCollection(collection: collection)
-                } else {
-                    self.delegate?.addItemToCollection(collection: collection)
-                }
-            }
-            
-            alert.addAction(action)
-        }
-
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-
-        // For iPad compatibility
-        if let popoverController = alert.popoverPresentationController {
-            popoverController.sourceView = self.view
-            popoverController.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
-            popoverController.permittedArrowDirections = []
-        }
-
-        present(alert, animated: true, completion: nil)
-    }
-     */
 
     // MARK: Layout
     private func setupConstraints() {

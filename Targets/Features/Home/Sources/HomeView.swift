@@ -175,7 +175,8 @@ public class HomeView: UIViewController {
                 headerView.label.text = section.title
                 
                 headerView.onDelete = {
-                    self.store.send(.view(.deleteCollection(section.id)))
+                    //self.store.send(.view(.deleteCollection(section.id)))
+                    self.handleDeleteConfirmation(for: section)
                 }
                 
                 return headerView
@@ -407,6 +408,19 @@ public class HomeView: UIViewController {
         }
     }
     
+    private func handleDeleteConfirmation(for section: HomeSection) {
+        let alertController = UIAlertController(title: "Confirm Deletion", message: "Are you sure you want to delete this collection?", preferredStyle: .alert)
+        let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
+            self?.store.send(.view(.deleteCollection(section.id)))
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        
+        alertController.addAction(deleteAction)
+        alertController.addAction(cancelAction)
+        
+        present(alertController, animated: true, completion: nil)
+    }
+    
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
@@ -427,4 +441,3 @@ extension HomeView: UICollectionViewDelegate {
         }
     }
 }
-

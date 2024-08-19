@@ -7,6 +7,10 @@
 
 import Architecture
 import UIKit
+import Combine
+import ComposableArchitecture
+import ViewComponents
+import SharedModels
 
 class SectionHeader: UICollectionReusableView {
     static let reuseIdentifier: String = "SectionHeaderHome"
@@ -19,14 +23,7 @@ class SectionHeader: UICollectionReusableView {
         return label
     }()
     
-    let deleteButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setImage(UIImage(systemName: "trash"), for: .normal)
-        button.tintColor = .red
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.isHidden = true
-        return button
-    }()
+    let deleteButton = CircleButton(icon: "trash");
     
     var onDelete: (() -> Void)?
 
@@ -34,6 +31,7 @@ class SectionHeader: UICollectionReusableView {
         super.init(frame: frame)
 
         addSubview(label)
+        addSubview(deleteButton)
 
         NSLayoutConstraint.activate([
             label.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -44,6 +42,8 @@ class SectionHeader: UICollectionReusableView {
             deleteButton.centerYAnchor.constraint(equalTo: label.centerYAnchor)
         ])
         
+        deleteButton.isHidden = true
+        deleteButton.tintColor = UIColor(.red)
         deleteButton.addTarget(self, action: #selector(deleteTapped), for: .touchUpInside)
     }
 
