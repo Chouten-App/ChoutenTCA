@@ -75,7 +75,7 @@ public class SuccessInfoVC: UIViewController {
 
     public func updateData() {
         if (delegate?.fetchIsInAnyCollection() == true) {
-            topBar.bookmarkButton = CircleButton(icon: "bookmark.fill")
+            topBar.bookmarkButton.iconName = "bookmark.fill"
         }
         
         topBar.titleLabel.text = infoData.titles.primary

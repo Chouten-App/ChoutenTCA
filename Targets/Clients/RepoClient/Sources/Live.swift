@@ -199,7 +199,7 @@ extension RepoClient: DependencyKey {
                         return
                     }
 
-                    guard let filePath = repoMetadata.modules?.first { $0.id == id }?.filePath else {
+                    guard let filePath = repoMetadata.modules?.first(where: { $0.id == id })?.filePath else {
                         logger.log("Filepath of module not found.")
                         return
                     }

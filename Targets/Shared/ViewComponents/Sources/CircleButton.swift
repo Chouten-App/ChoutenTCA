@@ -10,7 +10,11 @@ import UIKit
 
 public class CircleButton: UIButton {
 
-    public var iconName: String
+    public var iconName: String {
+        didSet {
+            updateIcon()  // Call this method whenever iconName changes
+        }
+    }
     public let size: Double
     public var onTap: (() -> Void)?
     public var hasInteraction: Bool
@@ -21,6 +25,7 @@ public class CircleButton: UIButton {
         self.hasInteraction = false
         super.init(frame: frame)
         setupButton()
+        updateIcon()
     }
 
     public required init?(coder aDecoder: NSCoder) {
@@ -29,6 +34,7 @@ public class CircleButton: UIButton {
         self.hasInteraction = false
         super.init(coder: aDecoder)
         setupButton()
+        updateIcon()
     }
 
     public init(icon: String, size: Double = 10.0, onTap: (() -> Void)? = nil, hasInteraction: Bool = false) {
@@ -38,6 +44,7 @@ public class CircleButton: UIButton {
         self.hasInteraction = hasInteraction
         super.init(frame: .zero)
         setupButton()
+        updateIcon()
     }
 
     private func setupButton() {
@@ -72,6 +79,8 @@ public class CircleButton: UIButton {
             widthAnchor.constraint(equalToConstant: 28),
             heightAnchor.constraint(equalToConstant: 28)
         ])
+        
+        updateIcon()
 
         if !hasInteraction {
             addTarget(self, action: #selector(handleTap), for: .touchUpInside) // Add this line
@@ -92,6 +101,19 @@ public class CircleButton: UIButton {
         self.configuration?.baseForegroundColor = ThemeManager.shared.getColor(for: .fg)
         layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
         imageView?.tintColor = ThemeManager.shared.getColor(for: .fg)
+    }
+    
+    private func updateIcon() {
+        setImage(
+            UIImage(systemName: iconName)?
+                .withRenderingMode(.alwaysTemplate)
+                .applyingSymbolConfiguration(
+                    .init(
+                        font: .systemFont(ofSize: size)
+                    )
+                ),
+            for: .normal
+        )
     }
 
     @objc private func handleTap() {
