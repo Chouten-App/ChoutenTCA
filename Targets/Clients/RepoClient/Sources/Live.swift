@@ -92,7 +92,7 @@ extension RepoClient: DependencyKey {
                 }
             },
             installRepo: { url in
-                // check if metadata.json exists
+                print("Installing repository with URL \(url)...")
                 let metadataUrl = url.appendingPathComponent("metadata.json")
 
                 let (data, response) = try await URLSession.shared.data(from: metadataUrl)
@@ -101,6 +101,8 @@ extension RepoClient: DependencyKey {
                       httpResponse.statusCode == 200 else {
                     return
                 }
+                
+                print("Successfully fetched repository data. Installing now...")
 
                 do {
                     var json = try JSONDecoder().decode(RepoMetadata.self, from: data)
@@ -116,6 +118,8 @@ extension RepoClient: DependencyKey {
                     var isDirectory: ObjCBool = false
                     if !fileManager.fileExists(atPath: newRepoUrl.path, isDirectory: &isDirectory) {
                         try fileManager.createDirectory(at: newRepoUrl, withIntermediateDirectories: false, attributes: nil)
+                        
+                        print("Successfully wrote repository directory.")
                     }
 
                     json.url = url.absoluteString
@@ -123,9 +127,13 @@ extension RepoClient: DependencyKey {
                     // add metadata.json file
                     let jsonData = try JSONEncoder().encode(json)
                     try jsonData.write(to: newRepoUrl.appendingPathComponent("metadata.json"), options: [.atomic, .completeFileProtection])
+                    
+                    print("Successfully wrote metadata.json.")
 
                     // get icon and store it
                     let (data, response) = try await URLSession.shared.data(from: url.appendingPathComponent("icon.png"))
+                    
+                    print("Fetched icon.png. Writing...")
 
                     guard let httpResponse = response as? HTTPURLResponse,
                           httpResponse.statusCode == 200 else {
@@ -134,22 +142,40 @@ extension RepoClient: DependencyKey {
                     }
 
                     try data.write(to: newRepoUrl.appendingPathComponent("icon.png"), options: [.atomic, .completeFileProtection])
-
+                    
+                    print("Successfully wrote icon.png")
                 } catch {
                     logger.log("JSON Error: \(error.localizedDescription)")
                     return
                 }
             },
             installRepoMetadata: { metadata in
+                print("Installing repository metadata...")
                 do {
                     guard let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
 
                     let reposUrl = documentsURL.appendingPathComponent("Repos")
-
                     let newRepoUrl = reposUrl.appendingPathComponent(metadata.id)
+                    
+                    if !FileManager.default.fileExists(atPath: newRepoUrl.path) {
+                        try FileManager.default.createDirectory(at: newRepoUrl, withIntermediateDirectories: true, attributes: nil)
+                        logger.log("Repository folder created at path: \(newRepoUrl)")
+                   }
+                    
+                    let metadataJson = newRepoUrl.appendingPathComponent("metadata.json")
+                    
+                    if !FileManager.default.fileExists(atPath: metadataJson.path) {
+                        if FileManager.default.createFile(atPath: metadataJson.path, contents: nil, attributes: nil) {
+                            logger.log("Created metadata.json file.")
+                        } else {
+                            logger.log("Error creating metadata.json file!")
+                        }
+                    }
 
                     let jsonData = try JSONEncoder().encode(metadata)
-                    try jsonData.write(to: newRepoUrl.appendingPathComponent("metadata.json"), options: [.atomic, .completeFileProtection])
+                    try jsonData.write(to: metadataJson, options: [.atomic, .completeFileProtection])
+                    
+                    logger.log("Successfully wrote repository metadata.")
                 } catch {
                     logger.log("Installing repo metadata failed. Reason: \(error.localizedDescription)")
                 }

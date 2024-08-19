@@ -208,7 +208,6 @@ public class RepoInstallPopup: UIViewController {
 
     let repoPicture: UIImageView = {
         let imageView = UIImageView()
-        // imageView.image = UIImage(named: "pfp")
         imageView.layer.borderWidth = 0.5
         imageView.layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
         imageView.layer.cornerRadius = 12
