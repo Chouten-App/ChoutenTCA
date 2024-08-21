@@ -249,7 +249,8 @@ public class RepoInstallPopup: UIViewController {
         let stack = UIStackView()
         stack.axis = .horizontal
         stack.alignment = .center
-        //stack.spacing = 12
+        stack.spacing = 8
+        stack.distribution = .equalSpacing
         stack.translatesAutoresizingMaskIntoConstraints = false
         stack.isHidden = true
         return stack
@@ -407,8 +408,8 @@ public class RepoInstallPopup: UIViewController {
 
         view.addSubview(topbar)
         
-        installingHorizontalStack.addSubview(installingLabel)
-        installingHorizontalStack.addSubview(progressView)
+        installingHorizontalStack.addArrangedSubview(installingLabel)
+        installingHorizontalStack.addArrangedSubview(progressView)
         
         view.addSubview(installingHorizontalStack)
     }
@@ -458,8 +459,7 @@ public class RepoInstallPopup: UIViewController {
             installingLabel.leadingAnchor.constraint(equalTo: installingHorizontalStack.leadingAnchor),
             installingLabel.centerYAnchor.constraint(equalTo: installingHorizontalStack.centerYAnchor),
 
-            progressView.trailingAnchor.constraint(equalTo: installingLabel.trailingAnchor),
-            progressView.centerYAnchor.constraint(equalTo: installingHorizontalStack.centerYAnchor),
+            progressView.trailingAnchor.constraint(equalTo: installingHorizontalStack.trailingAnchor),
             progressView.widthAnchor.constraint(equalToConstant: 24),
             progressView.heightAnchor.constraint(equalToConstant: 24)
         ])
@@ -505,4 +505,63 @@ extension RepoInstallPopup: UITextFieldDelegate {
         }
     }
 }
-// swiftlint:enable type_body_length
+public class CircularProgressView: UIView {
+
+    private var progressLayer = CAShapeLayer()
+    private var trackLayer = CAShapeLayer()
+    public var progressColor: UIColor = ThemeManager.shared.getColor(for: .accent) {
+        didSet {
+            progressLayer.strokeColor = progressColor.cgColor
+        }
+    }
+    public var trackColor: UIColor = ThemeManager.shared.getColor(for: .overlay) {
+        didSet {
+            trackLayer.strokeColor = trackColor.cgColor
+        }
+    }
+
+    public var progress: CGFloat = 0 {
+        didSet {
+            progressLayer.strokeEnd = progress
+        }
+    }
+
+    override public init(frame: CGRect) {
+        super.init(frame: frame)
+        setupLayers()
+    }
+
+    required public init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupLayers()
+    }
+
+    private func setupLayers() {
+        trackLayer.path = circularPath().cgPath
+        trackLayer.fillColor = UIColor.clear.cgColor
+        trackLayer.strokeColor = trackColor.cgColor
+        trackLayer.lineWidth = 6.0
+        trackLayer.strokeEnd = 1.0
+        layer.addSublayer(trackLayer)
+
+        progressLayer.path = circularPath().cgPath
+        progressLayer.fillColor = UIColor.clear.cgColor
+        progressLayer.strokeColor = progressColor.cgColor
+        progressLayer.lineWidth = 6.0
+        progressLayer.strokeEnd = 0.0
+        progressLayer.lineCap = .round
+        layer.addSublayer(progressLayer)
+    }
+
+    override public func layoutSubviews() {
+        super.layoutSubviews()
+        trackLayer.path = circularPath().cgPath
+        progressLayer.path = circularPath().cgPath
+    }
+
+    private func circularPath() -> UIBezierPath {
+        let radius = min(frame.size.width, frame.size.height) / 2
+        return UIBezierPath(arcCenter: CGPoint(x: frame.size.width / 2, y: frame.size.height / 2), radius: radius, startAngle: -CGFloat.pi / 2, endAngle: 1.5 * CGFloat.pi, clockwise: true)
+    }
+}
+
