@@ -25,6 +25,7 @@ public struct RepoFeature: Reducer {
         public var repos: [RepoMetadata] = []
         
         public var isInstalling = false
+        public var installingStatus = "Preparing..."
         public var progress: Double = 0.0
         
         public init() { }
@@ -45,7 +46,9 @@ public struct RepoFeature: Reducer {
             case setMetadata(_ metadata: RepoMetadata)
             
             case setInstalling(_ data: Bool)
+            case setInstallingStatus(_ status: String)
             case updateProgress(_ progress: Double)
+            case showErrorMessage(_ message: String)
         }
 
         @CasePathable
@@ -130,11 +133,12 @@ public struct RepoFeature: Reducer {
                     }
 
                     return .merge(
-                        .run { _ in
+                        .run { send in
                             do {
                                 try await repoClient.installRepo(checkedUrl)
                             } catch {
                                 print(error.localizedDescription)
+                                await send(.view(.showErrorMessage("Error installing repository! Possible internal error.")))
                             }
                         }
                     )
@@ -146,12 +150,16 @@ public struct RepoFeature: Reducer {
                     return .merge(
                         .run { send in
                             do {
+                                await send(.view(.setInstalling(false)))
+                                await send(.view(.updateProgress(0.0)))
+                                
                                 let repoMetadata = try await repoClient.fetchRepoDetails(checkedUrl)
                                 if let repoMetadata {
                                     await send(.view(.setMetadata(repoMetadata)))
                                 }
                             } catch {
                                 print(error.localizedDescription)
+                                await send(.view(.showErrorMessage("Invalid URL/unable to fetch repository.")))
                             }
                         }
                     )
@@ -161,9 +169,11 @@ public struct RepoFeature: Reducer {
                         await send(.view(.updateProgress(0.0)))
                         do {
                             // install metadata
+                            await send(.view(.setInstallingStatus("Installing metadata...")))
                             try repoClient.installRepoMetadata(metadata)
 
                             // loop through modules and install them
+                            await send(.view(.setInstallingStatus("Installing modules...")))
                             if let metadataModules = metadata.modules {
                                 let totalModules = Double(modules.count)
                                 var currentProgress = 0.1
@@ -181,10 +191,13 @@ public struct RepoFeature: Reducer {
                             }
                             
                             await send(.view(.updateProgress(1.0)))
+                            
+                            await send(.view(.setInstallingStatus("Finished!")))
                         } catch {
                             print(error.localizedDescription)
+                            await send(.view(.setInstallingStatus("Error installing repo! \(error.localizedDescription)")))
+                            await send(.view(.showErrorMessage("Error installing repository with modules! Possible internal error.")))
                         }
-                        //await send(.view(.setInstalling(false)))
                     }
                 case let .installModule(metadata, id):
                     return .run { _ in
@@ -198,10 +211,26 @@ public struct RepoFeature: Reducer {
                 case .setInstalling(let data):
                     state.isInstalling = data
                     return .none
+                case .setInstallingStatus(let status):
+                    state.installingStatus = status
+                    return .none
                 case .setMetadata(let metadata):
                     state.installRepoMetadata = metadata
                     return .none
                     
+                case .showErrorMessage(let message):
+                    return .run { send in
+                        DispatchQueue.main.async {
+                            if let rootView = UIApplication.shared.windows.first?.rootViewController?.view {
+                                rootView.showErrorDisplay(
+                                    message: "Error",
+                                    description: message,
+                                    indicator: "System",
+                                    type: .error
+                                )
+                            }
+                        }
+                    }
                 case .updateProgress(let progress):
                    state.progress = progress
                    return .none

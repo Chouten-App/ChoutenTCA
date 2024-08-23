@@ -56,8 +56,14 @@ public class CircularProgressView: UIView {
         layer.addSublayer(progressLayer)
     }
 
+    /*
     private func circularPath() -> UIBezierPath {
         return UIBezierPath(arcCenter: center, radius: frame.size.width / 2, startAngle: -CGFloat.pi / 2, endAngle: 1.5 * CGFloat.pi, clockwise: true)
+    }
+     */
+    private func circularPath() -> UIBezierPath {
+        let radius = min(frame.size.width, frame.size.height) / 2
+        return UIBezierPath(arcCenter: CGPoint(x: frame.size.width / 2, y: frame.size.height / 2), radius: radius, startAngle: -CGFloat.pi / 2, endAngle: 1.5 * CGFloat.pi, clockwise: true)
     }
 
     override public func layoutSubviews() {

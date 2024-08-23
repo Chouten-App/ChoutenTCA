@@ -256,11 +256,29 @@ public class RepoInstallPopup: UIViewController {
         return stack
     }()
     
+    let installingVerticalStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.alignment = .leading
+        stack.spacing = 2
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+    
     let installingLabel: UILabel = {
         let label = UILabel()
         label.text = "Installing..."
         label.font = .systemFont(ofSize: 14, weight: .semibold)
         label.textColor = ThemeManager.shared.getColor(for: .fg)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    let installingStatusLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Preparing..."  // Initial status text
+        label.font = .systemFont(ofSize: 12)  // Smaller font size
+        label.textColor = ThemeManager.shared.getColor(for: .fg).withAlphaComponent(0.8)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -308,6 +326,14 @@ public class RepoInstallPopup: UIViewController {
                 guard let self = self else { return }
                 DispatchQueue.main.async {
                     self.progressView.progress = progress
+                }
+            }
+            .store(in: &cancellables)
+            
+            store.publisher.installingStatus.sink { [weak self] status in
+                guard let self = self else { return }
+                DispatchQueue.main.async {
+                    self.installingStatusLabel.text = status
                 }
             }
             .store(in: &cancellables)
@@ -394,6 +420,8 @@ public class RepoInstallPopup: UIViewController {
     }
 
     private func configure() {
+        cancelButton.addTarget(self, action: #selector(dismissPopup), for: .touchUpInside)
+        
         view.backgroundColor = ThemeManager.shared.getColor(for: .bg)
 
         textField.delegate = self
@@ -408,7 +436,10 @@ public class RepoInstallPopup: UIViewController {
 
         view.addSubview(topbar)
         
-        installingHorizontalStack.addArrangedSubview(installingLabel)
+        installingVerticalStack.addArrangedSubview(installingLabel)
+        installingVerticalStack.addArrangedSubview(installingStatusLabel)
+        
+        installingHorizontalStack.addArrangedSubview(installingVerticalStack)
         installingHorizontalStack.addArrangedSubview(progressView)
         
         view.addSubview(installingHorizontalStack)
@@ -454,10 +485,7 @@ public class RepoInstallPopup: UIViewController {
             installingHorizontalStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             installingHorizontalStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             installingHorizontalStack.bottomAnchor.constraint(equalTo: cancelButton.topAnchor, constant: -10),
-            installingHorizontalStack.heightAnchor.constraint(equalToConstant: 30),
-
-            installingLabel.leadingAnchor.constraint(equalTo: installingHorizontalStack.leadingAnchor),
-            installingLabel.centerYAnchor.constraint(equalTo: installingHorizontalStack.centerYAnchor),
+            installingHorizontalStack.heightAnchor.constraint(equalToConstant: 40),
 
             progressView.trailingAnchor.constraint(equalTo: installingHorizontalStack.trailingAnchor),
             progressView.widthAnchor.constraint(equalToConstant: 24),
@@ -487,6 +515,10 @@ public class RepoInstallPopup: UIViewController {
 
         updateSelectedModules()
     }
+    
+    @objc private func dismissPopup() {
+        dismiss(animated: true, completion: nil)
+    }
 }
 
 extension RepoInstallPopup: UITextFieldDelegate {
@@ -503,65 +535,6 @@ extension RepoInstallPopup: UITextFieldDelegate {
             store.send(.view(.fetch(url: text)))
             // store.send(.view(.install(url: text)))
         }
-    }
-}
-public class CircularProgressView: UIView {
-
-    private var progressLayer = CAShapeLayer()
-    private var trackLayer = CAShapeLayer()
-    public var progressColor: UIColor = ThemeManager.shared.getColor(for: .accent) {
-        didSet {
-            progressLayer.strokeColor = progressColor.cgColor
-        }
-    }
-    public var trackColor: UIColor = ThemeManager.shared.getColor(for: .overlay) {
-        didSet {
-            trackLayer.strokeColor = trackColor.cgColor
-        }
-    }
-
-    public var progress: CGFloat = 0 {
-        didSet {
-            progressLayer.strokeEnd = progress
-        }
-    }
-
-    override public init(frame: CGRect) {
-        super.init(frame: frame)
-        setupLayers()
-    }
-
-    required public init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupLayers()
-    }
-
-    private func setupLayers() {
-        trackLayer.path = circularPath().cgPath
-        trackLayer.fillColor = UIColor.clear.cgColor
-        trackLayer.strokeColor = trackColor.cgColor
-        trackLayer.lineWidth = 6.0
-        trackLayer.strokeEnd = 1.0
-        layer.addSublayer(trackLayer)
-
-        progressLayer.path = circularPath().cgPath
-        progressLayer.fillColor = UIColor.clear.cgColor
-        progressLayer.strokeColor = progressColor.cgColor
-        progressLayer.lineWidth = 6.0
-        progressLayer.strokeEnd = 0.0
-        progressLayer.lineCap = .round
-        layer.addSublayer(progressLayer)
-    }
-
-    override public func layoutSubviews() {
-        super.layoutSubviews()
-        trackLayer.path = circularPath().cgPath
-        progressLayer.path = circularPath().cgPath
-    }
-
-    private func circularPath() -> UIBezierPath {
-        let radius = min(frame.size.width, frame.size.height) / 2
-        return UIBezierPath(arcCenter: CGPoint(x: frame.size.width / 2, y: frame.size.height / 2), radius: radius, startAngle: -CGFloat.pi / 2, endAngle: 1.5 * CGFloat.pi, clockwise: true)
     }
 }
 
