@@ -166,7 +166,7 @@ extension DatabaseClient: DependencyKey {
                                             description: item.infoData.description,
                                             poster: item.infoData.poster,
                                             label: Label(text: "Test", color: ""),
-                                            indicator: "\(item.infoData.yearReleased)",
+                                            indicator: "\(item.flag)",
                                             current: nil,
                                             total: nil
                                         )

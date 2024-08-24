@@ -7,6 +7,14 @@
 
 import Foundation
 
+public enum ItemStatus: String, Codable {
+    case inprogress = "In-Progress"
+    case completed = "Completed"
+    case planned = "Planned"
+    case dropped = "Dropped"
+    case none = "None"
+}
+
 public struct HomeSection: Codable, Equatable, Hashable {
     public let id: String
     public let title: String

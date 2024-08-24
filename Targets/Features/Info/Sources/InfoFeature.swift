@@ -33,6 +33,8 @@ public struct InfoFeature: Reducer {
         public var isInCollections: [HomeSectionChecks] = []
         
         public var isInAnyCollection = false
+        
+        public var flag: ItemStatus = .none
 
         public init() { }
     }
@@ -54,6 +56,7 @@ public struct InfoFeature: Reducer {
             case setIsInCollections(_ data: [HomeSectionChecks])
             case updateIsInCollections
             case updateIsInAnyCollection( _ data: Bool)
+            case updateFlag(_ flag: ItemStatus)
             case addToCollection(_ section: HomeSection)
             case removeFromCollection(_ section: HomeSection)
         }
@@ -131,7 +134,7 @@ public struct InfoFeature: Reducer {
                     return .send(.view(.setMediaList(data)))
                 case .addToCollection(let section):
                     print("Adding to collection! This is for debugging, but the url is \(state.url)")
-                    let infoData = CollectionItem(infoData: state.infoData!, url: state.url)
+                    let infoData = CollectionItem(infoData: state.infoData!, url: state.url, flag: state.flag)
                     return .run { send in
                         await self.databaseClient.addToCollection(section.id, "", infoData)
                         
@@ -139,7 +142,7 @@ public struct InfoFeature: Reducer {
                     }
                 case .removeFromCollection(let section):
                     print("Removing from collection! This is for debugging, but the url is \(state.url)")
-                    let infoData = CollectionItem(infoData: state.infoData!, url: state.url)
+                    let infoData = CollectionItem(infoData: state.infoData!, url: state.url, flag: state.flag)
                     return .run { send in
                         await self.databaseClient.removeFromCollection(section.id, "", infoData)
                         
@@ -175,6 +178,9 @@ public struct InfoFeature: Reducer {
                     }
                 case .updateIsInAnyCollection(let data):
                     state.isInAnyCollection = data
+                    return .none
+                case .updateFlag(let flag):
+                    state.flag = flag
                     return .none
                 case .setInfoData(let data):
                     state.infoData = data

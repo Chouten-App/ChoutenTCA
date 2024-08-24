@@ -73,7 +73,7 @@ public struct HomeFeature: Reducer {
                 case .deleteItem(let collectionId, let data):
                     return .run { send in
                         print("Deleting item for \(data.url)")
-                        await self.databaseClient.removeFromCollection(collectionId, "", CollectionItem(infoData: InfoData(titles: data.titles, tags: [], description: data.description, poster: data.poster, banner: nil, status: nil, mediaType: "", yearReleased: 0, seasons: [], mediaList: []), url: data.url))
+                        await self.databaseClient.removeFromCollection(collectionId, "", CollectionItem(infoData: InfoData(titles: data.titles, tags: [], description: data.description, poster: data.poster, banner: nil, status: nil, mediaType: "", yearReleased: 0, seasons: [], mediaList: []), url: data.url, flag: .none))
                     }
                 case .deleteCollection(let collectionId):
                     return .run { send in
