@@ -1,0 +1,33 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Tuist
+        run: |
+          curl -Ls https://install.tuist.app | bash
+
+      - name: Install dependencies
+        run: |
+          tuist fetch
+          
+      - name: Generate Xcode project
+        run: |
+          tuist generate
+          
+      - name: Build and test
+        run: |
+          xcodebuild -workspace Chouten.xcworkspace -scheme YourScheme -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 12,OS=latest' clean build test
