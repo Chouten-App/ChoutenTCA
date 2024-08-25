@@ -19,7 +19,9 @@ public protocol SuccessInfoVCDelegate: AnyObject {
     func fetchCollections() -> [HomeSection]
     func fetchIsInCollections() -> [HomeSectionChecks]
     func fetchIsInAnyCollection() -> Bool
+    func updateFlag(flag: ItemStatus) -> Void
     func addItemToCollection(collection: HomeSection)
+    func updateItemInCollection(collection: HomeSection)
     func removeFromCollection(collection: HomeSection)
 }
 
@@ -390,8 +392,16 @@ extension SuccessInfoVC: CollectionMenuVCDelegate {
         return self.delegate!.fetchIsInCollections()
     }
     
+    func updateFlag(flag: ItemStatus) {
+        self.delegate!.updateFlag(flag: flag)
+    }
+    
     func addItemToCollection(collection: SharedModels.HomeSection) {
         return self.delegate!.addItemToCollection(collection: collection)
+    }
+    
+    func updateItemInCollection(collection: SharedModels.HomeSection) {
+        return self.delegate!.updateItemInCollection(collection: collection)
     }
     
     func removeFromCollection(collection: SharedModels.HomeSection) {
@@ -402,7 +412,9 @@ extension SuccessInfoVC: CollectionMenuVCDelegate {
 protocol CollectionMenuVCDelegate: AnyObject {
     func fetchCollections() -> [HomeSection]
     func fetchIsInCollections() -> [HomeSectionChecks]
+    func updateFlag(flag: ItemStatus) -> Void
     func addItemToCollection(collection: HomeSection)
+    func updateItemInCollection(collection: HomeSection)
     func removeFromCollection(collection: HomeSection)
 }
 
@@ -411,6 +423,7 @@ class CollectionMenuVC: UIViewController {
 
     private var collections: [HomeSection] = []
     private var isInCollections: [HomeSectionChecks] = []
+    private var itemStatuses: [ItemStatus] = []
 
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -421,6 +434,49 @@ class CollectionMenuVC: UIViewController {
     }()
 
     private let tableView = UITableView()
+    
+    private let cancelButton: UIButton = {
+        var configuration = UIButton.Configuration.plain()
+        configuration.title = "Cancel"
+        configuration.attributedTitle = AttributedString("Cancel", attributes: AttributeContainer([
+            .font: UIFont.systemFont(ofSize: 14, weight: .bold),
+            .foregroundColor: UIColor.fg
+        ]))
+
+        let button = UIButton(configuration: configuration)
+        button.backgroundColor = ThemeManager.shared.getColor(for: .overlay)
+
+        button.layer.cornerRadius = 8
+        button.layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
+        button.layer.borderWidth = 0.5
+
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    private let confirmButton: UIButton = {
+        var configuration = UIButton.Configuration.plain()
+        configuration.title = "Confirm"
+        configuration.attributedTitle = AttributedString("Confirm", attributes: AttributeContainer([
+            .font: UIFont.systemFont(ofSize: 14, weight: .bold),
+            .foregroundColor: UIColor.fg
+        ]))
+
+        let button = UIButton(configuration: configuration)
+        button.backgroundColor = ThemeManager.shared.getColor(for: .accent)
+
+        button.layer.cornerRadius = 8
+
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    private let loadingIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .medium)
+        indicator.translatesAutoresizingMaskIntoConstraints = false
+        indicator.hidesWhenStopped = true
+        return indicator
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -445,20 +501,106 @@ class CollectionMenuVC: UIViewController {
         tableView.dataSource = self
         tableView.register(CollectionCell.self, forCellReuseIdentifier: "CollectionCell")
         view.addSubview(tableView)
-
+        
+        // Buttons
+        view.addSubview(cancelButton)
+        view.addSubview(confirmButton)
+        view.addSubview(loadingIndicator)
+        
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+            cancelButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            cancelButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            cancelButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -16),
+            cancelButton.heightAnchor.constraint(equalToConstant: 44),
+            
+            confirmButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            confirmButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            confirmButton.bottomAnchor.constraint(equalTo: cancelButton.topAnchor, constant: -8),
+            confirmButton.heightAnchor.constraint(equalToConstant: 44),
+
+            loadingIndicator.centerXAnchor.constraint(equalTo: confirmButton.centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: confirmButton.centerYAnchor)
+       ])
+
+       // Add actions
+       cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
+       confirmButton.addTarget(self, action: #selector(confirmButtonTapped), for: .touchUpInside)
     }
 
     private func loadCollectionsData() {
         guard let delegate = delegate else { return }
         collections = delegate.fetchCollections()
         isInCollections = delegate.fetchIsInCollections()
+        itemStatuses = collections.flatMap { collection in
+            // Find status for each collection or set to `.none` if not found
+            return collection.list.map { item in
+                if let status = isInCollections.first(where: { $0.url == item.url }) {
+                    return item.status
+                }
+                return .none
+            }
+        }
         tableView.reloadData()
+    }
+    
+    @objc private func cancelButtonTapped() {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    @objc private func confirmButtonTapped() {
+        confirmButton.setTitle("", for: .normal)
+        loadingIndicator.startAnimating()
+
+        confirmButton.isEnabled = false
+
+        // Simulate a custom function with a delay
+        DispatchQueue.global().async {
+            sleep(2)
+
+            DispatchQueue.main.async {
+                // Stop the loading indicator
+                self.loadingIndicator.stopAnimating()
+
+                // Re-enable the confirm button
+                self.confirmButton.isEnabled = true
+
+                // Dismiss the sheet after the task is complete
+                self.dismiss(animated: true, completion: nil)
+            }
+        }
+    }
+    
+    private func showStatusPicker(for index: Int, itemId: String) {
+        let statusOptions = [ItemStatus.none, ItemStatus.inprogress, ItemStatus.completed, ItemStatus.dropped, ItemStatus.planned]
+        
+        let alert = UIAlertController(title: "Select Status", message: nil, preferredStyle: .actionSheet)
+
+        for status in statusOptions {
+            alert.addAction(UIAlertAction(title: status.rawValue, style: .default, handler: { [weak self] _ in
+                guard let self = self else { return }
+                            
+                // Update the status in the itemStatuses array
+                self.itemStatuses[index] = status
+                
+                if let itemIndex = self.collections[index].list.firstIndex(where: { $0.url == itemId }) {
+                    delegate?.updateFlag(flag: status)
+                    delegate?.updateItemInCollection(collection: self.collections[index])
+                } else {
+                    print("Item with id \(itemId) not found")
+                }
+                
+                // Reload the row in the table view to reflect the changes
+                self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
+            }))
+        }
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(alert, animated: true, completion: nil)
     }
 }
 
@@ -471,8 +613,15 @@ extension CollectionMenuVC: UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CollectionCell", for: indexPath) as! CollectionCell
         let collection = collections[indexPath.row]
         let isInCollection = isInCollections[indexPath.row].isInCollection
+        let status = itemStatuses[indexPath.row]
 
-        cell.configure(with: collection.title, isInCollection: isInCollection)
+        cell.configure(with: collection.title, isInCollection: isInCollection, status: status)
+        
+        // Handle status button tap
+        cell.statusSelectionHandler = {
+            self.showStatusPicker(for: indexPath.row, itemId: self.isInCollections[indexPath.row].url)
+        }
+
         return cell
     }
 
@@ -506,6 +655,14 @@ class CollectionCell: UITableViewCell {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
+    
+    private let statusButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Select Status", for: .normal)
+        button.setTitleColor(.systemBlue, for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -520,6 +677,7 @@ class CollectionCell: UITableViewCell {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(titleLabel)
         contentView.addSubview(radioButton)
+        contentView.addSubview(statusButton)
 
         NSLayoutConstraint.activate([
             radioButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
@@ -527,15 +685,20 @@ class CollectionCell: UITableViewCell {
             radioButton.widthAnchor.constraint(equalToConstant: 24),
             radioButton.heightAnchor.constraint(equalToConstant: 24),
 
-            titleLabel.leadingAnchor.constraint(equalTo: radioButton.trailingAnchor, constant: 16),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+            titleLabel.leadingAnchor.constraint(equalTo: radioButton.trailingAnchor, constant: 12),
+            titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+
+            statusButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            statusButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
         ])
+        
+        statusButton.addTarget(self, action: #selector(statusButtonTapped), for: .touchUpInside)
     }
 
-    func configure(with title: String, isInCollection: Bool) {
+    func configure(with title: String, isInCollection: Bool, status: ItemStatus) {
         titleLabel.text = title
         updateRadioButton(isInCollection: isInCollection)
+        statusButton.setTitle(status.rawValue, for: .normal)
     }
 
     private func updateRadioButton(isInCollection: Bool) {
@@ -548,4 +711,11 @@ class CollectionCell: UITableViewCell {
             radioButton.backgroundColor = UIColor.clear
         }
     }
+    
+    @objc private func statusButtonTapped() {
+        // Trigger delegate method or closure to open the picker for status selection
+        statusSelectionHandler?()
+    }
+    
+    var statusSelectionHandler: (() -> Void)?
 }

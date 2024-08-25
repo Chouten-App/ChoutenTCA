@@ -58,6 +58,7 @@ public struct InfoFeature: Reducer {
             case updateIsInAnyCollection( _ data: Bool)
             case updateFlag(_ flag: ItemStatus)
             case addToCollection(_ section: HomeSection)
+            case updateItemInCollection(_ section: HomeSection)
             case removeFromCollection(_ section: HomeSection)
         }
 
@@ -133,15 +134,23 @@ public struct InfoFeature: Reducer {
                     }
                     return .send(.view(.setMediaList(data)))
                 case .addToCollection(let section):
-                    print("Adding to collection! This is for debugging, but the url is \(state.url)")
+                    print("Adding item to collection! Item is \(state.url)")
                     let infoData = CollectionItem(infoData: state.infoData!, url: state.url, flag: state.flag)
                     return .run { send in
                         await self.databaseClient.addToCollection(section.id, "", infoData)
                         
                         await send(.view(.updateIsInCollections))
                     }
+                case .updateItemInCollection(let section):
+                    print("Updating item in collection! Item is \(state.url)")
+                    let infoData = CollectionItem(infoData: state.infoData!, url: state.url, flag: state.flag)
+                    return .run { send in
+                        await self.databaseClient.updateItemInCollection(section.id, "", infoData)
+                        
+                        await send(.view(.updateIsInCollections))
+                    }
                 case .removeFromCollection(let section):
-                    print("Removing from collection! This is for debugging, but the url is \(state.url)")
+                    print("Removing item from collection! Item is \(state.url)")
                     let infoData = CollectionItem(infoData: state.infoData!, url: state.url, flag: state.flag)
                     return .run { send in
                         await self.databaseClient.removeFromCollection(section.id, "", infoData)
@@ -170,7 +179,7 @@ public struct InfoFeature: Reducer {
                                 isInAnyCollection = true
                             }
                             
-                            isInCollections.append(HomeSectionChecks(id: section.id, isInCollection: isInCollection))
+                            isInCollections.append(HomeSectionChecks(id: section.id, url: url, isInCollection: isInCollection))
                         }
                         
                         await send(.view(.updateIsInAnyCollection(isInAnyCollection)))

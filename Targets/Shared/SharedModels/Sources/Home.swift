@@ -37,10 +37,12 @@ public struct HomeSection: Codable, Equatable, Hashable {
 
 public struct HomeSectionChecks: Codable, Equatable, Hashable {
     public let id: String
+    public let url: String
     public var isInCollection: Bool
 
-    public init(id: String, isInCollection: Bool) {
+    public init(id: String, url: String, isInCollection: Bool) {
         self.id = id
+        self.url = url
         self.isInCollection = isInCollection
     }
 }
@@ -48,6 +50,7 @@ public struct HomeSectionChecks: Codable, Equatable, Hashable {
 public struct HomeData: Codable, Equatable, Hashable {
     public let id: String
     public let url: String
+    public var status: ItemStatus
     public let titles: Titles
     public let poster: String
     public let description: String
@@ -57,7 +60,7 @@ public struct HomeData: Codable, Equatable, Hashable {
     public let current: Int?
     public let total: Int?
     
-    public init(id: String = UUID().uuidString, url: String, titles: Titles, description: String, poster: String, label: Label, indicator: String, isWidescreen: Bool = false, current: Int?, total: Int?) {
+    public init(id: String = UUID().uuidString, url: String, titles: Titles, description: String, poster: String, label: Label, indicator: String, status: ItemStatus = .none, isWidescreen: Bool = false, current: Int?, total: Int?) {
         self.id = id
         self.url = url
         self.titles = titles
@@ -68,6 +71,7 @@ public struct HomeData: Codable, Equatable, Hashable {
         self.isWidescreen = isWidescreen
         self.current = current
         self.total = total
+        self.status = status
     }
     
     public func hash(into hasher: inout Hasher) {

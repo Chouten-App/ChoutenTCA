@@ -192,8 +192,8 @@ public class RepoInstallPopup: UIViewController {
 
     let installButton: UIButton = {
         var configuration = UIButton.Configuration.plain()
-        configuration.title = "Install repo"
-        configuration.attributedTitle = AttributedString("Install repo", attributes: AttributeContainer([
+        configuration.title = "Install"
+        configuration.attributedTitle = AttributedString("Install", attributes: AttributeContainer([
             .font: UIFont.systemFont(ofSize: 14, weight: .bold),
             .foregroundColor: UIColor.fg
         ]))

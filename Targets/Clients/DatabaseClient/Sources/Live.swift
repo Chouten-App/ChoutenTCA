@@ -95,6 +95,7 @@ extension DatabaseClient: DependencyKey {
                             t.column("collection_uuid", .text).notNull().references(collectionTableName, onDelete: .cascade)
                             t.column("moduleId", .text).notNull()
                             t.column("infoData", .jsonText).notNull()
+                            t.column("flag", .text).notNull()
                         }
                     }
                 } catch {
@@ -166,7 +167,8 @@ extension DatabaseClient: DependencyKey {
                                             description: item.infoData.description,
                                             poster: item.infoData.poster,
                                             label: Label(text: "Test", color: ""),
-                                            indicator: "\(item.flag)",
+                                            indicator: "\(item.flag.rawValue)",
+                                            status: item.flag,
                                             current: nil,
                                             total: nil
                                         )
@@ -219,12 +221,29 @@ extension DatabaseClient: DependencyKey {
                     let dbQueue = try DatabaseQueue(path: dbPath)
                     try dbQueue.write { db in
                         try db.execute(sql: """
-                            INSERT INTO 'items-\(collectionId)' (collection_uuid, moduleId, infoData) VALUES (?, ?, ?);
-                        """, arguments: [collectionId, moduleId, try? JSONEncoder().encode(infoData)])
+                            INSERT INTO 'items-\(collectionId)' (collection_uuid, moduleId, infoData, flag) VALUES (?, ?, ?, ?);
+                        """, arguments: [collectionId, moduleId, try? JSONEncoder().encode(infoData), infoData.flag.rawValue])
                         print("Successfully added item to the collection for \(infoData.infoData.titles.primary). ID: \(collectionId)")
                     }
                 } catch {
                     print("Error adding to collection!")
+                    print("\(error)")
+                }
+            },
+            updateItemInCollection: { collectionId, moduleId, infoData in
+                do {
+                    let dbPath = try fetchDatabasePath()
+                    let dbQueue = try DatabaseQueue(path: dbPath)
+                    
+                    // For some reason, if I include the moduleId and the moduleId string length is 0, it won't work lol
+                    try dbQueue.write { db in
+                        try db.execute(sql: """
+                            UPDATE 'items-\(collectionId)' SET infoData = ?, flag = ? WHERE infoData->>'url' = ?
+                        """, arguments: [try? JSONEncoder().encode(infoData), infoData.flag.rawValue, infoData.url])
+                        print("Successfully updated item in the collection for \(infoData.infoData.titles.primary). ID: \(collectionId) Flag: \(infoData.flag.rawValue)")
+                    }
+                } catch {
+                    print("Error updating item in collection!")
                     print("\(error)")
                 }
             },
@@ -233,7 +252,7 @@ extension DatabaseClient: DependencyKey {
                     let dbPath = try fetchDatabasePath()
                     let dbQueue = try DatabaseQueue(path: dbPath)
                     
-                    // For some reason, if I include the moduleId and the moduleId string length is 0, it won't work lol
+                    // Same thing as above. For some reason, if I include the moduleId and the moduleId string length is 0, it won't work lol
                     try dbQueue.write { db in
                         try db.execute(sql: """
                             DELETE FROM 'items-\(collectionId)' WHERE infoData->>'url' = ?

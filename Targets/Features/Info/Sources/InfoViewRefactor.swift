@@ -117,6 +117,14 @@ extension InfoViewRefactor: SuccessInfoVCDelegate {
         return store.isInAnyCollection
     }
     
+    public func updateFlag(flag: ItemStatus) -> Void {
+        store.send(.view(.updateFlag(flag)))
+    }
+    
+    public func updateItemInCollection(collection: HomeSection) {
+        store.send(.view(.updateItemInCollection(collection)))
+    }
+    
     public func addItemToCollection(collection: HomeSection) {
         store.send(.view(.addToCollection(collection)))
     }
