@@ -23,6 +23,8 @@ public protocol SuccessInfoVCDelegate: AnyObject {
     func addItemToCollection(collection: HomeSection)
     func updateItemInCollection(collection: HomeSection)
     func removeFromCollection(collection: HomeSection)
+    func updateCollections() -> Void
+    func updateIsInCollections() -> Void
 }
 
 public class SuccessInfoVC: UIViewController {
@@ -407,6 +409,14 @@ extension SuccessInfoVC: CollectionMenuVCDelegate {
     func removeFromCollection(collection: SharedModels.HomeSection) {
         return self.delegate!.removeFromCollection(collection: collection)
     }
+    
+    func updateCollections() {
+        self.delegate!.updateCollections()
+    }
+    
+    func updateIsInCollections() -> Void {
+        self.delegate!.updateIsInCollections()
+    }
 }
 
 protocol CollectionMenuVCDelegate: AnyObject {
@@ -416,6 +426,8 @@ protocol CollectionMenuVCDelegate: AnyObject {
     func addItemToCollection(collection: HomeSection)
     func updateItemInCollection(collection: HomeSection)
     func removeFromCollection(collection: HomeSection)
+    func updateCollections() -> Void
+    func updateIsInCollections() -> Void
 }
 
 class CollectionMenuVC: UIViewController {
@@ -539,7 +551,7 @@ class CollectionMenuVC: UIViewController {
         itemStatuses = collections.flatMap { collection in
             // Find status for each collection or set to `.none` if not found
             return collection.list.map { item in
-                if let status = isInCollections.first(where: { $0.url == item.url }) {
+                if isInCollections.first(where: { $0.url == item.url }) != nil {
                     return item.status
                 }
                 return .none
@@ -587,7 +599,7 @@ class CollectionMenuVC: UIViewController {
                 // Update the status in the itemStatuses array
                 self.itemStatuses[index] = status
                 
-                if let itemIndex = self.collections[index].list.firstIndex(where: { $0.url == itemId }) {
+                if self.collections[index].list.firstIndex(where: { $0.url == itemId }) != nil {
                     delegate?.updateFlag(flag: status)
                     delegate?.updateItemInCollection(collection: self.collections[index])
                 } else {
@@ -640,6 +652,14 @@ extension CollectionMenuVC: UITableViewDelegate, UITableViewDataSource {
 
         // Update the cell
         tableView.reloadRows(at: [indexPath], with: .automatic)
+        
+        delegate?.updateCollections()
+        delegate?.updateIsInCollections()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.collections = self.delegate?.fetchCollections() ?? []
+            self.isInCollections = self.delegate?.fetchIsInCollections() ?? []
+        }
     }
 }
 
