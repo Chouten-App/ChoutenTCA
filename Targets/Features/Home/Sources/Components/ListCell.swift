@@ -66,6 +66,14 @@ class ListCell: UICollectionViewCell, SelfConfiguringCell {
         return label
     }()
     
+    let indicatorImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.tintColor = UIColor.fg
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
     let whiteCircleImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(systemName: "circle.fill"))
         imageView.tintColor = .white
@@ -100,6 +108,7 @@ class ListCell: UICollectionViewCell, SelfConfiguringCell {
         contentView.addSubview(stackView)
 
         indicator.addSubview(indicatorLabel)
+        indicator.addSubview(indicatorImageView)
         imageView.addSubview(indicator)
 
         stackView.setCustomSpacing(4, after: imageView)
@@ -124,13 +133,18 @@ class ListCell: UICollectionViewCell, SelfConfiguringCell {
             stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor),
 
-            indicator.widthAnchor.constraint(equalTo: indicatorLabel.widthAnchor, constant: 16),
-            indicator.heightAnchor.constraint(equalTo: indicatorLabel.heightAnchor, constant: 8),
+            indicator.widthAnchor.constraint(equalToConstant: 24),
+            indicator.heightAnchor.constraint(equalToConstant: 24),
             indicator.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
             indicator.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            
+            indicatorLabel.centerXAnchor.constraint(equalTo: indicator.centerXAnchor),
+            indicatorLabel.centerYAnchor.constraint(equalTo: indicator.centerYAnchor),
 
-            indicatorLabel.trailingAnchor.constraint(equalTo: indicator.trailingAnchor, constant: -8),
-            indicatorLabel.topAnchor.constraint(equalTo: indicator.topAnchor, constant: 4),
+            indicatorImageView.centerXAnchor.constraint(equalTo: indicator.centerXAnchor),
+            indicatorImageView.centerYAnchor.constraint(equalTo: indicator.centerYAnchor),
+            indicatorImageView.widthAnchor.constraint(equalToConstant: 18),
+            indicatorImageView.heightAnchor.constraint(equalToConstant: 18),
             
             whiteCircleImageView.widthAnchor.constraint(equalToConstant: 32),
             whiteCircleImageView.heightAnchor.constraint(equalToConstant: 32),
@@ -152,10 +166,49 @@ class ListCell: UICollectionViewCell, SelfConfiguringCell {
         self.data = data
         
         imageView.setAsyncImage(url: data.poster)
-        indicatorLabel.text = data.indicator
         titleLabel.text = data.titles.primary
         countLabel.text = "\(data.current != nil ? String(data.current!) : "~")/\(data.total != nil ? String(data.total!) : "~")"
 
+        if let indicator = ItemStatus(rawValue: data.indicator) {
+            var symbolName: String {
+                switch indicator {
+                case .inprogress:
+                    return "clock"  // You can randomly or conditionally choose between "clock", "hourglass", or "arrow.triangle.2.circlepath"
+                case .completed:
+                    return "checkmark.circle"  // Similarly, choose between "checkmark.circle", "checkmark.seal", or "flag.checkered"
+                case .planned:
+                    return "calendar.badge.clock"
+                case .dropped:
+                    return "xmark.circle"
+                case .none:
+                    return "minus.circle"
+                }
+            }
+            
+            var symbolColor: UIColor {
+                switch indicator {
+                case .inprogress:
+                    return .yellow
+                case .completed:
+                    return .green
+                case .planned:
+                    return .yellow
+                case .dropped:
+                    return .red
+                case .none:
+                    return .white
+                }
+            }
+            
+            indicatorLabel.isHidden = true
+            indicatorImageView.isHidden = false
+            indicatorImageView.image = UIImage(systemName: symbolName)
+            indicatorImageView.tintColor = symbolColor
+        } else {
+            indicatorLabel.text = data.indicator
+            indicatorLabel.isHidden = false
+            indicatorImageView.isHidden = true
+        }
         indicator.alpha = data.indicator.isEmpty ? 0.0 : 1.0
     }
 }
