@@ -19,6 +19,7 @@ jobs:
       - name: Install Tuist
         run: |
           curl -Ls https://install.tuist.app | bash
+          export PATH="$HOME/.tuist/bin:$PATH"
 
       - name: Install dependencies
         run: |
