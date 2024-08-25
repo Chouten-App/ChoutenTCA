@@ -19,7 +19,12 @@ jobs:
       - name: Install Tuist
         run: |
           curl -Ls https://install.tuist.app | bash
-          export PATH="$HOME/.tuist/bin:$PATH"
+      - name: Export path
+        run: |
+          echo 'export PATH=$HOME/.tuist/bin:$PATH' >> $GITHUB_ENV
+      
+      - name: Print Tuist version
+        run: tuist --version
 
       - name: Install dependencies
         run: |
