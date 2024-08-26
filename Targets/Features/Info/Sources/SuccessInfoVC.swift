@@ -19,12 +19,8 @@ public protocol SuccessInfoVCDelegate: AnyObject {
     func fetchCollections() -> [HomeSection]
     func fetchIsInCollections() -> [HomeSectionChecks]
     func fetchIsInAnyCollection() -> Bool
-    func updateFlag(flag: ItemStatus) -> Void
     func addItemToCollection(collection: HomeSection)
-    func updateItemInCollection(collection: HomeSection)
     func removeFromCollection(collection: HomeSection)
-    func updateCollections() -> Void
-    func updateIsInCollections() -> Void
 }
 
 public class SuccessInfoVC: UIViewController {
@@ -394,40 +390,20 @@ extension SuccessInfoVC: CollectionMenuVCDelegate {
         return self.delegate!.fetchIsInCollections()
     }
     
-    func updateFlag(flag: ItemStatus) {
-        self.delegate!.updateFlag(flag: flag)
-    }
-    
     func addItemToCollection(collection: SharedModels.HomeSection) {
         return self.delegate!.addItemToCollection(collection: collection)
     }
     
-    func updateItemInCollection(collection: SharedModels.HomeSection) {
-        return self.delegate!.updateItemInCollection(collection: collection)
-    }
-    
     func removeFromCollection(collection: SharedModels.HomeSection) {
         return self.delegate!.removeFromCollection(collection: collection)
-    }
-    
-    func updateCollections() {
-        self.delegate!.updateCollections()
-    }
-    
-    func updateIsInCollections() -> Void {
-        self.delegate!.updateIsInCollections()
     }
 }
 
 protocol CollectionMenuVCDelegate: AnyObject {
     func fetchCollections() -> [HomeSection]
     func fetchIsInCollections() -> [HomeSectionChecks]
-    func updateFlag(flag: ItemStatus) -> Void
     func addItemToCollection(collection: HomeSection)
-    func updateItemInCollection(collection: HomeSection)
     func removeFromCollection(collection: HomeSection)
-    func updateCollections() -> Void
-    func updateIsInCollections() -> Void
 }
 
 class CollectionMenuVC: UIViewController {
@@ -586,34 +562,6 @@ class CollectionMenuVC: UIViewController {
             }
         }
     }
-    
-    private func showStatusPicker(for index: Int, itemId: String) {
-        let statusOptions = [ItemStatus.none, ItemStatus.inprogress, ItemStatus.completed, ItemStatus.dropped, ItemStatus.planned]
-        
-        let alert = UIAlertController(title: "Select Status", message: nil, preferredStyle: .actionSheet)
-
-        for status in statusOptions {
-            alert.addAction(UIAlertAction(title: status.rawValue, style: .default, handler: { [weak self] _ in
-                guard let self = self else { return }
-                            
-                // Update the status in the itemStatuses array
-                self.itemStatuses[index] = status
-                
-                if self.collections[index].list.firstIndex(where: { $0.url == itemId }) != nil {
-                    delegate?.updateFlag(flag: status)
-                    delegate?.updateItemInCollection(collection: self.collections[index])
-                } else {
-                    print("Item with id \(itemId) not found")
-                }
-                
-                // Reload the row in the table view to reflect the changes
-                self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
-            }))
-        }
-
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        present(alert, animated: true, completion: nil)
-    }
 }
 
 extension CollectionMenuVC: UITableViewDelegate, UITableViewDataSource {
@@ -625,14 +573,9 @@ extension CollectionMenuVC: UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CollectionCell", for: indexPath) as! CollectionCell
         let collection = collections[indexPath.row]
         let isInCollection = isInCollections[indexPath.row].isInCollection
-        let status = itemStatuses[indexPath.row]
+        let status = indexPath.row < itemStatuses.count ? itemStatuses[indexPath.row] : (collections[indexPath.row].list.first(where: { $0.url == isInCollections[indexPath.row].url })?.status ?? .none)
 
         cell.configure(with: collection.title, isInCollection: isInCollection, status: status)
-        
-        // Handle status button tap
-        cell.statusSelectionHandler = {
-            self.showStatusPicker(for: indexPath.row, itemId: self.isInCollections[indexPath.row].url)
-        }
 
         return cell
     }
@@ -652,14 +595,6 @@ extension CollectionMenuVC: UITableViewDelegate, UITableViewDataSource {
 
         // Update the cell
         tableView.reloadRows(at: [indexPath], with: .automatic)
-        
-        delegate?.updateCollections()
-        delegate?.updateIsInCollections()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.collections = self.delegate?.fetchCollections() ?? []
-            self.isInCollections = self.delegate?.fetchIsInCollections() ?? []
-        }
     }
 }
 

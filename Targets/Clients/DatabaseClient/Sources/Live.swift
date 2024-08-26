@@ -61,15 +61,17 @@ extension DatabaseClient: DependencyKey {
         return Self(
             initDB: {
                 do {
-                    let dbPath = try fetchDatabasePath()
-                    let dbQueue = try DatabaseQueue(path: dbPath)
-                    try dbQueue.write { db in
-                        // This is useless as downloads aren't used yet
-                        try db.create(table: "downloads") { t in
-                            t.primaryKey("id", .text)
-                            t.column("item", .jsonText).notNull()
-                        }
+                    let dbQueue: DatabaseQueue = {
+                        let dbPath = try! fetchDatabasePath()
+                        return try! DatabaseQueue(path: dbPath)
+                    }()
+                    
+                    try! dbQueue.write { db in
+                        try db.execute(sql: "PRAGMA journal_mode = WAL;")
+                        try db.execute(sql: "PRAGMA cache_size = -2000;")
                     }
+
+                    try dbQueue.close()
                 } catch {
                     print("Error initializing database file!")
                     print("\(error)")
@@ -78,8 +80,10 @@ extension DatabaseClient: DependencyKey {
             createCollection: { name in
                 let randomId = UUID().uuidString;
                 do {
-                    let dbPath = try fetchDatabasePath()
-                    let dbQueue = try DatabaseQueue(path: dbPath)
+                    let dbQueue: DatabaseQueue = {
+                        let dbPath = try! fetchDatabasePath()
+                        return try! DatabaseQueue(path: dbPath)
+                    }()
                     
                     try dbQueue.write { db in
                         let collectionTableName = "collection-\(randomId)"
@@ -98,19 +102,26 @@ extension DatabaseClient: DependencyKey {
                             t.column("flag", .text).notNull()
                         }
                     }
+                    
+                    try dbQueue.close()
                 } catch {
                     print("Error creating collection tables for \(name)!")
                     print("\(error)")
                 }
                 
                 do {
-                    let dbPath = try fetchDatabasePath()
-                    let dbQueue = try DatabaseQueue(path: dbPath)
+                    let dbQueue: DatabaseQueue = {
+                        let dbPath = try! fetchDatabasePath()
+                        return try! DatabaseQueue(path: dbPath)
+                    }()
+                    
                     try dbQueue.write { db in
                         let collectionTableName = "collection-\(randomId)"
                         try db.execute(sql: "INSERT INTO '\(collectionTableName)' (uuid, name) VALUES (?, ?)", arguments: [randomId, name])
                         print("Successfully created collection for \(name). ID: \(randomId)")
                     }
+                    
+                    try dbQueue.close()
                 } catch {
                     print("Error creating base collections for \(name)!")
                     print("\(error)")
@@ -120,14 +131,20 @@ extension DatabaseClient: DependencyKey {
             },
             fetchCollection: { id in
                 do {
-                    let dbPath = try fetchDatabasePath()
-                    let dbQueue = try DatabaseQueue(path: dbPath)
+                    let dbQueue: DatabaseQueue = {
+                        let dbPath = try! fetchDatabasePath()
+                        return try! DatabaseQueue(path: dbPath)
+                    }()
                     
-                    return try dbQueue.read { db in
+                    let collection = try dbQueue.read { db in
                         let items = try Row.fetchAll(db, sql: "SELECT * FROM 'collection-\(id)'")
                         
                         return CollectionData(uuid: "", name: "")
                     }
+                    
+                    try dbQueue.close()
+                    
+                    return collection
                 } catch {
                     print("Error fetching collection data for \(id)!")
                     print("\(error)")
@@ -136,9 +153,12 @@ extension DatabaseClient: DependencyKey {
             },
             fetchCollections: {
                 do {
-                    let dbPath = try fetchDatabasePath()
-                    let dbQueue = try DatabaseQueue(path: dbPath)
-                    return try dbQueue.read { db in
+                    let dbQueue: DatabaseQueue = {
+                        let dbPath = try! fetchDatabasePath()
+                        return try! DatabaseQueue(path: dbPath)
+                    }()
+                    
+                    let collections = try dbQueue.read { db in
                         // Fetch collection table name matching collection_uuid
                         let tables = try String.fetchAll(db, sql: """
                             SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'collection-%'
@@ -185,6 +205,10 @@ extension DatabaseClient: DependencyKey {
 
                         return collections
                     }
+                    
+                    try dbQueue.close()
+                    
+                    return collections
                 } catch {
                     print("Error fetching collections!")
                     print("\(error)")
@@ -194,10 +218,12 @@ extension DatabaseClient: DependencyKey {
             },
             isInCollection: { collectionId, moduleId, infoData in
                 do {
-                    let dbPath = try fetchDatabasePath()
-                    let dbQueue = try DatabaseQueue(path: dbPath)
+                    let dbQueue: DatabaseQueue = {
+                        let dbPath = try! fetchDatabasePath()
+                        return try! DatabaseQueue(path: dbPath)
+                    }()
                     
-                    return try dbQueue.read { db in
+                    let exists = try dbQueue.read { db in
                         // Query to check if the item is in the collection
                         let itemExists = try Bool.fetchOne(db, sql: """
                             SELECT EXISTS (
@@ -209,6 +235,10 @@ extension DatabaseClient: DependencyKey {
                         
                         return itemExists ?? false
                     }
+                    
+                    try dbQueue.close()
+                    
+                    return exists
                 } catch {
                     print("Error checking if item is in collection!")
                     print("\(error)")
@@ -217,14 +247,19 @@ extension DatabaseClient: DependencyKey {
             },
             addToCollection: { collectionId, moduleId, infoData in
                 do {
-                    let dbPath = try fetchDatabasePath()
-                    let dbQueue = try DatabaseQueue(path: dbPath)
+                    let dbQueue: DatabaseQueue = {
+                        let dbPath = try! fetchDatabasePath()
+                        return try! DatabaseQueue(path: dbPath)
+                    }()
+                    
                     try dbQueue.write { db in
                         try db.execute(sql: """
                             INSERT INTO 'items-\(collectionId)' (collection_uuid, moduleId, infoData, flag) VALUES (?, ?, ?, ?);
                         """, arguments: [collectionId, moduleId, try? JSONEncoder().encode(infoData), infoData.flag.rawValue])
                         print("Successfully added item to the collection for \(infoData.infoData.titles.primary). ID: \(collectionId)")
                     }
+                    
+                    try dbQueue.close()
                 } catch {
                     print("Error adding to collection!")
                     print("\(error)")
@@ -232,8 +267,10 @@ extension DatabaseClient: DependencyKey {
             },
             updateItemInCollection: { collectionId, moduleId, infoData in
                 do {
-                    let dbPath = try fetchDatabasePath()
-                    let dbQueue = try DatabaseQueue(path: dbPath)
+                    let dbQueue: DatabaseQueue = {
+                        let dbPath = try! fetchDatabasePath()
+                        return try! DatabaseQueue(path: dbPath)
+                    }()
                     
                     // For some reason, if I include the moduleId and the moduleId string length is 0, it won't work lol
                     try dbQueue.write { db in
@@ -242,6 +279,8 @@ extension DatabaseClient: DependencyKey {
                         """, arguments: [try? JSONEncoder().encode(infoData), infoData.flag.rawValue, infoData.url])
                         print("Successfully updated item in the collection for \(infoData.infoData.titles.primary). ID: \(collectionId) Flag: \(infoData.flag.rawValue)")
                     }
+                    
+                    try dbQueue.close()
                 } catch {
                     print("Error updating item in collection!")
                     print("\(error)")
@@ -249,8 +288,10 @@ extension DatabaseClient: DependencyKey {
             },
             removeFromCollection: { collectionId, moduleId, infoData in
                 do {
-                    let dbPath = try fetchDatabasePath()
-                    let dbQueue = try DatabaseQueue(path: dbPath)
+                    let dbQueue: DatabaseQueue = {
+                        let dbPath = try! fetchDatabasePath()
+                        return try! DatabaseQueue(path: dbPath)
+                    }()
                     
                     // Same thing as above. For some reason, if I include the moduleId and the moduleId string length is 0, it won't work lol
                     try dbQueue.write { db in
@@ -259,6 +300,8 @@ extension DatabaseClient: DependencyKey {
                         """, arguments: [infoData.url])
                         print("Successfully deleted item from collection for \(infoData.infoData.titles.primary). ID: \(collectionId)")
                     }
+                    
+                    try dbQueue.close()
                 } catch {
                     print("Error removing from collection!")
                     print("\(error)")
@@ -266,8 +309,10 @@ extension DatabaseClient: DependencyKey {
             },
             removeCollection: { collectionId, moduleId in
                 do {
-                    let dbPath = try fetchDatabasePath()
-                    let dbQueue = try DatabaseQueue(path: dbPath)
+                    let dbQueue: DatabaseQueue = {
+                        let dbPath = try! fetchDatabasePath()
+                        return try! DatabaseQueue(path: dbPath)
+                    }()
                     
                     try dbQueue.write { db in
                         let collectionTableName = "collection-\(collectionId)"
@@ -281,6 +326,8 @@ extension DatabaseClient: DependencyKey {
                         
                         print("Successfully deleted collection and items tables for collectionId: \(collectionId)")
                     }
+                    
+                    try dbQueue.close()
                 } catch {
                     print("Error deleting collection!")
                     print("\(error)")

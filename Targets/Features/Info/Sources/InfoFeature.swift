@@ -57,7 +57,6 @@ public struct InfoFeature: Reducer {
             case updateIsInCollections
             case updateIsInAnyCollection( _ data: Bool)
             case updateFlag(_ flag: ItemStatus)
-            case updateCollections
             case addToCollection(_ section: HomeSection)
             case updateItemInCollection(_ section: HomeSection)
             case removeFromCollection(_ section: HomeSection)
@@ -103,11 +102,6 @@ public struct InfoFeature: Reducer {
                             }
                         }
                     )
-                case .updateCollections:
-                    return .run { send in
-                        let collections = await self.databaseClient.fetchCollections();
-                        await send(.view(.setCollections(collections)))
-                    }
                 case .fetchMedia(let url):
                     return .merge(
                         .run { send in
@@ -145,7 +139,6 @@ public struct InfoFeature: Reducer {
                     return .run { send in
                         await self.databaseClient.addToCollection(section.id, "", infoData)
                         await send(.view(.updateIsInCollections))
-                        await send(.view(.updateCollections))
                     }
                 case .updateItemInCollection(let section):
                     print("Updating item in collection! Item is \(state.url)")
@@ -160,7 +153,6 @@ public struct InfoFeature: Reducer {
                     return .run { send in
                         await self.databaseClient.removeFromCollection(section.id, "", infoData)
                         await send(.view(.updateIsInCollections))
-                        await send(.view(.updateCollections))
                     }
                 case .setCollections(let data):
                     state.collections = data

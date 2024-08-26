@@ -109,28 +109,12 @@ extension InfoViewRefactor: SuccessInfoVCDelegate {
         return store.collections
     }
     
-    public func updateCollections() -> Void {
-        store.send(.view(.updateCollections))
-    }
-    
     public func fetchIsInCollections() -> [HomeSectionChecks] {
         return store.isInCollections
     }
     
     public func fetchIsInAnyCollection() -> Bool {
         return store.isInAnyCollection
-    }
-    
-    public func updateFlag(flag: ItemStatus) -> Void {
-        store.send(.view(.updateFlag(flag)))
-    }
-    
-    public func updateItemInCollection(collection: HomeSection) {
-        store.send(.view(.updateItemInCollection(collection)))
-    }
-    
-    public func updateIsInCollections() -> Void {
-        store.send(.view(.updateIsInCollections))
     }
     
     public func addItemToCollection(collection: HomeSection) {
