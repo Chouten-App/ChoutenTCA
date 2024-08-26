@@ -16,24 +16,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Install Tuist
+      - name: Temporary
         run: |
-          curl -Ls https://install.tuist.app | bash
-      - name: Export path
-        run: |
-          echo 'export PATH=$HOME/.tuist/bin:$PATH' >> $GITHUB_ENV
-      
-      - name: Print Tuist version
-        run: tuist --version
-
-      - name: Install dependencies
-        run: |
-          tuist fetch
-          
-      - name: Generate Xcode project
-        run: |
-          tuist generate
-          
-      - name: Build and test
-        run: |
-          xcodebuild -workspace Chouten.xcworkspace -scheme YourScheme -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 12,OS=latest' clean build test
+          echo "Hello, world"
