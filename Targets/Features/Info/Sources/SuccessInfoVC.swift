@@ -21,6 +21,8 @@ public protocol SuccessInfoVCDelegate: AnyObject {
     func fetchIsInAnyCollection() -> Bool
     func addItemToCollection(collection: HomeSection)
     func removeFromCollection(collection: HomeSection)
+    func updateFlag(status: ItemStatus)
+    func updateItemInCollection(collection: HomeSection)
 }
 
 public class SuccessInfoVC: UIViewController {
@@ -397,6 +399,14 @@ extension SuccessInfoVC: CollectionMenuVCDelegate {
     func removeFromCollection(collection: SharedModels.HomeSection) {
         return self.delegate!.removeFromCollection(collection: collection)
     }
+    
+    func updateFlag(status: SharedModels.ItemStatus) {
+        return self.delegate!.updateFlag(status: status)
+    }
+    
+    func updateItemInCollection(collection: SharedModels.HomeSection) {
+        return self.delegate!.updateItemInCollection(collection: collection)
+    }
 }
 
 protocol CollectionMenuVCDelegate: AnyObject {
@@ -404,6 +414,8 @@ protocol CollectionMenuVCDelegate: AnyObject {
     func fetchIsInCollections() -> [HomeSectionChecks]
     func addItemToCollection(collection: HomeSection)
     func removeFromCollection(collection: HomeSection)
+    func updateFlag(status: ItemStatus)
+    func updateItemInCollection(collection: HomeSection)
 }
 
 class CollectionMenuVC: UIViewController {
@@ -575,7 +587,7 @@ extension CollectionMenuVC: UITableViewDelegate, UITableViewDataSource {
         let isInCollection = isInCollections[indexPath.row].isInCollection
         let status = indexPath.row < itemStatuses.count ? itemStatuses[indexPath.row] : (collections[indexPath.row].list.first(where: { $0.url == isInCollections[indexPath.row].url })?.status ?? .none)
 
-        cell.configure(with: collection.title, isInCollection: isInCollection, status: status)
+        cell.configure(with: collection.title, isInCollection: isInCollection, status: status, collection: collection, delegate: self)
 
         return cell
     }
@@ -598,6 +610,21 @@ extension CollectionMenuVC: UITableViewDelegate, UITableViewDataSource {
     }
 }
 
+extension CollectionMenuVC: CollectionCellDelegate {
+    func updateFlag(status: SharedModels.ItemStatus) {
+        return self.delegate!.updateFlag(status: status)
+    }
+    
+    func updateItemInCollection(collection: SharedModels.HomeSection) {
+        return self.delegate!.updateItemInCollection(collection: collection)
+    }
+}
+
+protocol CollectionCellDelegate: AnyObject {
+    func updateFlag(status: ItemStatus)
+    func updateItemInCollection(collection: HomeSection)
+}
+
 // Custom UITableViewCell with circular radio button
 class CollectionCell: UITableViewCell {
     private let titleLabel = UILabel()
@@ -618,6 +645,13 @@ class CollectionCell: UITableViewCell {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
+    
+    private var collection: HomeSection? = nil
+    private let statusOptions: [ItemStatus] = [.completed, .dropped, .inprogress, .none, .planned]
+    private weak var delegate: CollectionCellDelegate? = nil
+    
+    // Closure to handle the status selection
+    var statusSelectionHandler: (() -> Void)?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -644,13 +678,44 @@ class CollectionCell: UITableViewCell {
             titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
 
             statusButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            statusButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            statusButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
         
         statusButton.addTarget(self, action: #selector(statusButtonTapped), for: .touchUpInside)
     }
+    
+    @objc private func statusButtonTapped() {
+        guard let viewController = findViewController() else { return }
+        
+        let alertController = UIAlertController(title: "Select Status", message: nil, preferredStyle: .actionSheet)
+                
+        for status in statusOptions {
+            let action = UIAlertAction(title: status.rawValue, style: .default) { _ in
+                self.updateStatus(to: status)
+            }
+            alertController.addAction(action)
+        }
 
-    func configure(with title: String, isInCollection: Bool, status: ItemStatus) {
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alertController.addAction(cancelAction)
+
+        viewController.present(alertController, animated: true, completion: nil)
+    }
+
+    private func findViewController() -> UIViewController? {
+        var responder: UIResponder? = self
+        while responder != nil {
+            responder = responder?.next
+            if let viewController = responder as? UIViewController {
+                return viewController
+            }
+        }
+        return nil
+    }
+
+    func configure(with title: String, isInCollection: Bool, status: ItemStatus, collection: HomeSection, delegate: CollectionCellDelegate) {
+        self.collection = collection
+        self.delegate = delegate
         titleLabel.text = title
         updateRadioButton(isInCollection: isInCollection)
         statusButton.setTitle(status.rawValue, for: .normal)
@@ -667,10 +732,12 @@ class CollectionCell: UITableViewCell {
         }
     }
     
-    @objc private func statusButtonTapped() {
-        // Trigger delegate method or closure to open the picker for status selection
-        statusSelectionHandler?()
+    private func updateStatus(to status: ItemStatus) {
+        if collection != nil {
+            delegate!.updateFlag(status: status)
+            delegate!.updateItemInCollection(collection: collection!)
+        }
+        
+        statusButton.setTitle(status.rawValue, for: .normal)
     }
-    
-    var statusSelectionHandler: (() -> Void)?
 }

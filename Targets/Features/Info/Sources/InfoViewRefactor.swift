@@ -128,4 +128,12 @@ extension InfoViewRefactor: SuccessInfoVCDelegate {
     public func removeFromCollection(collection: HomeSection) {
         store.send(.view(.removeFromCollection(collection)))
     }
+    
+    public func updateFlag(status: ItemStatus) {
+        store.send(.view(.updateFlag(status)))
+    }
+    
+    public func updateItemInCollection(collection: HomeSection) {
+        store.send(.view(.updateItemInCollection(collection)))
+    }
 }

@@ -12,6 +12,8 @@ import GRDB
 
 extension DatabaseClient: DependencyKey {
     public static let liveValue: Self = {
+        
+        // Centralized function to fetch the database path
         @Sendable func fetchDatabasePath() throws -> String {
             if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
                 let modulesDirectory = documentsDirectory.appendingPathComponent("Database")
@@ -27,6 +29,7 @@ extension DatabaseClient: DependencyKey {
             }
         }
         
+        // Function to create the database and directories
         @Sendable func createDatabase() {
             if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
                 let fileManager = FileManager.default
@@ -66,10 +69,7 @@ extension DatabaseClient: DependencyKey {
                         return try! DatabaseQueue(path: dbPath)
                     }()
                     
-                    try! dbQueue.write { db in
-                        try db.execute(sql: "PRAGMA journal_mode = WAL;")
-                        try db.execute(sql: "PRAGMA cache_size = -2000;")
-                    }
+                    // ??
 
                     try dbQueue.close()
                 } catch {
