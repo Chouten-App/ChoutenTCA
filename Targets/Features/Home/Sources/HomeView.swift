@@ -93,6 +93,7 @@ public class HomeView: UIViewController {
         view.addSubview(selectButton)
         view.addSubview(deleteButton)
 
+        collectionView.register(ContinueWatchingCard.self, forCellWithReuseIdentifier: ContinueWatchingCard.reuseIdentifier)
         collectionView.register(CarouselCell.self, forCellWithReuseIdentifier: CarouselCell.reuseIdentifier)
         collectionView.register(ListCell.self, forCellWithReuseIdentifier: ListCell.reuseIdentifier)
         collectionView.register(
@@ -154,7 +155,10 @@ public class HomeView: UIViewController {
     
     func createDataSource() {
         dataSource = UICollectionViewDiffableDataSource<HomeSection, HomeData>(collectionView: collectionView) { collectionView, indexPath, data in
+            
             switch self.store.collections[indexPath.section].type {
+            case 3:
+                return self.configure(ContinueWatchingCard.self, with: data, for: indexPath)
             case 0:
                 return self.configure(CarouselCell.self, with: data, for: indexPath)
             default:
@@ -188,10 +192,9 @@ public class HomeView: UIViewController {
 
     func reloadData() {
         var snapshot = NSDiffableDataSourceSnapshot<HomeSection, HomeData>()
-            
+        
         if !self.store.collections.isEmpty {
             snapshot.appendSections(self.store.collections)
-            
             for section in self.store.collections {
                 snapshot.appendItems(section.list, toSection: section)
             }
@@ -203,8 +206,9 @@ public class HomeView: UIViewController {
     func createCompositionalLayout() -> UICollectionViewLayout {
         let layout = UICollectionViewCompositionalLayout { sectionIndex, layoutEnvironment in
             let section = self.store.collections[sectionIndex]
-
             switch section.type {
+            case 3:
+                return self.createContinueWatchingCarousel(using: section)
             case 0:
                 return self.createCarouselSection(using: section)
             default:
@@ -217,6 +221,21 @@ public class HomeView: UIViewController {
         layout.configuration = configuration
 
         return layout
+    }
+    
+    func createContinueWatchingCarousel(using section: HomeSection) -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.8), heightDimension: .absolute(180))
+        let layoutItem = NSCollectionLayoutItem(layoutSize: itemSize)
+
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.9), heightDimension: .absolute(200))
+        let layoutGroup = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [layoutItem])
+
+        let layoutSection = NSCollectionLayoutSection(group: layoutGroup)
+        layoutSection.orthogonalScrollingBehavior = .continuousGroupLeadingBoundary
+        layoutSection.interGroupSpacing = 12
+        layoutSection.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 20, bottom: 20, trailing: 20)
+
+        return layoutSection
     }
 
     func createCarouselSection(using section: HomeSection) -> NSCollectionLayoutSection {

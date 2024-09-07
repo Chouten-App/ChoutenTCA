@@ -69,7 +69,14 @@ extension DatabaseClient: DependencyKey {
                         return try! DatabaseQueue(path: dbPath)
                     }()
                     
-                    // ??
+                    try dbQueue.write { db in
+                        try db.create(table: "continuewatching", options: .ifNotExists) { t in
+                            t.column("id", .integer).primaryKey()
+                            t.column("moduleId", .text).notNull()
+                            t.column("infoData", .jsonText).notNull()
+                            t.column("episodeData", .jsonText).notNull()
+                        }
+                    }
 
                     try dbQueue.close()
                 } catch {
@@ -77,58 +84,7 @@ extension DatabaseClient: DependencyKey {
                     print("\(error)")
                 }
             },
-            createCollection: { name in
-                let randomId = UUID().uuidString;
-                do {
-                    let dbQueue: DatabaseQueue = {
-                        let dbPath = try! fetchDatabasePath()
-                        return try! DatabaseQueue(path: dbPath)
-                    }()
-                    
-                    try dbQueue.write { db in
-                        let collectionTableName = "collection-\(randomId)"
-                        let itemsTableName = "items-\(randomId)"
-                        
-                        try db.create(table: collectionTableName) { t in
-                            t.column("uuid", .text).primaryKey()
-                            t.column("name", .text).notNull()
-                        }
-                        
-                        try db.create(table: itemsTableName) { t in
-                            t.column("id", .integer).primaryKey()
-                            t.column("collection_uuid", .text).notNull().references(collectionTableName, onDelete: .cascade)
-                            t.column("moduleId", .text).notNull()
-                            t.column("infoData", .jsonText).notNull()
-                            t.column("flag", .text).notNull()
-                        }
-                    }
-                    
-                    try dbQueue.close()
-                } catch {
-                    print("Error creating collection tables for \(name)!")
-                    print("\(error)")
-                }
-                
-                do {
-                    let dbQueue: DatabaseQueue = {
-                        let dbPath = try! fetchDatabasePath()
-                        return try! DatabaseQueue(path: dbPath)
-                    }()
-                    
-                    try dbQueue.write { db in
-                        let collectionTableName = "collection-\(randomId)"
-                        try db.execute(sql: "INSERT INTO '\(collectionTableName)' (uuid, name) VALUES (?, ?)", arguments: [randomId, name])
-                        print("Successfully created collection for \(name). ID: \(randomId)")
-                    }
-                    
-                    try dbQueue.close()
-                } catch {
-                    print("Error creating base collections for \(name)!")
-                    print("\(error)")
-                }
-                
-                return randomId;
-            },
+            
             fetchCollection: { id in
                 do {
                     let dbQueue: DatabaseQueue = {
@@ -245,6 +201,60 @@ extension DatabaseClient: DependencyKey {
                     return false
                 }
             },
+            
+            createCollection: { name in
+                let randomId = UUID().uuidString;
+                do {
+                    let dbQueue: DatabaseQueue = {
+                        let dbPath = try! fetchDatabasePath()
+                        return try! DatabaseQueue(path: dbPath)
+                    }()
+                    
+                    try dbQueue.write { db in
+                        let collectionTableName = "collection-\(randomId)"
+                        let itemsTableName = "items-\(randomId)"
+                        
+                        try db.create(table: collectionTableName) { t in
+                            t.column("uuid", .text).primaryKey()
+                            t.column("name", .text).notNull()
+                        }
+                        
+                        try db.create(table: itemsTableName) { t in
+                            t.column("id", .integer).primaryKey()
+                            t.column("collection_uuid", .text).notNull().references(collectionTableName, onDelete: .cascade)
+                            t.column("moduleId", .text).notNull()
+                            t.column("infoData", .jsonText).notNull()
+                            t.column("flag", .text).notNull()
+                        }
+                    }
+                    
+                    try dbQueue.close()
+                } catch {
+                    print("Error creating collection tables for \(name)!")
+                    print("\(error)")
+                }
+                
+                do {
+                    let dbQueue: DatabaseQueue = {
+                        let dbPath = try! fetchDatabasePath()
+                        return try! DatabaseQueue(path: dbPath)
+                    }()
+                    
+                    try dbQueue.write { db in
+                        let collectionTableName = "collection-\(randomId)"
+                        try db.execute(sql: "INSERT INTO '\(collectionTableName)' (uuid, name) VALUES (?, ?)", arguments: [randomId, name])
+                        print("Successfully created collection for \(name). ID: \(randomId)")
+                    }
+                    
+                    try dbQueue.close()
+                } catch {
+                    print("Error creating base collections for \(name)!")
+                    print("\(error)")
+                }
+                
+                return randomId;
+            },
+            
             addToCollection: { collectionId, moduleId, infoData in
                 do {
                     let dbQueue: DatabaseQueue = {
@@ -330,6 +340,84 @@ extension DatabaseClient: DependencyKey {
                     try dbQueue.close()
                 } catch {
                     print("Error deleting collection!")
+                    print("\(error)")
+                }
+            },
+            
+            fetchContinueWatching: {
+                do {
+                    let dbQueue: DatabaseQueue = {
+                        let dbPath = try! fetchDatabasePath()
+                        return try! DatabaseQueue(path: dbPath)
+                    }()
+                    
+                    let continueWatchingItems = try dbQueue.read { db in
+                        // Fetch all rows from the "continuewatching" table
+                        let rows = try Row.fetchAll(db, sql: "SELECT * FROM continuewatching")
+                        
+                        let randomId = UUID().uuidString;
+                        var result = HomeSection(id: randomId, title: "Continue Watching", type: 3, list: [])
+                        
+                        for row in rows {
+                            // Parse each row to create a ContinueWatchingItem object
+                            let moduleId: String = row["moduleId"]
+                            let infoDataString: String = row["infoData"]
+                            let episodeDataString: String = row["episodeData"]
+                            
+                            do {
+                                let item = try JSONDecoder().decode(CollectionItem.self, from: infoDataString.data(using: .utf8)!)
+                                let homeData = HomeData(
+                                    url: item.url,
+                                    titles: Titles(primary: item.infoData.titles.primary, secondary: item.infoData.titles.secondary ?? ""),
+                                    description: item.infoData.description,
+                                    poster: item.infoData.poster,
+                                    label: Label(text: "Test", color: ""),
+                                    indicator: "\(item.flag.rawValue)",
+                                    status: item.flag,
+                                    current: nil,
+                                    total: nil
+                                )
+                                result.list.append(homeData)
+                            } catch {
+                                continue
+                            }
+                        }
+                        
+                        return result
+                    }
+                    
+                    
+                    try dbQueue.close()
+                    
+                    return continueWatchingItems
+                } catch {
+                    print("Error fetching continue watching!")
+                    print("\(error)")
+
+                    let randomId = UUID().uuidString;
+                    
+                    return HomeSection(id: randomId, title: "Continue Watching", type: 0, list: [])
+                }
+            },
+            
+            addToContinueWatching: { moduleId, infoData in
+                do {
+                    let dbQueue: DatabaseQueue = {
+                        let dbPath = try! fetchDatabasePath()
+                        return try! DatabaseQueue(path: dbPath)
+                    }()
+                    
+                    // temp need episode data
+                    try dbQueue.write { db in
+                        try db.execute(sql: """
+                            INSERT INTO 'continuewatching' (moduleId, infoData, episodeData) VALUES (?, ?, ?);
+                        """, arguments: [moduleId, try? JSONEncoder().encode(infoData), try? JSONEncoder().encode(HomeSection(id: "", title: "", type: 0, list: []))])
+                        print("Successfully added item to continue watching for \(infoData.infoData.titles.primary).")
+                    }
+                    
+                    try dbQueue.close()
+                } catch {
+                    print("Error adding to continue watching!")
                     print("\(error)")
                 }
             }

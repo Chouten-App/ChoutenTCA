@@ -93,6 +93,9 @@ public struct InfoFeature: Reducer {
                                 
                                 let collections = await self.databaseClient.fetchCollections();
                                 
+                                // TEMPORARY
+                                await self.databaseClient.addToContinueWatching("", CollectionItem(infoData: data, url: url, flag: .none))
+                                
                                 await send(.view(.updateIsInCollections))
                                 
                                 await send(.view(.setInfoData(data)))

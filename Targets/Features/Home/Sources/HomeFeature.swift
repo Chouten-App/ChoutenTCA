@@ -61,10 +61,15 @@ public struct HomeFeature: Reducer {
                         .run { send in
                             await self.databaseClient.initDB()
                             
-                            let data = await self.databaseClient.fetchCollections();
+                            var collections = await self.databaseClient.fetchCollections();
+                            let continueWatching = await self.databaseClient.fetchContinueWatching();
                             
-                            await send(.view(.setCollections(data)))
-                            print("Collection count: \(data.count)")
+                            collections.append(continueWatching)
+                            
+                            await send(.view(.setCollections(collections)))
+                            
+                            print("Collections count: \(collections.count)")
+                            print("Continue watching count: \(continueWatching.list.count)")
                         }
                     )
                 case .setCollections(let data):
@@ -81,9 +86,11 @@ public struct HomeFeature: Reducer {
                         await self.databaseClient.removeCollection(collectionId, "");
                     }
                 case .createCollection(let name):
-                    return .run { send in
+                    return .run { _ in
                         print("Creating collection for \(name)...")
-                        await self.databaseClient.createCollection(name)
+                        
+                        let result = await self.databaseClient.createCollection(name)
+                        print("Collection created with name \(result)!")
                     }
                 }
             }
