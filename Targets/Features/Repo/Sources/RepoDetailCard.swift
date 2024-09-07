@@ -62,8 +62,6 @@ class RepoDetailCard: UIView {
         layer.cornerRadius = 12
         translatesAutoresizingMaskIntoConstraints = false
 
-        // set data
-        // Get the path to the user's Documents directory
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
 
         if let imageUrl = documentsDirectory?.appendingPathComponent("Repos").appendingPathComponent(repo.id).appendingPathComponent("icon.png") {
@@ -71,7 +69,6 @@ class RepoDetailCard: UIView {
 
             if let imageData {
                 let image = UIImage(data: imageData)
-
                 repoPicture.image = image
             }
         }
@@ -85,11 +82,6 @@ class RepoDetailCard: UIView {
     }
 
     private func setupConstraints() {
-
-//        let heightConstraint = heightAnchor
-//                        .constraint(equalToConstant: 80)
-//        heightConstraint.priority = .defaultHigh
-
         NSLayoutConstraint.activate([
             widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 40),
 

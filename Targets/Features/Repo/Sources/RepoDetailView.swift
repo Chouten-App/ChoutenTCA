@@ -291,17 +291,18 @@ class RepoDetailView: UIViewController {
         }
 
         let installedModules = getInstalledModules()
+        let installedModuleIds = Set(installedModules.map { $0.id })
+
         for index in 0..<installedModules.count {
             var module = installedModules[index]
 
             // check if new version exists
-            if let availableVersion = repo.modules?.first { $0.id == module.id }?.version {
+            if let availableVersion = repo.modules?.first(where: { $0.id == module.id })?.version {
                 switch module.version.compare(availableVersion, options: .numeric) {
                 case .orderedSame:
                     module.state = .upToDate
                 case .orderedDescending:
                     // available is lower
-                    // should never happen, but is possible
                     module.state = .upToDate
                 case .orderedAscending:
                     module.state = .updateAvailable
@@ -309,15 +310,14 @@ class RepoDetailView: UIViewController {
             }
 
             let moduleCard = ModuleCard(module, id: repo.id)
-
             installedModuleStack.addArrangedSubview(moduleCard)
         }
+
         if installedModules.isEmpty {
             let noInstalledModules = TitleCard(
                 "No modules installed.",
                 description: "You don't have any modules installed yet."
             )
-
             installedModuleStack.addArrangedSubview(noInstalledModules)
         }
 
@@ -327,7 +327,18 @@ class RepoDetailView: UIViewController {
         )
 
         if let modules = repo.modules {
-            for availableModule in modules {
+            let availableModules = modules.filter { !installedModuleIds.contains($0.id) }
+            
+            if availableModules.count == 0 {
+                // Add TitleCard component
+                let noAvailableModulesCard = TitleCard(
+                    "No uninstalled modules for this repo",
+                    description: "All available modules are already installed."
+                )
+                availableModuleStack.addArrangedSubview(noAvailableModulesCard)
+            }
+            
+            for availableModule in availableModules {
                 let convertedModule = Module(
                     id: availableModule.id,
                     name: availableModule.name,
