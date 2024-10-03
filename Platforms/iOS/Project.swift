@@ -39,5 +39,14 @@ let project = Project(
           "DEVELOPMENT_TEAM": "A9QQBWPHB7"
       ])
     )
+  ],
+  schemes: [
+    Scheme(
+      name: Environments.appName, // Use the same name as your app for clarity
+      shared: true, // Ensure this scheme is shared
+      buildAction: BuildAction(targets: [Environments.appName]),
+      testAction: TestAction(targets: [], configurations: ["Debug"]), // Specify if you have test targets
+      runAction: RunAction(executable: Environments.appName) // Run action with the app's executable
+    )
   ]
 )
