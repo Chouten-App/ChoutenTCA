@@ -40,31 +40,16 @@ jobs:
       - name: Generate Xcode project
         run: tuist generate
 
-      # Set up Xcode environment (this is optional and can be skipped if you're not using Fastlane or xcodebuild directly)
-      - name: Set up Xcode environment
-        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+      # Build the project using Tuist
+      - name: Build with Tuist
+        run: tuist build --configuration Release
 
-      # Build the .ipa using xcodebuild
-      - name: Build and Archive IPA
-        run: |
-          xcodebuild \
-            -scheme "Chouten-Workspace" \
-            -configuration "Release" \
-            -workspace "Chouten.xcworkspace" \
-            -derivedDataPath "./build" \
-            clean archive -archivePath "./build/Chouten-Workspace.xcarchive"
+      # Optional: Export the .ipa if necessary (you can handle this step with Fastlane or similar)
+      # If needed, you can use 'tuist archive' or set up Fastlane to handle the IPA export
 
-      # Export the .ipa
-      - name: Export IPA
-        run: |
-          xcodebuild -exportArchive \
-            -archivePath "./build/Chouten-Workspace.xcarchive" \
-            -exportPath "./output" \
-            -exportOptionsPlist "./ExportOptions.plist"
-
-      # Upload artifact (optional step if you want to download the IPA from the build)
-      - name: Upload IPA
+      # Optional: Upload artifact (if you want to download the IPA or any build files)
+      - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
-          name: Chouten-Workspace.ipa
-          path: ./output/*.ipa
+          name: build-artifact
+          path: ./build/
