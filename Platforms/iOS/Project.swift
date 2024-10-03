@@ -42,7 +42,7 @@ let project = Project(
   ],
   schemes: [
     Scheme(
-      name: Environments.appName, // Use the same name as your app for clarity
+      name: "Chouten-Workspace", // Use the same name as your app for clarity
       shared: true, // Ensure this scheme is shared
       buildAction: BuildAction(targets: [Environments.appName]),
       testAction: TestAction(targets: [], configurations: ["Debug"]), // Specify if you have test targets
