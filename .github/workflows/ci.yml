@@ -1,21 +1,70 @@
-name: Build and Test
+name: Build IPA
 
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   build:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout Code
+      # Checkout the code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Temporary
+      # Set up Ruby environment (for tools like bundler, fastlane if used)
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1' # Use your desired Ruby version
+
+      # Install Homebrew (needed for Tuist)
+      - name: Install Homebrew
         run: |
-          echo "Hello, world"
+          echo | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo 'eval $(/opt/homebrew/bin/brew shellenv)' >> ~/.zprofile
+          eval $(/opt/homebrew/bin/brew shellenv)
+
+      # Install Tuist
+      - name: Install Tuist
+        run: |
+          curl -Ls https://install.tuist.io | bash
+          export PATH="$HOME/.tuist/bin:$PATH"
+
+      # Generate Xcode project using Tuist
+      - name: Generate Xcode project
+        run: tuist generate
+
+      # Set up Xcode environment (this is optional and can be skipped if you're not using Fastlane or xcodebuild directly)
+      - name: Set up Xcode environment
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      # Build the .ipa using xcodebuild
+      - name: Build and Archive IPA
+        run: |
+          xcodebuild \
+            -scheme "ChoutenTCA" \
+            -configuration "Release" \
+            -workspace "ChoutenTCA.xcworkspace" \
+            -derivedDataPath "./build" \
+            clean archive -archivePath "./build/ChoutenTCA.xcarchive"
+
+      # Export the .ipa
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath "./build/ChoutenTCA.xcarchive" \
+            -exportPath "./output" \
+            -exportOptionsPlist "./ExportOptions.plist"
+
+      # Upload artifact (optional step if you want to download the IPA from the build)
+      - name: Upload IPA
+        uses: actions/upload-artifact@v3
+        with:
+          name: ChoutenTCA.ipa
+          path: ./output/*.ipa
