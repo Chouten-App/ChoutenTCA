@@ -48,17 +48,17 @@ jobs:
       - name: Build and Archive IPA
         run: |
           xcodebuild \
-            -scheme "ChoutenTCA" \
+            -scheme "Chouten-Workspace" \
             -configuration "Release" \
-            -workspace "ChoutenTCA.xcworkspace" \
+            -workspace "Chouten.xcworkspace" \
             -derivedDataPath "./build" \
-            clean archive -archivePath "./build/ChoutenTCA.xcarchive"
+            clean archive -archivePath "./build/Chouten-Workspace.xcarchive"
 
       # Export the .ipa
       - name: Export IPA
         run: |
           xcodebuild -exportArchive \
-            -archivePath "./build/ChoutenTCA.xcarchive" \
+            -archivePath "./build/Chouten-Workspace.xcarchive" \
             -exportPath "./output" \
             -exportOptionsPlist "./ExportOptions.plist"
 
@@ -66,5 +66,5 @@ jobs:
       - name: Upload IPA
         uses: actions/upload-artifact@v3
         with:
-          name: ChoutenTCA.ipa
+          name: Chouten-Workspace.ipa
           path: ./output/*.ipa
