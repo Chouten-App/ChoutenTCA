@@ -17,6 +17,7 @@
 		31B987D32CC5525100965288 /* UserCollection+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B987CB2CC5525100965288 /* UserCollection+CoreDataProperties.swift */; };
 		31B987D42CC5525100965288 /* UserItem+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B987CF2CC5525100965288 /* UserItem+CoreDataProperties.swift */; };
 		31B987D52CC5525100965288 /* UserItem+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B987CE2CC5525100965288 /* UserItem+CoreDataClass.swift */; };
+		31B987D72CC55CBD00965288 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 31B987D62CC55CB800965288 /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -40,6 +41,7 @@
 		31B987CD2CC5525100965288 /* UserContinueWatching+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "UserContinueWatching+CoreDataProperties.swift"; path = "Chouten/Database/UserContinueWatching+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		31B987CE2CC5525100965288 /* UserItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "UserItem+CoreDataClass.swift"; path = "Chouten/Database/UserItem+CoreDataClass.swift"; sourceTree = "<group>"; };
 		31B987CF2CC5525100965288 /* UserItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "UserItem+CoreDataProperties.swift"; path = "Chouten/Database/UserItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		31B987D62CC55CB800965288 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -81,6 +83,7 @@
 		31B985522CBC54A300965288 = {
 			isa = PBXGroup;
 			children = (
+				31B987D62CC55CB800965288 /* README.md */,
 				31B987CA2CC5525100965288 /* UserCollection+CoreDataClass.swift */,
 				31B987CB2CC5525100965288 /* UserCollection+CoreDataProperties.swift */,
 				31B987CC2CC5525100965288 /* UserContinueWatching+CoreDataClass.swift */,
@@ -181,6 +184,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				31B987D72CC55CBD00965288 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
