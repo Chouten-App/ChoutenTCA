@@ -6,15 +6,47 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		31B985C12CC3A21400965288 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 31B985C02CC3A21400965288 /* ComposableArchitecture */; };
+		31B985C82CC3E95E00965288 /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = 31B985C72CC3E95E00965288 /* Nuke */; };
+		31B985CA2CC3E95E00965288 /* NukeExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = 31B985C92CC3E95E00965288 /* NukeExtensions */; };
+		31B985CC2CC3E95E00965288 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 31B985CB2CC3E95E00965288 /* NukeUI */; };
+		31B987D02CC5525100965288 /* UserCollection+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B987CA2CC5525100965288 /* UserCollection+CoreDataClass.swift */; };
+		31B987D12CC5525100965288 /* UserContinueWatching+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B987CC2CC5525100965288 /* UserContinueWatching+CoreDataClass.swift */; };
+		31B987D22CC5525100965288 /* UserContinueWatching+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B987CD2CC5525100965288 /* UserContinueWatching+CoreDataProperties.swift */; };
+		31B987D32CC5525100965288 /* UserCollection+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B987CB2CC5525100965288 /* UserCollection+CoreDataProperties.swift */; };
+		31B987D42CC5525100965288 /* UserItem+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B987CF2CC5525100965288 /* UserItem+CoreDataProperties.swift */; };
+		31B987D52CC5525100965288 /* UserItem+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B987CE2CC5525100965288 /* UserItem+CoreDataClass.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		31B986172CC5368500965288 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		31B9855B2CBC54A300965288 /* Chouten.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Chouten.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		31B987CA2CC5525100965288 /* UserCollection+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "UserCollection+CoreDataClass.swift"; path = "Chouten/Database/UserCollection+CoreDataClass.swift"; sourceTree = "<group>"; };
+		31B987CB2CC5525100965288 /* UserCollection+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "UserCollection+CoreDataProperties.swift"; path = "Chouten/Database/UserCollection+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		31B987CC2CC5525100965288 /* UserContinueWatching+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "UserContinueWatching+CoreDataClass.swift"; path = "Chouten/Database/UserContinueWatching+CoreDataClass.swift"; sourceTree = "<group>"; };
+		31B987CD2CC5525100965288 /* UserContinueWatching+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "UserContinueWatching+CoreDataProperties.swift"; path = "Chouten/Database/UserContinueWatching+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		31B987CE2CC5525100965288 /* UserItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "UserItem+CoreDataClass.swift"; path = "Chouten/Database/UserItem+CoreDataClass.swift"; sourceTree = "<group>"; };
+		31B987CF2CC5525100965288 /* UserItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "UserItem+CoreDataProperties.swift"; path = "Chouten/Database/UserItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		31B9856D2CBC54A600965288 /* Exceptions for "Chouten" folder in "Chouten" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				App/Shared/Info.plist,
 			);
 			target = 31B9855A2CBC54A300965288 /* Chouten */;
 		};
@@ -36,6 +68,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				31B985C12CC3A21400965288 /* ComposableArchitecture in Frameworks */,
+				31B985C82CC3E95E00965288 /* Nuke in Frameworks */,
+				31B985CA2CC3E95E00965288 /* NukeExtensions in Frameworks */,
+				31B985CC2CC3E95E00965288 /* NukeUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,7 +81,14 @@
 		31B985522CBC54A300965288 = {
 			isa = PBXGroup;
 			children = (
+				31B987CA2CC5525100965288 /* UserCollection+CoreDataClass.swift */,
+				31B987CB2CC5525100965288 /* UserCollection+CoreDataProperties.swift */,
+				31B987CC2CC5525100965288 /* UserContinueWatching+CoreDataClass.swift */,
+				31B987CD2CC5525100965288 /* UserContinueWatching+CoreDataProperties.swift */,
+				31B987CE2CC5525100965288 /* UserItem+CoreDataClass.swift */,
+				31B987CF2CC5525100965288 /* UserItem+CoreDataProperties.swift */,
 				31B9855D2CBC54A300965288 /* Chouten */,
+				31B986122CC5368500965288 /* Frameworks */,
 				31B9855C2CBC54A300965288 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -58,6 +101,13 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		31B986122CC5368500965288 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -68,6 +118,7 @@
 				31B985572CBC54A300965288 /* Sources */,
 				31B985582CBC54A300965288 /* Frameworks */,
 				31B985592CBC54A300965288 /* Resources */,
+				31B986172CC5368500965288 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -78,6 +129,10 @@
 			);
 			name = Chouten;
 			packageProductDependencies = (
+				31B985C02CC3A21400965288 /* ComposableArchitecture */,
+				31B985C72CC3E95E00965288 /* Nuke */,
+				31B985C92CC3E95E00965288 /* NukeExtensions */,
+				31B985CB2CC3E95E00965288 /* NukeUI */,
 			);
 			productName = Chouten;
 			productReference = 31B9855B2CBC54A300965288 /* Chouten.app */;
@@ -107,6 +162,10 @@
 			);
 			mainGroup = 31B985522CBC54A300965288;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				31B985BF2CC3A21400965288 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */,
+				31B985C62CC3E91700965288 /* XCRemoteSwiftPackageReference "Nuke" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 31B9855C2CBC54A300965288 /* Products */;
 			projectDirPath = "";
@@ -132,6 +191,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				31B987D02CC5525100965288 /* UserCollection+CoreDataClass.swift in Sources */,
+				31B987D12CC5525100965288 /* UserContinueWatching+CoreDataClass.swift in Sources */,
+				31B987D22CC5525100965288 /* UserContinueWatching+CoreDataProperties.swift in Sources */,
+				31B987D32CC5525100965288 /* UserCollection+CoreDataProperties.swift in Sources */,
+				31B987D42CC5525100965288 /* UserItem+CoreDataProperties.swift in Sources */,
+				31B987D52CC5525100965288 /* UserItem+CoreDataClass.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -147,12 +212,14 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = A9QQBWPHB7;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Chouten/Info.plist;
+				INFOPLIST_FILE = Chouten/App/Shared/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Chouten;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -160,6 +227,9 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.Chouten;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -175,12 +245,14 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = A9QQBWPHB7;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Chouten/Info.plist;
+				INFOPLIST_FILE = Chouten/App/Shared/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Chouten;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -188,6 +260,9 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.Chouten;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -335,6 +410,48 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		31B985BF2CC3A21400965288 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-composable-architecture";
+			requirement = {
+				kind = exactVersion;
+				version = 1.11.2;
+			};
+		};
+		31B985C62CC3E91700965288 /* XCRemoteSwiftPackageReference "Nuke" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kean/Nuke";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.8.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		31B985C02CC3A21400965288 /* ComposableArchitecture */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 31B985BF2CC3A21400965288 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */;
+			productName = ComposableArchitecture;
+		};
+		31B985C72CC3E95E00965288 /* Nuke */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 31B985C62CC3E91700965288 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = Nuke;
+		};
+		31B985C92CC3E95E00965288 /* NukeExtensions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 31B985C62CC3E91700965288 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeExtensions;
+		};
+		31B985CB2CC3E95E00965288 /* NukeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 31B985C62CC3E91700965288 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 31B985532CBC54A300965288 /* Project object */;
 }

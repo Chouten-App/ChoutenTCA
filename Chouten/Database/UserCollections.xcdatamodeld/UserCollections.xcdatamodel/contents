@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23231" systemVersion="23G93" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="UserCollection" representedClassName="UserCollection" syncable="YES">
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="uuid" optional="YES" attributeType="String"/>
+        <relationship name="items" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="UserItem" inverseName="collection" inverseEntity="UserItem"/>
+    </entity>
+    <entity name="UserContinueWatching" representedClassName="UserContinueWatching" syncable="YES">
+        <attribute name="episodeData" optional="YES" attributeType="Binary"/>
+        <attribute name="infoData" optional="YES" attributeType="Binary"/>
+        <attribute name="moduleId" optional="YES" attributeType="String"/>
+        <attribute name="uuid" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="UserItem" representedClassName="UserItem" syncable="YES">
+        <attribute name="flag" optional="YES" attributeType="String"/>
+        <attribute name="infoData" optional="YES" attributeType="Binary"/>
+        <attribute name="moduleId" optional="YES" attributeType="String"/>
+        <attribute name="uuid" optional="YES" attributeType="String"/>
+        <relationship name="collection" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserCollection" inverseName="items" inverseEntity="UserCollection"/>
+    </entity>
+</model>
