@@ -130,7 +130,6 @@ extension DatabaseClient: DependencyKey {
                 
                 return false // Item does not exist
             },
-            
             createCollection: { name in
                 let randomId = UUID().uuidString
 
@@ -150,7 +149,6 @@ extension DatabaseClient: DependencyKey {
                 
                 return randomId
             },
-            
             addToCollection: { collectionId, moduleId, infoData in
                 let fetchRequest: NSFetchRequest<UserCollection> = UserCollection.fetchRequest()
                 fetchRequest.predicate = NSPredicate(format: "uuid == %@", collectionId)
@@ -178,6 +176,29 @@ extension DatabaseClient: DependencyKey {
                     }
                 } catch {
                     print("Error adding to collection!")
+                    print("\(error)")
+                }
+            },
+            updateCollectionName: { collectionId, name in
+                let fetchRequest: NSFetchRequest<UserCollection> = UserCollection.fetchRequest()
+                fetchRequest.predicate = NSPredicate(format: "uuid == %@", collectionId)
+
+                do {
+                    // Fetch the collection
+                    let collections = try context.fetch(fetchRequest)
+                    
+                    // Check if the collection exists
+                    if let collection = collections.first {
+                        collection.name = name
+
+                        // Save the context to persist the new item
+                        try context.save()
+                        print("Successfully update collection \(collectionId)")
+                    } else {
+                        print("Collection with ID \(collectionId) not found.")
+                    }
+                } catch {
+                    print("Error updating name of collection!")
                     print("\(error)")
                 }
             },

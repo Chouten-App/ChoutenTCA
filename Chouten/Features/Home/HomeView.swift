@@ -98,6 +98,11 @@ class HomeView: UIViewController {
             forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
             withReuseIdentifier: SectionHeaderHome.reuseIdentifier
         )
+        collectionView.register(
+            EmptySectionFooter.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
+            withReuseIdentifier: EmptySectionFooter.reuseIdentifier
+        )
         
         collectionView.delegate = self
     }
@@ -173,15 +178,20 @@ class HomeView: UIViewController {
                     return UICollectionReusableView()
                 }
                 
-                headerView.label.text = section.title
-                
+                headerView.configure(with: section.title, id: section.id)
+                headerView.delegate = self
                 
                 headerView.onDelete = {
-                    //self.store.send(.view(.deleteCollection(section.id)))
                     self.handleDeleteConfirmation(for: section)
                 }
                 
                 return headerView
+            } else if kind == UICollectionView.elementKindSectionFooter {
+                let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: EmptySectionFooter.reuseIdentifier, for: indexPath) as! EmptySectionFooter
+                let section = self.dataSource?.snapshot().sectionIdentifiers[indexPath.section]
+                let hasItems = section?.list.isEmpty == false
+                footerView.isHidden = hasItems
+                return footerView
             }
 
             return nil
@@ -267,7 +277,15 @@ class HomeView: UIViewController {
             elementKind: UICollectionView.elementKindSectionHeader,
             alignment: .top
         )
-        layoutSection.boundarySupplementaryItems = [layoutSectionHeader]
+        
+        let layoutSectionFooterSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(50))
+        let layoutSectionFooter = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: layoutSectionFooterSize,
+            elementKind: UICollectionView.elementKindSectionFooter,
+            alignment: .bottom
+        )
+
+        layoutSection.boundarySupplementaryItems = [layoutSectionHeader, layoutSectionFooter]
 
         return layoutSection
     }
@@ -283,6 +301,7 @@ class HomeView: UIViewController {
                 return
             }
             self.store.send(.view(.createCollection(name)))
+            reloadData()
         }
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
@@ -366,7 +385,6 @@ class HomeView: UIViewController {
         }
         
         // Update collection view
-        reloadData()
         
         // Clear selection
         selectedItems.removeAll()
@@ -398,6 +416,7 @@ class HomeView: UIViewController {
             self.collectionView.indexPathsForSelectedItems?.forEach { indexPath in
                 self.collectionView.deselectItem(at: indexPath, animated: false)
             }
+            self.handleRefresh()
         }
     }
 
@@ -440,6 +459,12 @@ class HomeView: UIViewController {
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+}
+
+extension HomeView: SectionHeaderHomeDelegate {
+    func didUpdateCollectionName(of collectionId: String, to name: String) {
+        store.send(.view(.updateCollectionName(collectionId, name)))
     }
 }
 

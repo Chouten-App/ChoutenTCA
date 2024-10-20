@@ -31,6 +31,7 @@ struct HomeFeature: Reducer {
             case createCollection(_ name: String)
             case deleteItem(_ collectionId: String, _ data: HomeData)
             case deleteCollection(_ collectionId: String)
+            case updateCollectionName(_ collectionId: String, _ name: String)
         }
 
         @CasePathable
@@ -59,8 +60,8 @@ struct HomeFeature: Reducer {
                         .run { send in
                             await self.databaseClient.initDB()
                             
-                            var collections = await self.databaseClient.fetchCollections();
-                            let continueWatching = await self.databaseClient.fetchContinueWatching();
+                            var collections = await self.databaseClient.fetchCollections()
+                            let continueWatching = await self.databaseClient.fetchContinueWatching()
                             
                             collections.append(continueWatching)
                             
@@ -73,6 +74,12 @@ struct HomeFeature: Reducer {
                 case .setCollections(let data):
                     state.collections = data
                     return .none
+                case .updateCollectionName(let collectionId, let name):
+                    return .merge(
+                        .run { send in
+                            await self.databaseClient.updateCollectionName(collectionId, name)
+                        }
+                    )
                 case .deleteItem(let collectionId, let data):
                     return .run { send in
                         print("Deleting item for \(data.url)")

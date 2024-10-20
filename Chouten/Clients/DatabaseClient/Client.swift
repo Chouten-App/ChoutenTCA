@@ -20,6 +20,7 @@ struct DatabaseClient: Sendable {
     
     let createCollection: @Sendable (_ name: String) async -> String
     let addToCollection: @Sendable (_ collectionId: String, _ moduleId: String, _ infoData: CollectionItem) async -> Void
+    let updateCollectionName: @Sendable (_ collectionId: String, _ name: String) async -> Void
     let updateItemInCollection: @Sendable (_ collectionId: String, _ moduleId: String, _ infoData: CollectionItem) async -> Void
     let removeFromCollection: @Sendable (_ collectionId: String, _ moduleId: String, _ infoData: CollectionItem) async -> Void
     let removeCollection: @Sendable (_ collectionId: String, _ moduleId: String) async -> Void
