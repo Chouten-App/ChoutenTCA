@@ -26,8 +26,7 @@ class HomeView: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
-    let addButton = CircleButton(icon: "plus");
+
     let deleteButton = CircleButton(icon: "trash")
     let selectButton = CircleButton(icon: "ellipsis")
     
@@ -77,16 +76,10 @@ class HomeView: UIViewController {
         refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
         collectionView.refreshControl = refreshControl
         
-        addButton.isUserInteractionEnabled = true
-        addButton.onTap = {
-            self.addButtonTapped()
-        }
-        
         selectButton.addTarget(self, action: #selector(selectButtonTapped), for: .touchUpInside)
         deleteButton.addTarget(self, action: #selector(deleteSelectedItems), for: .touchUpInside)
 
         view.addSubview(collectionView)
-        view.addSubview(addButton)
         view.addSubview(selectButton)
         view.addSubview(deleteButton)
 
@@ -103,6 +96,12 @@ class HomeView: UIViewController {
             forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
             withReuseIdentifier: EmptySectionFooter.reuseIdentifier
         )
+        collectionView.register(
+            AddCollectionFooter.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
+            withReuseIdentifier: AddCollectionFooter.reuseIdentifier
+        )
+
         
         collectionView.delegate = self
     }
@@ -133,13 +132,8 @@ class HomeView: UIViewController {
         NSLayoutConstraint.activate([
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 60),
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),// topPadding + 60),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -140),
-            
-            addButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            addButton.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 60),
-            addButton.widthAnchor.constraint(equalToConstant: 80),
-            addButton.heightAnchor.constraint(equalToConstant: 80),
             
             selectButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             selectButton.bottomAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 100),
@@ -187,11 +181,17 @@ class HomeView: UIViewController {
                 
                 return headerView
             } else if kind == UICollectionView.elementKindSectionFooter {
-                let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: EmptySectionFooter.reuseIdentifier, for: indexPath) as! EmptySectionFooter
                 let section = self.dataSource?.snapshot().sectionIdentifiers[indexPath.section]
                 let hasItems = section?.list.isEmpty == false
-                footerView.isHidden = hasItems
-                return footerView
+                
+                if hasItems {
+                    let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: EmptySectionFooter.reuseIdentifier, for: indexPath) as! EmptySectionFooter
+                    footerView.isHidden = hasItems
+                    return footerView
+                } else {
+                    let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: AddCollectionFooter.reuseIdentifier, for: indexPath) as! AddCollectionFooter
+                    return footerView
+                }
             }
 
             return nil
@@ -327,13 +327,10 @@ class HomeView: UIViewController {
             let initialSelect = self.selectButton.frame
             
             UIView.animate(withDuration: 0.3, animations: {
-                self.selectButton.transform = CGAffineTransform(translationX: self.addButton.frame.minX - self.selectButton.frame.minX, y: -5)
                 self.selectButton.setTitle("Done", for: .normal)
                 self.selectButton.imageView?.isHidden = true
                 self.selectButton.backgroundColor = UIColor(.clear)
                 self.selectButton.layer.borderWidth = 0
-                
-                self.addButton.alpha = 0
                 
                 self.deleteButton.transform = CGAffineTransform(translationX: initialSelect.minX - self.deleteButton.frame.minX, y: 0)
                 self.deleteButton.alpha = 1
@@ -348,8 +345,6 @@ class HomeView: UIViewController {
                 self.selectButton.backgroundColor = ThemeManager.shared.getColor(for: .overlay)
                 self.selectButton.layer.borderWidth = 0.5
                 self.selectButton.transform = .identity
-                
-                self.addButton.alpha = 1
                 
                 self.deleteButton.transform = .identity
                 self.deleteButton.alpha = 0
@@ -400,8 +395,6 @@ class HomeView: UIViewController {
             self.selectButton.backgroundColor = ThemeManager.shared.getColor(for: .overlay)
             self.selectButton.layer.borderWidth = 0.5
             self.selectButton.transform = .identity
-            
-            self.addButton.alpha = 1
             
             self.deleteButton.transform = .identity
             self.deleteButton.alpha = 0

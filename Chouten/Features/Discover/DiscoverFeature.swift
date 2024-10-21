@@ -11,7 +11,7 @@ import SwiftUI
 
 @Reducer
 struct DiscoverFeature: Reducer {
-    // @Dependency(\.relayClient) var relayClient
+    @Dependency(\.relayClient) var relayClient
 
     @ObservableState
     struct State: FeatureState {
@@ -52,8 +52,6 @@ struct DiscoverFeature: Reducer {
                 switch viewAction {
                 case .onAppear:
                     state.discoverSections = []
-                    return .none
-                    /*
                     return .merge(
                         .run { send in
                             do {
@@ -64,7 +62,6 @@ struct DiscoverFeature: Reducer {
                             }
                         }
                     )
-                     */
                 case .setDiscoverSections(let data):
                     state.discoverSections = data
                     return .none

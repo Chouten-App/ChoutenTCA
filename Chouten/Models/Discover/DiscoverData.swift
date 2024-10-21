@@ -9,6 +9,7 @@ import Foundation
 import JavaScriptCore
 
 struct DiscoverData: Codable, Equatable, Hashable {
+    let id: UUID = UUID()
     let url: String
     let titles: Titles
     let poster: String

@@ -12,13 +12,13 @@ import UIKit
  class AppViewController: UIViewController {
     var module: Module?
     var store: Store<AppFeature.State, AppFeature.Action>
-    // var repoStore: Store<RepoFeature.State, RepoFeature.Action>
+    var repoStore: Store<RepoFeature.State, RepoFeature.Action>
 
     let tabs: [UIViewController]
 
-    // let topBar = AppViewTopBar()
+    let topBar = AppViewTopBar()
     let tabBar = TabBar()
-    // let moduleSelector = ModalViewController()
+    let moduleSelector = ModalViewController()
 
     let monitor = NWPathMonitor()
 
@@ -52,16 +52,16 @@ import UIKit
      init(_ module: Module?) {
         self.module = module
 
-        /*
+        
         self.repoStore = .init(
             initialState: .init(),
             reducer: { RepoFeature() }
-        )*/
+        )
         
         self.tabs = [
             HomeView(),
             DiscoverView(),
-            // RepoView(store: repoStore)
+            RepoView(store: repoStore)
         ]
 
         store = .init(
@@ -70,7 +70,7 @@ import UIKit
         )
 
         super.init(nibName: nil, bundle: nil)
-        /*
+        
         NotificationCenter.default.addObserver(forName: .changedModule, object: nil, queue: nil) { notification in
             if let result = notification.object as? Module {
                 // Handle the result here
@@ -80,7 +80,6 @@ import UIKit
                 print("Notification received without a valid result.")
             }
         }
-         */
 
         let queue = DispatchQueue.global(qos: .background)
         monitor.start(queue: queue)
@@ -112,7 +111,7 @@ import UIKit
         super.viewDidLoad()
 
         view.backgroundColor = ThemeManager.shared.getColor(for: .bg)
-        // topBar.blurView.alpha = 0.0
+        topBar.blurView.alpha = 0.0
 
         for index in 0..<tabs.count {
             let tab = tabs[index]
@@ -125,18 +124,15 @@ import UIKit
         configure()
         setupConstraints()
 
-        /*
         if let discoverView = tabs[1] as? DiscoverView {
             discoverView.collectionView.delegate = self
         }
-         */
 
         observe { [weak self] in
             guard let self else { return }
-
-            /*
-             self.topBar.label.text = store.selected.rawValue
-
+            
+            self.topBar.label.text = store.selected.rawValue
+            
             switch store.selected {
             case .home:
                 self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
@@ -155,26 +151,25 @@ import UIKit
                     .withRenderingMode(.alwaysTemplate)
                     .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
             }
-             */
         }
 
         store.send(.view(.onAppear))
     }
 
     private func configure() {
-        // moduleSelector.selectedModuleTitle.text = module?.name
+        moduleSelector.selectedModuleTitle.text = module?.name
 
-        // addChild(moduleSelector)
-        // view.addSubview(moduleSelector.view)
+        addChild(moduleSelector)
+        view.addSubview(moduleSelector.view)
 
         tabBar.delegate = self
-        // topBar.delegate = self
+        topBar.delegate = self
         tabBar.isUserInteractionEnabled = true
-        // topBar.isUserInteractionEnabled = true
+        topBar.isUserInteractionEnabled = true
         tabBar.translatesAutoresizingMaskIntoConstraints = false
-        // topBar.translatesAutoresizingMaskIntoConstraints = false
+        topBar.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tabBar)
-        // view.addSubview(topBar)
+        view.addSubview(topBar)
         
         /*
         offlineBanner.addSubview(offlineTitle)
@@ -192,11 +187,10 @@ import UIKit
 
         NSLayoutConstraint.activate([
             // ModuleSelector constraints
-            /*
             moduleSelector.view.bottomAnchor.constraint(equalTo: tabBar.topAnchor, constant: 12), // Adjusted to -14 for spacing
             moduleSelector.view.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: -1),
             moduleSelector.view.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 1),
-*/
+
             // TabBar constraints
             tabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -211,13 +205,13 @@ import UIKit
 
             offlineTitle.centerXAnchor.constraint(equalTo: offlineBanner.centerXAnchor),
             offlineTitle.bottomAnchor.constraint(equalTo: offlineBanner.bottomAnchor, constant: -12),
-            
+            */
             // TopBar constraints
             topBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             topBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            topBar.topAnchor.constraint(equalTo: offlineBanner.bottomAnchor),
-            topBar.heightAnchor.constraint(equalToConstant: 64 + (isOffline ? 0 : topPadding))
-             */
+            topBar.topAnchor.constraint(equalTo: view.topAnchor),
+            topBar.heightAnchor.constraint(equalToConstant: 64 + topPadding)
+             
         ])
 
     }
@@ -335,7 +329,7 @@ extension AppViewController: UIScrollViewDelegate, UICollectionViewDelegate {
      func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let offsetY = -scrollView.contentOffset.y - 40
 
-        // topBar.blurView.alpha = -offsetY / 60
+        topBar.blurView.alpha = -offsetY / 60
     }
 
      func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -377,7 +371,7 @@ extension AppViewController: UIScrollViewDelegate, UICollectionViewDelegate {
     }
 }
 
-/*
+
 extension AppViewController: AppViewTopBarDelegate {
      func didTapButton() {
         let scenes = UIApplication.shared.connectedScenes
@@ -401,11 +395,14 @@ extension AppViewController: AppViewTopBarDelegate {
 
             navController.present(vc, animated: true, completion: nil)
         case .discover:
-            vc = SearchView()
+            break
+            /*
+             vc = SearchView()
 
             navController.navigationBar.isHidden = true
 
             navController.pushViewController(vc, animated: true)
+             */
         case .repos:
             vc = RepoInstallPopup(store: self.repoStore)
 
@@ -420,9 +417,9 @@ extension AppViewController: AppViewTopBarDelegate {
     }
 }
 
+
 extension AppViewController: UIPopoverPresentationControllerDelegate {
      func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
         .none
     }
 }
-*/

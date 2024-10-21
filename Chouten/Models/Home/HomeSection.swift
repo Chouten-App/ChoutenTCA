@@ -2,7 +2,7 @@
 //  HomeSection.swift
 //  Chouten
 //
-//  Created by Steph on 19/10/2024.
+//  Created by Inumaki on 19/10/2024.
 //
 
 import Foundation

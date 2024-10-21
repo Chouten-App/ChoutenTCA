@@ -24,7 +24,7 @@ class EntryController: UIViewController {
     let appView: AppViewController
     
     
-     init(_ module: Module?) {
+     init(_ module: Module? = nil) {
         self.appView = AppViewController(module)
         super.init(nibName: nil, bundle: nil)
     }

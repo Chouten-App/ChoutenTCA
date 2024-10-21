@@ -43,7 +43,7 @@ extension JSValue {
     func toError(_ functionName: String? = nil, stackTrace _: Bool = true) -> JSValueError { .init(self, functionName) }
 }
 
-/*
+
 extension JSValue {
     // swiftlint:disable line_length
      func toMediaListArray() -> [MediaList]? {
@@ -227,4 +227,3 @@ extension JSValue {
         }
     }
 }
-*/

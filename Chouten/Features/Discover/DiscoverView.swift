@@ -26,7 +26,7 @@ class DiscoverView: UIViewController {
         super.init(nibName: nil, bundle: nil)
 
         store.send(.view(.onAppear))
-        // NotificationCenter.default.addObserver(self, selector: #selector(handleChangedModule), name: .changedModule, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleChangedModule), name: .changedModule, object: nil)
     }
 
     required init?(coder: NSCoder) {
@@ -48,6 +48,7 @@ class DiscoverView: UIViewController {
 
         view.addSubview(loadingView.view)
         addChild(loadingView)
+        loadingView.didMove(toParent: self)
 
         view.addSubview(collectionView)
 
@@ -65,6 +66,7 @@ class DiscoverView: UIViewController {
         observe { [weak self] in
             guard let self else { return }
 
+            
             if !store.discoverSections.isEmpty {
                 loadingView.view.removeFromSuperview()
                 loadingView.removeFromParent()
@@ -83,12 +85,16 @@ class DiscoverView: UIViewController {
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 40),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -140),
-
-            loadingView.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            loadingView.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            loadingView.view.topAnchor.constraint(equalTo: view.topAnchor),
-            loadingView.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+        
+        if loadingView.parent != nil {
+            NSLayoutConstraint.activate([
+                loadingView.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                loadingView.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                loadingView.view.topAnchor.constraint(equalTo: view.topAnchor),
+                loadingView.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
+        }
     }
 
     func configure<T: SelfConfiguringCell>(_ cellType: T.Type, with data: DiscoverData, for indexPath: IndexPath) -> T {

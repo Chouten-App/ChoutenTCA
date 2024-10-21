@@ -18,6 +18,7 @@
 		31B987D42CC5525100965288 /* UserItem+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B987CF2CC5525100965288 /* UserItem+CoreDataProperties.swift */; };
 		31B987D52CC5525100965288 /* UserItem+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B987CE2CC5525100965288 /* UserItem+CoreDataClass.swift */; };
 		31B987D72CC55CBD00965288 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 31B987D62CC55CB800965288 /* README.md */; };
+		31B98B042CC5890100965288 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 31B98B032CC5890100965288 /* ZIPFoundation */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -74,6 +75,7 @@
 				31B985C82CC3E95E00965288 /* Nuke in Frameworks */,
 				31B985CA2CC3E95E00965288 /* NukeExtensions in Frameworks */,
 				31B985CC2CC3E95E00965288 /* NukeUI in Frameworks */,
+				31B98B042CC5890100965288 /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -136,6 +138,7 @@
 				31B985C72CC3E95E00965288 /* Nuke */,
 				31B985C92CC3E95E00965288 /* NukeExtensions */,
 				31B985CB2CC3E95E00965288 /* NukeUI */,
+				31B98B032CC5890100965288 /* ZIPFoundation */,
 			);
 			productName = Chouten;
 			productReference = 31B9855B2CBC54A300965288 /* Chouten.app */;
@@ -168,6 +171,7 @@
 			packageReferences = (
 				31B985BF2CC3A21400965288 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */,
 				31B985C62CC3E91700965288 /* XCRemoteSwiftPackageReference "Nuke" */,
+				31B988AA2CC587CC00965288 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 31B9855C2CBC54A300965288 /* Products */;
@@ -219,10 +223,12 @@
 				INFOPLIST_FILE = Chouten/App/Shared/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Chouten;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -252,10 +258,12 @@
 				INFOPLIST_FILE = Chouten/App/Shared/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Chouten;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -432,6 +440,14 @@
 				minimumVersion = 12.8.0;
 			};
 		};
+		31B988AA2CC587CC00965288 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
+			requirement = {
+				branch = development;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -454,6 +470,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 31B985C62CC3E91700965288 /* XCRemoteSwiftPackageReference "Nuke" */;
 			productName = NukeUI;
+		};
+		31B98B032CC5890100965288 /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 31B988AA2CC587CC00965288 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

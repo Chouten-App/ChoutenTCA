@@ -98,7 +98,7 @@ class CarouselCellHome: UICollectionViewCell, SelfConfiguringCellHome {
 
         addButton.isUserInteractionEnabled = true
         addButton.onTap = {
-            // self.showErrorDisplay(message: "Unimplemented", description: "Adding Shows to a list has not been implemented yet.")
+            self.showErrorDisplay(message: "Unimplemented", description: "Adding Shows to a list has not been implemented yet.")
         }
 
         tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
