@@ -11,19 +11,6 @@ Chouten operates as a versatile modular system, adept at retrieving and presenti
 
 ---
 
-## Get Started  
-Ready to jump in? Here’s how to install Chouten:  
-
-### TestFlight  
-1. Open the TestFlight app on your iOS device.  
-2. Use this link to join the beta: [TestFlight Link](#)  
-
-### IPA File  
-1. Grab the IPA file from [IPA Link](#).  
-2. Use AltStore or Sideloadly to install it on your device.  
-
----
-
 ## Contribute  
 We’re all about community! Here’s how you can help make Chouten even better:  
 
