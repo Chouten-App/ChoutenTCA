@@ -5,6 +5,7 @@
 //  Created by Inumaki on 11.03.24.
 //
 
+import Core
 import ComposableArchitecture
 import Network
 import UIKit
@@ -394,14 +395,11 @@ extension AppViewController: AppViewTopBarDelegate {
 
             navController.present(vc, animated: true, completion: nil)
         case .discover:
-            break
-            /*
-             vc = SearchView()
+            vc = SearchView()
 
             navController.navigationBar.isHidden = true
 
             navController.pushViewController(vc, animated: true)
-             */
         case .repos:
             vc = RepoInstallPopup(store: self.repoStore)
 

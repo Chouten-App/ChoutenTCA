@@ -5,6 +5,7 @@
 //  Created by Inumaki on 27.01.24.
 //
 
+import Core
 import Combine
 import ComposableArchitecture
 import UIKit
@@ -65,12 +66,20 @@ class DiscoverView: UIViewController {
 
         observe { [weak self] in
             guard let self else { return }
-
             
             if !store.discoverSections.isEmpty {
-                loadingView.view.removeFromSuperview()
-                loadingView.removeFromParent()
+                print("Found Data")
+                loadingView.view.isHidden = true
+                collectionView.isHidden = false
                 reloadData()
+            }
+            
+            //NEW: Add DiscoverLoadView when List is Empty
+            // - Prevents Lists from other Module to show when a Module wont Load
+            else if store.state.discoverSections.isEmpty {
+                reloadData()
+                loadingView.view.isHidden = false
+                collectionView.isHidden = true
             }
         }
 

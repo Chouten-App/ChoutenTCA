@@ -5,6 +5,7 @@
 //  Created by Inumaki on 28.05.24.
 //
 
+import Core
 import UIKit
 
 protocol PaginationDelegate: AnyObject {
@@ -37,6 +38,41 @@ class PaginationDisplay: UIView {
         contentView.translatesAutoresizingMaskIntoConstraints = false
         return contentView
     }()
+    
+    let dropdownButton: UIButton = {
+        let button = UIButton()
+        let image = UIImage(systemName: "chevron.down")?
+            .withRenderingMode(.alwaysTemplate)
+            .applyingSymbolConfiguration(
+                .init(
+                    font: .systemFont(ofSize: 8)
+                )
+            )
+        
+        var configuration = UIButton.Configuration.plain()
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+        configuration.imagePadding = 5
+        button.configuration = configuration
+        
+        button.setImage(image, for: .normal)
+        button.tintColor = .fg
+        button.backgroundColor = .overlay
+        button.layer.borderColor = UIColor.border.cgColor
+        button.layer.borderWidth = 0.5
+        button.layer.cornerRadius = 16
+        
+        let title = NSAttributedString(
+            string: "1 - 24",
+            attributes: [
+                .foregroundColor: UIColor.fg,
+                .font: UIFont.systemFont(ofSize: 12)
+            ]
+        )
+        button.setAttributedTitle(title, for: .normal)
+        
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
 
     // MARK: Lifecycle
 
@@ -68,6 +104,7 @@ class PaginationDisplay: UIView {
         scrollView.addSubview(contentView)
 
         addSubview(scrollView)
+        addSubview(dropdownButton)
     }
 
     func updateData() {
@@ -131,7 +168,11 @@ class PaginationDisplay: UIView {
 
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            contentView.heightAnchor.constraint(equalTo: scrollView.heightAnchor)
+            contentView.heightAnchor.constraint(equalTo: scrollView.heightAnchor),
+            
+            dropdownButton.trailingAnchor.constraint(equalTo: trailingAnchor),
+            dropdownButton.centerYAnchor.constraint(equalTo: centerYAnchor),
+            dropdownButton.heightAnchor.constraint(equalToConstant: 32)
         ])
     }
 }

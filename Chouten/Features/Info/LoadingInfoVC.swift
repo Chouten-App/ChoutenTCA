@@ -5,6 +5,7 @@
 //  Created by Inumaki on 06.02.24.
 //
 
+import Core
 import UIKit
 
 class LoadingInfoVC: UIViewController {
@@ -68,7 +69,7 @@ class LoadingInfoVC: UIViewController {
             topBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             topBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             topBar.topAnchor.constraint(equalTo: view.topAnchor),
-            topBar.heightAnchor.constraint(equalToConstant: topPadding + 40),
+            topBar.heightAnchor.constraint(equalToConstant: topPadding + 70),
 
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),

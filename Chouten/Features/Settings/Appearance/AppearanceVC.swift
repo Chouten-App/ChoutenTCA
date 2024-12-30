@@ -74,6 +74,7 @@ class AccentCircle: UIView {
 
     @objc func setAccent() {
         ThemeManager.shared.accent = index
+        UserDefaults.standard.set(index, forKey: "selectedAccentIndex")
         UIView.animate(withDuration: 0.2) {
             self.delegate?.updateAccent()
         }

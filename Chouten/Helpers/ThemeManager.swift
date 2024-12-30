@@ -66,7 +66,8 @@ import UIKit
             light: UIColor(hex: "#BBBBBB"),
             dark: UIColor(hex: "#3B3B3B")
         )
-        self.accent = 0
+        
+        self.accent = UserDefaults.standard.integer(forKey: "selectedAccentIndex")
     }
 
      func getColor(for type: ThemeColorEnum, light: Bool? = nil) -> UIColor {

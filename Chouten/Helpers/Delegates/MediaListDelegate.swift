@@ -5,6 +5,7 @@
 //  Created by Cel on 27/10/2024.
 //
 
+import Core
 import Foundation
 
 protocol MediaListDelegate: AnyObject {

@@ -10,6 +10,7 @@ import UIKit
  class DiscoverLoadingView: UIViewController {
      let scrollView: UIScrollView = {
         let scrollView                          = UIScrollView()
+        
         scrollView.showsVerticalScrollIndicator = false
         scrollView.alwaysBounceVertical         = true
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -19,7 +20,7 @@ import UIKit
     let contentView: UIStackView = {
         let view        = UIStackView()
         view.axis       = .vertical
-        view.spacing    = 20  // Adjust the spacing between cards
+        view.spacing    = 30  // Adjust the spacing between cards
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -77,7 +78,7 @@ import UIKit
 
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 40),
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 70),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             // contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
 

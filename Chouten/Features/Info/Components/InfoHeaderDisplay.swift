@@ -5,8 +5,75 @@
 //  Created by Inumaki on 31.01.24.
 //
 
+import Core
 import Nuke
 import UIKit
+
+class AccentButton: UIView {
+    var active: Bool = false
+    var onTap: (() -> Void)?
+    
+    let icon: UIImageView = {
+        let imageView = UIImageView()
+        imageView.tintColor = .fg
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
+    init(_ icon: String) {
+        super.init(frame: .zero)
+        configure()
+        setupConstraints()
+        
+        self.icon.image = UIImage(systemName: icon)?
+            .withRenderingMode(.alwaysTemplate)
+            .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 20)))
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        configure()
+        setupConstraints()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    func setActive() {
+        active.toggle()
+        backgroundColor = active ? .accent : .overlay
+        layer.borderWidth = active ? 0.0 : 0.5
+    }
+    
+    private func configure() {
+        translatesAutoresizingMaskIntoConstraints = false
+        
+        backgroundColor = .overlay
+        layer.borderColor = UIColor.border.cgColor
+        layer.borderWidth = 0.5
+        layer.cornerRadius = 8
+        
+        addSubview(icon)
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tap))
+        addGestureRecognizer(tapGesture)
+    }
+    
+    private func setupConstraints() {
+        NSLayoutConstraint.activate([
+            icon.centerXAnchor.constraint(equalTo: centerXAnchor),
+            icon.centerYAnchor.constraint(equalTo: centerYAnchor),
+            widthAnchor.constraint(equalToConstant: 40),
+            heightAnchor.constraint(equalToConstant: 40),
+        ])
+    }
+    
+    @objc func tap() {
+        onTap?()
+    }
+}
 
 class InfoHeaderDisplay: UIView {
 
@@ -20,10 +87,14 @@ class InfoHeaderDisplay: UIView {
     let detailsView = UIStackView()
     let posterImage = UIImageView()
     let titlesStack = UIStackView()
+    let continueStack = UIStackView()
     let secondaryTitle = UILabel()
     let primaryTitle = UILabel()
     let statusLabel = UILabel()
     let ratingLabel = UILabel()
+    
+    let bookmarkButton = AccentButton("bookmark.fill")
+    let trackerButton = AccentButton("arrow.triangle.2.circlepath.circle")
 
     // swiftlint:disable implicitly_unwrapped_optional
     var containerHeightConstraint: NSLayoutConstraint!
@@ -140,6 +211,7 @@ class InfoHeaderDisplay: UIView {
         // statusLabel.text = infoData.status ?? "N/A"
         statusLabel.textColor = ThemeManager.shared.getColor(for: .accent)
         statusLabel.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+        statusLabel.textAlignment = .right
 
         // ratingLabel.text = "10.0"
         ratingLabel.textColor = ThemeManager.shared.getColor(for: .fg)
@@ -156,11 +228,14 @@ class InfoHeaderDisplay: UIView {
 
         let horizontalTitlesStack = UIStackView()
         horizontalTitlesStack.axis = .horizontal
+        horizontalTitlesStack.spacing = 8
         horizontalTitlesStack.alignment = .bottom
         horizontalTitlesStack.translatesAutoresizingMaskIntoConstraints = false
 
+        horizontalTitlesStack.addArrangedSubview(bookmarkButton)
+        horizontalTitlesStack.addArrangedSubview(trackerButton)
         horizontalTitlesStack.addArrangedSubview(statusLabel)
-        horizontalTitlesStack.addArrangedSubview(ratingLabel)
+        // horizontalTitlesStack.addArrangedSubview(ratingLabel)
 
         titlesStack.addArrangedSubview(spacer)
         titlesStack.addArrangedSubview(secondaryTitle)
@@ -193,7 +268,7 @@ class InfoHeaderDisplay: UIView {
 
             bannerImage.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             bannerImage.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            bannerImage.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -40),
+            bannerImage.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -60),
 
             gradientView.leadingAnchor.constraint(equalTo: bannerImage.leadingAnchor),
             gradientView.trailingAnchor.constraint(equalTo: bannerImage.trailingAnchor),

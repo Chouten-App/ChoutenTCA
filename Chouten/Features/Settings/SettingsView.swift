@@ -95,6 +95,7 @@ class TopBar: UIView {
     func configure(settingsText: String, doneText: String) {
         self.settingsText.text = settingsText
         self.doneText.text = doneText
+
     }
 
     func updateAppearance() {
@@ -104,6 +105,7 @@ class TopBar: UIView {
 
     @objc func handleTap() {
         if doneText.text == "Done" {
+            print("DOne")
             let scenes = UIApplication.shared.connectedScenes
             if let windowScene = scenes.first as? UIWindowScene,
                let window = windowScene.windows.first,
@@ -111,6 +113,7 @@ class TopBar: UIView {
                 navController.dismiss(animated: true)
             }
         } else {
+            print("BAck")
             // remove other view and vc like appearance or logs
             if let parentVC = self.parentViewController {
                 if let childVC = parentVC.children.first(where: { $0.view.tag == 1000 }) {
@@ -250,7 +253,8 @@ class SettingsView: UIViewController {
         ])
 
         return card
-    }()*/
+    }()
+     */
 
     let notLoggedInView: UIView = {
         let card = UIView()
@@ -421,6 +425,7 @@ class SettingsView: UIViewController {
         labelStack.addArrangedSubview(madeByLabel)
         labelStack.addArrangedSubview(versionLabel)
 
+        //stack.addArrangedSubview(profileCard)
         stack.addArrangedSubview(notLoggedInView)
         stack.addArrangedSubview(settingDisplay)
         stack.addArrangedSubview(logDisplay)
@@ -441,14 +446,19 @@ class SettingsView: UIViewController {
 
         view.bringSubviewToFront(topbar)
         topbar.layer.zPosition = 100
-
+        
+        /*notLoggedInView.isUserInteractionEnabled = true
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(goToLogin))
+        notLoggedInView.addGestureRecognizer(tapGesture)
+         */
+        
         settingDisplay.isUserInteractionEnabled = true
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(goToAppearance))
-        settingDisplay.addGestureRecognizer(tapGesture)
+        let tapGesture2 = UITapGestureRecognizer(target: self, action: #selector(goToAppearance))
+        settingDisplay.addGestureRecognizer(tapGesture2)
 
         logDisplay.isUserInteractionEnabled = true
-        let tapGesture2 = UITapGestureRecognizer(target: self, action: #selector(goToLog))
-        logDisplay.addGestureRecognizer(tapGesture2)
+        let tapGesture3 = UITapGestureRecognizer(target: self, action: #selector(goToLog))
+        logDisplay.addGestureRecognizer(tapGesture3)
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -463,8 +473,31 @@ class SettingsView: UIViewController {
         self.view.backgroundColor = ThemeManager.shared.getColor(for: .bg)
         topbar.updateAppearance()
     }
+    
+    @objc func goToLogin() {
+        let loginVC = LoginVC()
+
+        loginVC.view.tag = 1000
+
+        addChild(loginVC)
+        view.addSubview(loginVC.view)
+        topbar.configure(settingsText: "Login", doneText: "Back")
+        topbar.isUserInteractionEnabled = true
+
+        UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveEaseOut) {
+            loginVC.view.alpha = 1.0
+            loginVC.view.transform = CGAffineTransform(translationX: 0, y: 0)
+        }
+
+        // navController.pushViewController(tempVC, animated: true)
+    }
 
     @objc func goToAppearance() {
+        
+        //NEW: Show Error onclick
+        view.showErrorDisplay(message: "WIP", description: "Appearance Settings is coming soon!")
+        
+        /*
         let tempVC = AppearanceVC()
 
         tempVC.view.tag = 1000
@@ -476,12 +509,16 @@ class SettingsView: UIViewController {
         UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveEaseOut) {
             tempVC.view.alpha = 1.0
             tempVC.view.transform = CGAffineTransform(translationX: 0, y: 0)
-        }
-
+        }  
+         */
+        
         // navController.pushViewController(tempVC, animated: true)
+         
     }
 
     @objc func goToLog() {
+        
+        
         let tempVC = LogVC()
 
         tempVC.view.tag = 1000
@@ -494,5 +531,7 @@ class SettingsView: UIViewController {
             tempVC.view.alpha = 1.0
             tempVC.view.transform = CGAffineTransform(translationX: 0, y: 0)
         }
+         
+         
     }
 }

@@ -5,9 +5,15 @@
 //  Created by Inumaki on 05.03.24.
 //
 
+import Core
 import Combine
 import ComposableArchitecture
 import UIKit
+
+struct FooterKind {
+    static let addCollectionFooter = "AddCollectionFooter"
+    static let emptySectionFooter = "EmptySectionFooter"
+}
 
 class HomeView: UIViewController {
     var store: Store<HomeFeature.State, HomeFeature.Action>
@@ -28,7 +34,6 @@ class HomeView: UIViewController {
     }()
 
     let deleteButton = CircleButton(icon: "trash")
-    let selectButton = CircleButton(icon: "ellipsis")
     
     init() {
         store = .init(
@@ -44,6 +49,11 @@ class HomeView: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: false)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,8 +67,8 @@ class HomeView: UIViewController {
         observe { [weak self] in
             guard let self else { return }
 
-            if !store.collections.isEmpty {
-                reloadData()
+            if !self.store.collections.isEmpty {
+                self.reloadData()
             }
         }
         
@@ -66,11 +76,17 @@ class HomeView: UIViewController {
     }
 
     private func configure() {
+        let scenes = UIApplication.shared.connectedScenes
+        let windowScene = scenes.first as? UIWindowScene
+        let window = windowScene?.windows.first
+
+        let topPadding = window?.safeAreaInsets.top ?? 0.0
+        
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createCompositionalLayout())
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.clipsToBounds = false
         collectionView.backgroundColor = ThemeManager.shared.getColor(for: .bg)
-        collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        collectionView.contentInset = UIEdgeInsets(top: topPadding + 30, left: 0, bottom: 0, right: 0)
         collectionView.showsVerticalScrollIndicator = false
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.allowsMultipleSelection = true // Enable multi-selection
@@ -78,11 +94,9 @@ class HomeView: UIViewController {
         refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
         collectionView.refreshControl = refreshControl
         
-        selectButton.addTarget(self, action: #selector(selectButtonTapped), for: .touchUpInside)
         deleteButton.addTarget(self, action: #selector(deleteSelectedItems), for: .touchUpInside)
 
         view.addSubview(collectionView)
-        view.addSubview(selectButton)
         view.addSubview(deleteButton)
 
         collectionView.register(ContinueWatchingCard.self, forCellWithReuseIdentifier: ContinueWatchingCard.reuseIdentifier)
@@ -95,12 +109,12 @@ class HomeView: UIViewController {
         )
         collectionView.register(
             EmptySectionFooter.self,
-            forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
+            forSupplementaryViewOfKind: FooterKind.emptySectionFooter,
             withReuseIdentifier: EmptySectionFooter.reuseIdentifier
         )
         collectionView.register(
             AddCollectionFooter.self,
-            forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
+            forSupplementaryViewOfKind: FooterKind.addCollectionFooter,
             withReuseIdentifier: AddCollectionFooter.reuseIdentifier
         )
         
@@ -133,11 +147,8 @@ class HomeView: UIViewController {
         NSLayoutConstraint.activate([
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 70),
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -140),
-            
-            selectButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            selectButton.bottomAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 100),
             
             deleteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             deleteButton.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 60)
@@ -178,21 +189,26 @@ class HomeView: UIViewController {
                 }
                 
                 return headerView
-            case UICollectionView.elementKindSectionFooter:
+            case FooterKind.emptySectionFooter:
                 let section = self.dataSource?.snapshot().sectionIdentifiers[indexPath.section]
-                let hasItems = section?.list.isEmpty == false
                 
-                if hasItems {
-                    let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: EmptySectionFooter.reuseIdentifier, for: indexPath) as! EmptySectionFooter
-                    footerView.isHidden = hasItems
-                    return footerView
-                } else {
-                    let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: AddCollectionFooter.reuseIdentifier, for: indexPath) as! AddCollectionFooter
-                    
-                    footerView.delegate = self
-                    
-                    return footerView
-                }
+                // If the section's list is empty, show the empty footer first
+                let footerView = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: kind,
+                    withReuseIdentifier: EmptySectionFooter.reuseIdentifier,
+                    for: indexPath) as! EmptySectionFooter
+                return footerView
+            case FooterKind.addCollectionFooter:
+                let section = self.dataSource?.snapshot().sectionIdentifiers[indexPath.section]
+                
+                // Regular footer for non-empty section
+                let footerView = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: kind,
+                    withReuseIdentifier: AddCollectionFooter.reuseIdentifier,
+                    for: indexPath) as! AddCollectionFooter
+                footerView.delegate = self
+                footerView.isHidden = !(indexPath.section == self.store.collections.count - 2)
+                return footerView
             default:
                 return nil
             }
@@ -216,22 +232,13 @@ class HomeView: UIViewController {
         let layout = UICollectionViewCompositionalLayout { sectionIndex, layoutEnvironment in
             let section = self.store.collections[sectionIndex]
 
-            let footerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(50)) // Adjust height as needed
-            let footer = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: footerSize, elementKind: UICollectionView.elementKindSectionFooter, alignment: .bottom)
-
             switch section.type {
             case 3:
                 let sectionLayout = self.createContinueWatchingCarousel(using: section)
-                if self.store.collections.isEmpty {
-                    sectionLayout.boundarySupplementaryItems = [footer] // Add the footer to this section
-                }
-                return sectionLayout
-            case 0:
-                let sectionLayout = self.createCarouselSection(using: section)
                 return sectionLayout
             default:
-                let sectionLayout = self.createListSection(using: section)
-                // sectionLayout.boundarySupplementaryItems = [footer] // Add the footer to this section
+                let isLast = sectionIndex == self.store.collections.count - 2
+                let sectionLayout = self.createListSection(using: section, isLast: isLast)
                 return sectionLayout
             }
         }
@@ -244,38 +251,10 @@ class HomeView: UIViewController {
     }
     
     func createContinueWatchingCarousel(using section: HomeSection) -> NSCollectionLayoutSection {
-        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.8), heightDimension: .absolute(180))
-        let layoutItem = NSCollectionLayoutItem(layoutSize: itemSize)
-
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.9), heightDimension: .absolute(200))
-        let layoutGroup = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [layoutItem])
-
-        let layoutSection = NSCollectionLayoutSection(group: layoutGroup)
-        layoutSection.orthogonalScrollingBehavior = .continuousGroupLeadingBoundary
-        layoutSection.interGroupSpacing = 12
-        layoutSection.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 20, bottom: 20, trailing: 20)
-
-        return layoutSection
-    }
-
-    func createCarouselSection(using section: HomeSection) -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1))
         let layoutItem = NSCollectionLayoutItem(layoutSize: itemSize)
 
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.8), heightDimension: .absolute(420))
-        let layoutGroup = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [layoutItem])
-
-        let layoutSection = NSCollectionLayoutSection(group: layoutGroup)
-        layoutSection.orthogonalScrollingBehavior = .groupPagingCentered
-        layoutSection.interGroupSpacing = 20
-        return layoutSection
-    }
-
-    func createListSection(using section: HomeSection) -> NSCollectionLayoutSection {
-        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1))
-        let layoutItem = NSCollectionLayoutItem(layoutSize: itemSize)
-
-        let groupSize = NSCollectionLayoutSize(widthDimension: .estimated(100), heightDimension: .estimated(180))
+        let groupSize = NSCollectionLayoutSize(widthDimension: .absolute(280), heightDimension: .absolute(190))
         let layoutGroup = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [layoutItem])
 
         let layoutSection = NSCollectionLayoutSection(group: layoutGroup)
@@ -283,6 +262,22 @@ class HomeView: UIViewController {
         layoutSection.interGroupSpacing = 12
         layoutSection.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
 
+        return layoutSection
+    }
+
+    func createListSection(using section: HomeSection, isLast: Bool = false) -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1))
+        let layoutItem = NSCollectionLayoutItem(layoutSize: itemSize)
+
+        let groupSize = NSCollectionLayoutSize(widthDimension: .estimated(100), heightDimension: .estimated(200))
+        let layoutGroup = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [layoutItem])
+
+        let layoutSection = NSCollectionLayoutSection(group: layoutGroup)
+        layoutSection.orthogonalScrollingBehavior = .continuousGroupLeadingBoundary
+        layoutSection.interGroupSpacing = 12
+        layoutSection.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
+
+        // Header
         let layoutSectionHeaderSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(40))
         let layoutSectionHeader = NSCollectionLayoutBoundarySupplementaryItem(
             layoutSize: layoutSectionHeaderSize,
@@ -290,14 +285,29 @@ class HomeView: UIViewController {
             alignment: .top
         )
         
-        let layoutSectionFooterSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(50))
+        layoutSection.boundarySupplementaryItems = [layoutSectionHeader]
+        
+        var addFooterHeight: Double = 0.0
+        
+        if section.list.isEmpty {
+            let emptyCollectionFooterSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(70))
+            let emptyCollectionFooter = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: emptyCollectionFooterSize,
+                elementKind: FooterKind.emptySectionFooter,
+                alignment: .bottom
+            )
+            layoutSection.boundarySupplementaryItems.append(emptyCollectionFooter)
+            
+            addFooterHeight += 70.0
+        }
+
+        let layoutSectionFooterSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(isLast ? addFooterHeight + 50 : 0)) // Adjust height for the last footer
         let layoutSectionFooter = NSCollectionLayoutBoundarySupplementaryItem(
             layoutSize: layoutSectionFooterSize,
-            elementKind: UICollectionView.elementKindSectionFooter,
+            elementKind: FooterKind.addCollectionFooter,
             alignment: .bottom
         )
-
-        layoutSection.boundarySupplementaryItems = [layoutSectionHeader, layoutSectionFooter]
+        layoutSection.boundarySupplementaryItems.append(layoutSectionFooter)
 
         return layoutSection
     }
@@ -324,61 +334,6 @@ class HomeView: UIViewController {
         self.present(alertController, animated: true, completion: nil)
     }
     
-    @objc private func selectButtonTapped() {
-        isSelectionMode.toggle()
-        
-        collectionView.visibleSupplementaryViews(ofKind: UICollectionView.elementKindSectionHeader).forEach { view in
-            if let headerView = view as? SectionHeaderHome {
-                headerView.deleteButton.isHidden = !isSelectionMode
-            }
-        }
-        
-        if isSelectionMode {
-            collectionView.allowsMultipleSelection = true
-            
-            let initialSelect = self.selectButton.frame
-            
-            UIView.animate(withDuration: 0.3, animations: {
-                self.selectButton.setTitle("Done", for: .normal)
-                self.selectButton.imageView?.isHidden = true
-                self.selectButton.backgroundColor = UIColor(.clear)
-                self.selectButton.layer.borderWidth = 0
-                
-                self.deleteButton.transform = CGAffineTransform(translationX: initialSelect.minX - self.deleteButton.frame.minX, y: 0)
-                self.deleteButton.alpha = 1
-            })
-        } else {
-            collectionView.allowsMultipleSelection = false
-            selectedItems.removeAll()
-            
-            UIView.animate(withDuration: 0.3, animations: {
-                self.selectButton.setTitle("", for: .normal)
-                self.selectButton.imageView?.isHidden = false
-                self.selectButton.backgroundColor = ThemeManager.shared.getColor(for: .overlay)
-                self.selectButton.layer.borderWidth = 0.5
-                self.selectButton.transform = .identity
-                
-                self.deleteButton.transform = .identity
-                self.deleteButton.alpha = 0
-            }) { _ in
-                self.collectionView.visibleCells.forEach { cell in
-                    if let listCell = cell as? ListCellHome,
-                       let _ = self.collectionView.indexPath(for: cell) {
-                        listCell.setSelected(false)
-                    }
-                }
-                
-                self.collectionView.indexPathsForSelectedItems?.forEach { indexPath in
-                    self.collectionView.deselectItem(at: indexPath, animated: false)
-                }
-            }
-            
-            updateUIForSelection()
-        }
-        
-        updateUIForSelection()
-    }
-    
     @objc private func deleteSelectedItems() {
         isSelectionMode.toggle()
         
@@ -402,11 +357,6 @@ class HomeView: UIViewController {
         selectedItems.removeAll()
         
         UIView.animate(withDuration: 0.3, animations: {
-            self.selectButton.setTitle("", for: .normal)
-            self.selectButton.imageView?.isHidden = false
-            self.selectButton.backgroundColor = ThemeManager.shared.getColor(for: .overlay)
-            self.selectButton.layer.borderWidth = 0.5
-            self.selectButton.transform = .identity
             
             self.deleteButton.transform = .identity
             self.deleteButton.alpha = 0

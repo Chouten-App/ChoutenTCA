@@ -19,7 +19,7 @@ class AddCollectionFooter: UICollectionReusableView {
         addSubview(button)
         NSLayoutConstraint.activate([
             button.centerXAnchor.constraint(equalTo: centerXAnchor),
-            button.centerYAnchor.constraint(equalTo: centerYAnchor)
+            button.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
         
         button.onTap = {

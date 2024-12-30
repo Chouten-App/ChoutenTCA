@@ -5,6 +5,7 @@
 //  Created by Inumaki on 08.07.24.
 //
 
+import Core
 import UIKit
 
 class MediaSelectorItem: UIView {

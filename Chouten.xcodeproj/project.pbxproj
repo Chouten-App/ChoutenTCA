@@ -15,6 +15,8 @@
 		31B98B042CC5890100965288 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 31B98B032CC5890100965288 /* ZIPFoundation */; };
 		AE7914762CD82BA1003BBFFE /* GoogleCast.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE7914742CD82B9E003BBFFE /* GoogleCast.xcframework */; };
 		AE7914772CD82BA1003BBFFE /* GoogleCast.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AE7914742CD82B9E003BBFFE /* GoogleCast.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E93D167A2CE2126C00B24766 /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = E93D16792CE2126C00B24766 /* Core */; };
+		E9750B3F2CDB85FF00601F4A /* Slyderin in Frameworks */ = {isa = PBXBuildFile; productRef = E9750B3E2CDB85FF00601F4A /* Slyderin */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -35,6 +37,10 @@
 		31B9855B2CBC54A300965288 /* Chouten.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Chouten.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		31B987D62CC55CB800965288 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		AE7914742CD82B9E003BBFFE /* GoogleCast.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = GoogleCast.xcframework; sourceTree = "<group>"; };
+		E93D167C2CE212CA00B24766 /* Core */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Core; sourceTree = "<group>"; };
+		E93D167D2CE2131F00B24766 /* Relay */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Relay; sourceTree = "<group>"; };
+		E93D19892CE2E69A00B24766 /* CAFilter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CAFilter.h; sourceTree = "<group>"; };
+		E93D198E2CE2E87700B24766 /* Chouten-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Chouten-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -63,10 +69,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E9750B3F2CDB85FF00601F4A /* Slyderin in Frameworks */,
 				31B985C12CC3A21400965288 /* ComposableArchitecture in Frameworks */,
 				AE7914762CD82BA1003BBFFE /* GoogleCast.xcframework in Frameworks */,
 				31B985C82CC3E95E00965288 /* Nuke in Frameworks */,
 				31B985CA2CC3E95E00965288 /* NukeExtensions in Frameworks */,
+				E93D167A2CE2126C00B24766 /* Core in Frameworks */,
 				31B985CC2CC3E95E00965288 /* NukeUI in Frameworks */,
 				31B98B042CC5890100965288 /* ZIPFoundation in Frameworks */,
 			);
@@ -78,10 +86,14 @@
 		31B985522CBC54A300965288 = {
 			isa = PBXGroup;
 			children = (
+				E93D198E2CE2E87700B24766 /* Chouten-Bridging-Header.h */,
+				E93D167D2CE2131F00B24766 /* Relay */,
+				E93D167C2CE212CA00B24766 /* Core */,
 				31B987D62CC55CB800965288 /* README.md */,
 				31B9855D2CBC54A300965288 /* Chouten */,
 				31B986122CC5368500965288 /* Frameworks */,
 				31B9855C2CBC54A300965288 /* Products */,
+				E93D19892CE2E69A00B24766 /* CAFilter.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -127,6 +139,8 @@
 				31B985C92CC3E95E00965288 /* NukeExtensions */,
 				31B985CB2CC3E95E00965288 /* NukeUI */,
 				31B98B032CC5890100965288 /* ZIPFoundation */,
+				E9750B3E2CDB85FF00601F4A /* Slyderin */,
+				E93D16792CE2126C00B24766 /* Core */,
 			);
 			productName = Chouten;
 			productReference = 31B9855B2CBC54A300965288 /* Chouten.app */;
@@ -140,7 +154,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 1620;
 				TargetAttributes = {
 					31B9855A2CBC54A300965288 = {
 						CreatedOnToolsVersion = 16.0;
@@ -160,6 +174,7 @@
 				31B985BF2CC3A21400965288 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */,
 				31B985C62CC3E91700965288 /* XCRemoteSwiftPackageReference "Nuke" */,
 				31B988AA2CC587CC00965288 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+				E9750B3D2CDB85FF00601F4A /* XCRemoteSwiftPackageReference "Slyderin" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 31B9855C2CBC54A300965288 /* Products */;
@@ -200,12 +215,15 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = A9QQBWPHB7;
+				DEVELOPMENT_TEAM = 9PQ6RD47C7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Chouten/App/Shared/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Chouten;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "This app requires Bluetooth access to discover Cast devices.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "This app requires access to the local network to discover Cast devices.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app requires microphone access to enable audio features for Chromecast.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -217,13 +235,15 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.Chouten;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.Choutenn;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/Chouten-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
+				SYSTEM_HEADER_SEARCH_PATHS = "$(SOURCE_DIR)/Chouten/Features/Info/Components";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -235,12 +255,15 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = A9QQBWPHB7;
+				DEVELOPMENT_TEAM = 9PQ6RD47C7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Chouten/App/Shared/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Chouten;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "This app requires Bluetooth access to discover Cast devices.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "This app requires access to the local network to discover Cast devices.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app requires microphone access to enable audio features for Chromecast.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -252,13 +275,15 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.Chouten;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inumaki.Choutenn;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/Chouten-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
+				SYSTEM_HEADER_SEARCH_PATHS = "$(SOURCE_DIR)/Chouten/Features/Info/Components";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -430,6 +455,14 @@
 				kind = branch;
 			};
 		};
+		E9750B3D2CDB85FF00601F4A /* XCRemoteSwiftPackageReference "Slyderin" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/EdgarDegas/Slyderin";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -457,6 +490,15 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 31B988AA2CC587CC00965288 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
+		};
+		E93D16792CE2126C00B24766 /* Core */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Core;
+		};
+		E9750B3E2CDB85FF00601F4A /* Slyderin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9750B3D2CDB85FF00601F4A /* XCRemoteSwiftPackageReference "Slyderin" */;
+			productName = Slyderin;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

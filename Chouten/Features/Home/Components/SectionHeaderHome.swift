@@ -57,7 +57,6 @@ class SectionHeaderHome: UICollectionReusableView {
             deleteButton.centerYAnchor.constraint(equalTo: label.centerYAnchor)
         ])
         
-        deleteButton.isHidden = true
         deleteButton.tintColor = UIColor(.red)
         deleteButton.addTarget(self, action: #selector(deleteTapped), for: .touchUpInside)
 

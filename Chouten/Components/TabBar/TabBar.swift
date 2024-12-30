@@ -114,7 +114,7 @@ extension UITapGestureRecognizer {
     private func configure() {
         translatesAutoresizingMaskIntoConstraints = false
         
-        circleView.backgroundColor = .accent
+        circleView.backgroundColor = ThemeManager.shared.getColor(for: .accent)
         circleView.layer.cornerRadius = 60
         circleView.alpha = 0.3
         circleView.translatesAutoresizingMaskIntoConstraints = false

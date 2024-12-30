@@ -5,6 +5,7 @@
 //  Created by Inumaki on 25.04.24.
 //
 
+import Core
 import Combine
 import ComposableArchitecture
 import SwiftUI

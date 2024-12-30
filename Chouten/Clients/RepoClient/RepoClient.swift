@@ -6,6 +6,7 @@
 //
 //
 
+import Core
 import Dependencies
 import DependenciesMacros
 import Foundation

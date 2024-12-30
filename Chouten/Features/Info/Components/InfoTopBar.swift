@@ -8,27 +8,6 @@
 import UIKit
 import GoogleCast
 
-extension UIView {
-    func snapshotWithGaussianBlur(radius: CGFloat) -> UIImage? {
-        UIGraphicsBeginImageContextWithOptions(bounds.size, false, UIScreen.main.scale)
-        guard let context = UIGraphicsGetCurrentContext() else { return nil }
-        layer.render(in: context)
-        guard let snapshot = UIGraphicsGetImageFromCurrentImageContext() else { return nil }
-        UIGraphicsEndImageContext()
-
-        let ciImage = CIImage(image: snapshot)
-        let filter = CIFilter(name: "CIGaussianBlur")
-        filter?.setValue(ciImage, forKey: kCIInputImageKey)
-        filter?.setValue(radius, forKey: kCIInputRadiusKey)
-
-        guard let outputCIImage = filter?.outputImage else { return nil }
-        let context_new = CIContext(options: nil)
-        guard let outputCGImage = context_new.createCGImage(outputCIImage, from: outputCIImage.extent) else { return nil }
-
-        return UIImage(cgImage: outputCGImage)
-    }
-}
-
 class InfoTopBar: UIView {
 
     let title: String
@@ -39,19 +18,7 @@ class InfoTopBar: UIView {
         return view
     }()
 
-    let blurView: UIVisualEffectView = {
-        let effect              = UIBlurEffect(style: .systemUltraThinMaterialDark)
-        let view                = UIVisualEffectView(effect: effect)
-        view.layer.borderColor  = ThemeManager.shared.getColor(for: .border).cgColor
-        view.layer.borderWidth  = 0.5
-        view.translatesAutoresizingMaskIntoConstraints = false
-        let animator = UIViewPropertyAnimator()
-        animator.addAnimations { view.effect = effect }
-        animator.fractionComplete = 0
-        animator.stopAnimation(false)
-        animator.finishAnimation(at: .current)
-        return view
-    }()
+    let blurView = VariableBlurUIView()
 
     let backButton = CircleButton(icon: "chevron.left")
     var bookmarkButton = CircleButton(icon: "bookmark")
@@ -106,7 +73,7 @@ class InfoTopBar: UIView {
 
     private func configure() {
         titleHorizontalStack.addArrangedSubview(titleLabel)
-        titleHorizontalStack.addArrangedSubview(bookmarkButton)
+        // titleHorizontalStack.addArrangedSubview(bookmarkButton)
         
         marqueeWrapper.clipsToBounds = true
         marqueeWrapper.translatesAutoresizingMaskIntoConstraints = false
@@ -127,9 +94,10 @@ class InfoTopBar: UIView {
 
         titleLabel.alpha = 0.0
         blurView.alpha = 0.0
+        blurView.translatesAutoresizingMaskIntoConstraints = false
         
         castButton.translatesAutoresizingMaskIntoConstraints = false
-        titleHorizontalStack.addArrangedSubview(castButton)
+        // titleHorizontalStack.addArrangedSubview(castButton)
 
         backButton.onTap = {
             let scenes = UIApplication.shared.connectedScenes
@@ -149,13 +117,13 @@ class InfoTopBar: UIView {
             wrapper.topAnchor.constraint(equalTo: topAnchor),
             wrapper.bottomAnchor.constraint(equalTo: bottomAnchor),
 
-            blurView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: -1),
-            blurView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 1),
-            blurView.topAnchor.constraint(equalTo: topAnchor, constant: -1),
+            blurView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            blurView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            blurView.topAnchor.constraint(equalTo: topAnchor),
             blurView.bottomAnchor.constraint(equalTo: bottomAnchor),
 
             horizontalStack.leadingAnchor.constraint(equalTo: wrapper.leadingAnchor, constant: 20),
-            horizontalStack.bottomAnchor.constraint(equalTo: wrapper.bottomAnchor, constant: -12),
+            horizontalStack.bottomAnchor.constraint(equalTo: wrapper.bottomAnchor, constant: -12 - 30),
 
             marqueeWrapper.topAnchor.constraint(equalTo: backButton.topAnchor),
             marqueeWrapper.bottomAnchor.constraint(equalTo: backButton.bottomAnchor),

@@ -5,6 +5,7 @@
 //  Created by Inumaki on 14.06.24.
 //
 
+import Core
 import UIKit
 
 class ModuleSelectionCard: UIView {

@@ -5,6 +5,7 @@
 //  Created by Inumaki on 13.07.24.
 //
 
+import Core
 import UIKit
 
 class CarouselCellHome: UICollectionViewCell, SelfConfiguringCellHome {

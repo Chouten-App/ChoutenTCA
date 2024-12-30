@@ -5,50 +5,8 @@
 //  Created by Inumaki on 9/7/24.
 //
 
+import Core
 import UIKit
-
-class AsyncImageView: UIImageView {
-    private var currentURL: URL?
-    
-    // Function to load image from a URL string
-    func loadImage(from urlString: String, placeholder: UIImage? = nil) {
-        // Set placeholder image while the actual image loads
-        self.image = placeholder
-        
-        // Ensure the URL is valid
-        guard let url = URL(string: urlString) else {
-            return
-        }
-        
-        // Keep track of the URL in case it's changed before the request finishes
-        currentURL = url
-        
-        // Create a URL session to download the image data asynchronously
-        URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-            // Check for errors or invalid data
-            if let error = error {
-                print("Failed to load image: \(error)")
-                return
-            }
-            
-            guard let data = data, let downloadedImage = UIImage(data: data) else {
-                return
-            }
-            
-            // Ensure we're still expecting the image from this URL (in case of reused cells, etc.)
-            if url == self?.currentURL {
-                DispatchQueue.main.async {
-                    self?.image = downloadedImage
-                }
-            }
-        }.resume()
-    }
-    
-    // Optionally, you can cancel any ongoing request if the view is reused or deallocated
-    func cancelLoading() {
-        currentURL = nil
-    }
-}
 
  class ContinueWatchingCard: UICollectionViewCell, SelfConfiguringCellHome {
     static var reuseIdentifier: String = "ContinueWatchingCard"
@@ -145,6 +103,8 @@ class AsyncImageView: UIImageView {
         moduleImageView.setAsyncImage(url: "https://www.chouten.app/Icon.png")
         
         titleLabel.text = data.titles.primary
+        subtitleLabel.text = data.titles.secondary ?? ""
+        timeLabel.text = data.indicator
         
         addSubview(imageView)
         overlayView.addSubview(titleLabel)
@@ -161,8 +121,8 @@ class AsyncImageView: UIImageView {
     
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            widthAnchor.constraint(equalToConstant: 240),
-            heightAnchor.constraint(equalToConstant: 180),
+            widthAnchor.constraint(equalToConstant: 280),
+            heightAnchor.constraint(equalToConstant: 190),
             
             overlayView.topAnchor.constraint(equalTo: topAnchor),
             overlayView.bottomAnchor.constraint(equalTo: bottomAnchor),
@@ -182,6 +142,7 @@ class AsyncImageView: UIImageView {
             
             titleLabel.bottomAnchor.constraint(equalTo: subtitleLabel.topAnchor, constant: -4),
             titleLabel.leadingAnchor.constraint(equalTo: subtitleLabel.leadingAnchor),
+            titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
             
             progressView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
             progressView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),

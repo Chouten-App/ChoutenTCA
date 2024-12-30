@@ -5,6 +5,7 @@
 //  Created by Inumaki on 08.02.24.
 //
 
+import Core
 import UIKit
 import GoogleCast
 
@@ -34,13 +35,51 @@ class ExtraInfoDisplay: UIView {
     }()
     
     let chapterButton: UIButton = {
-        let button = UIButton()
-        button.backgroundColor = .accent
-        button.titleLabel?.font = .systemFont(ofSize: 14, weight: .bold)
-        button.setTitle("Continue Watching: Episode 1", for: .normal)
-        button.layer.cornerRadius = 20
+        var config = UIButton.Configuration.filled()
+        config.attributedTitle = AttributedString(
+            NSAttributedString(
+                string: "Continue Watching: Episode 1",
+                attributes: [
+                    .font: UIFont.systemFont(ofSize: 13, weight: .bold),
+                    .foregroundColor: UIColor.fg
+                ]
+            )
+        )
+        config.baseBackgroundColor = .accent
+        config.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16)
+        config.cornerStyle = .capsule
+        // config.background.strokeColor = UIColor.border
+        // config.background.strokeWidth = 0.5
+        
+        let button = UIButton(configuration: config)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.setContentHuggingPriority(.required, for: .horizontal) // Prevent squishing
+        button.setContentCompressionResistancePriority(.required, for: .horizontal) // Ensure it resists compression
+        
         return button
+    }()
+    
+    let countdownTitle = TitleLabel("Episode 12", style: .subtitle)
+    let countdownTime = TitleLabel("4 days, 12 hours", style: .caption)
+    
+    let continueStack: UIStackView = {
+        let continueStack = UIStackView()
+        continueStack.axis = .horizontal
+        continueStack.spacing = 8
+        continueStack.alignment = .center
+        continueStack.distribution = .fillProportionally
+        continueStack.translatesAutoresizingMaskIntoConstraints = false
+        return continueStack
+    }()
+    
+    let countdownStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.alignment = .trailing
+        stack.distribution = .fill
+        stack.spacing = 2
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
     }()
 
 
@@ -87,9 +126,14 @@ class ExtraInfoDisplay: UIView {
 
         stack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
-        stack.addArrangedSubview(chapterButton)
+        stack.addArrangedSubview(continueStack)
+        continueStack.addArrangedSubview(chapterButton)
+        continueStack.addArrangedSubview(countdownStack)
         
-        stack.setCustomSpacing(16, after: chapterButton)
+        countdownStack.addArrangedSubview(countdownTitle)
+        countdownStack.addArrangedSubview(countdownTime)
+        
+        stack.setCustomSpacing(8, after: chapterButton)
 
         if !infoData.tags.isEmpty {
             stack.addArrangedSubview(tagsDisplay)
@@ -101,6 +145,13 @@ class ExtraInfoDisplay: UIView {
         paragraphStyle.hyphenationFactor = 1.0
         attstr.addAttribute(.paragraphStyle, value: paragraphStyle, range: NSRange(0..<attstr.length))
         descriptionLabel.attributedText = attstr
+        
+        countdownTitle.font = .systemFont(ofSize: 12, weight: .bold)
+        countdownTitle.alpha = 1.0
+        
+        countdownTime.numberOfLines = 0
+        countdownTime.setContentHuggingPriority(.required, for: .horizontal) // Prevent squishing
+        countdownTime.setContentCompressionResistancePriority(.required, for: .horizontal) // Ensure it resists compression
         
         chapterButton.addTarget(self, action: #selector(castMedia), for: .touchUpInside)
     }
@@ -143,8 +194,11 @@ class ExtraInfoDisplay: UIView {
             stack.leadingAnchor.constraint(equalTo: leadingAnchor),
             stack.trailingAnchor.constraint(equalTo: trailingAnchor),
             
-            chapterButton.heightAnchor.constraint(equalToConstant: 40),
-            chapterButton.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width * 0.7),
+            // chapterButton.heightAnchor.constraint(equalToConstant: 40),
+            // chapterButton.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width * 0.65),
+            continueStack.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 40),
+            countdownStack.heightAnchor.constraint(equalToConstant: 40),
+            countdownStack.widthAnchor.constraint(equalToConstant: 110),
             
             descriptionLabel.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 40)
         ])

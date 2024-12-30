@@ -9,6 +9,7 @@ import Dependencies
 import DependenciesMacros
 import Foundation
 import OSLog
+import Core
 
 // MARK: - RelayClient
 

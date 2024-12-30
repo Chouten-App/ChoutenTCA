@@ -2,7 +2,7 @@
 //  UserContinueWatching+CoreDataProperties.swift
 //  Chouten
 //
-//  Created by Inumaki on 20/10/2024.
+//  Created by Inumaki on 24/11/2024.
 //
 //
 
@@ -12,14 +12,16 @@ import CoreData
 
 extension UserContinueWatching {
 
-    @nonobjc  class func fetchRequest() -> NSFetchRequest<UserContinueWatching> {
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<UserContinueWatching> {
         return NSFetchRequest<UserContinueWatching>(entityName: "UserContinueWatching")
     }
 
-    @NSManaged  var episodeData: Data?
-    @NSManaged  var infoData: Data?
-    @NSManaged  var moduleId: String?
-    @NSManaged  var uuid: String?
+    @NSManaged public var episodeData: Data?
+    @NSManaged public var infoData: Data?
+    @NSManaged public var moduleId: String?
+    @NSManaged public var uuid: String?
+    @NSManaged public var progress: Double
+    @NSManaged public var duration: Double
 
 }
 

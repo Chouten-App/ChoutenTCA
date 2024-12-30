@@ -5,7 +5,9 @@
 //  Created by Inumaki on 09.02.24.
 //
 
+import Core
 import UIKit
+import Slyderin
 
 protocol PlayerControlsDelegate: AnyObject {
     func updateCurrentTime(didChangeProgress progress: Double)
@@ -26,6 +28,18 @@ extension Double {
     }
 }
 
+class CustomSeekbar: UIProgressView {
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        let maskLayerPath = UIBezierPath(roundedRect: bounds, cornerRadius: 4.0)
+        let maskLayer = CAShapeLayer()
+        maskLayer.frame = self.bounds
+        maskLayer.path = maskLayerPath.cgPath
+        layer.mask = maskLayer
+    }
+}
+
 // swiftlint:disable type_body_length
 class PlayerControlsController: UIViewController {
     var data: MediaStream?
@@ -38,9 +52,13 @@ class PlayerControlsController: UIViewController {
     var duration: Double = 0.0
     var isPlaying = false {
         didSet {
-            let image = UIImage(systemName: isPlaying ? "pause.fill" : "play.fill")?.withRenderingMode(.alwaysTemplate)
-            playPauseButton.setImage(image, for: .normal)
-            view.layoutIfNeeded()
+            UIView.animate(withDuration: 0.2) {
+                let image = UIImage(systemName: self.isPlaying ? "pause.fill" : "play.fill")?
+                    .withRenderingMode(.alwaysTemplate)
+                    .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 52)))
+                self.playPauseButton.image = image
+                self.view.layoutIfNeeded()
+            }
         }
     }
 
@@ -159,7 +177,17 @@ class PlayerControlsController: UIViewController {
         return label
     }()
 
-    var playPauseButton = AnimatedButton()
+    var playPauseButton: UIImageView = {
+        let view = UIImageView(
+            image: UIImage(systemName: "play.fill")?
+                .withRenderingMode(.alwaysTemplate)
+                .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 52)))
+        )
+        view.tintColor = ThemeManager.shared.getColor(for: .fg)
+        view.contentMode = .scaleAspectFit
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
 
     let backButton = CircleButton(icon: "chevron.left")
 
@@ -204,6 +232,37 @@ class PlayerControlsController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+    
+    
+    var slider: Slider = {
+        let slider = Slider(
+            slider: ThumblessSlider(
+                direction: .leadingToTrailing,
+                scaling: .againstAxis(1.25),
+                cornerRadius: .full
+            ),
+            options: [.tracks(.onTranslation)]
+        )
+        slider.directionalLayoutMargins = .init(
+            top: 12, leading: 12, bottom: 12, trailing: 12
+        )
+        slider.viewModel.maximumValue = 1
+        slider.viewModel.minimumValue = 0
+        slider.viewModel.value = 0
+        slider.tintColor = .white
+        slider.sizeToFit()
+        
+        slider.translatesAutoresizingMaskIntoConstraints = false
+        return slider
+    }()
+    
+    let seekbarWrapper: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    var blockValueChange: Bool = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -217,10 +276,6 @@ class PlayerControlsController: UIViewController {
         view.addSubview(subtitleLabel)
         view.addSubview(currentTimeLabel)
         view.addSubview(durationLabel)
-
-        playPauseButton = AnimatedButton { _ in
-            self.delegate?.playPauseTapped()
-        }
 
         activityIndicator.tintColor = ThemeManager.shared.getColor(for: .fg)
         activityIndicator.startAnimating()
@@ -238,6 +293,9 @@ class PlayerControlsController: UIViewController {
         view.addSubview(settingsButton)
 
         view.addSubview(skipEpisodeButton)
+        
+        let pauseButtonGesture = UITapGestureRecognizer(target: self, action: #selector(playPauseTapped))
+        playPauseButton.addGestureRecognizer(pauseButtonGesture)
 
         skipEpisodeButton.onTap = {
             self.delegate?.nextEpisode()
@@ -309,6 +367,24 @@ class PlayerControlsController: UIViewController {
 
 //        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(updateUI))
 //        view.addGestureRecognizer(tapGesture)
+        
+        view.addSubview(seekbarWrapper)
+        
+        progressBar.alpha = 0.0
+        progressBar.isUserInteractionEnabled = false
+        
+        slider.valueChangeHandler = { [weak self] value in
+            guard let self else { return }
+            print(value)
+            if !blockValueChange {
+                let interval = self.calculateCurrentTime(from: value)
+                self.currentTimeLabel.text = self.formatTime(interval)
+                self.delegate?.updateCurrentTime(didChangeProgress: value)
+            }
+            blockValueChange = false
+        }
+        
+        seekbarWrapper.addSubview(slider)
 
         NSLayoutConstraint.activate([
             backButton.leadingAnchor.constraint(equalTo: progressBar.leadingAnchor, constant: 12),
@@ -402,6 +478,16 @@ class PlayerControlsController: UIViewController {
 
             mediaSelectorButton.trailingAnchor.constraint(equalTo: skipEpisodeButton.leadingAnchor, constant: -12),
             mediaSelectorButton.bottomAnchor.constraint(equalTo: progressBar.topAnchor, constant: 8),
+            
+            seekbarWrapper.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 8),
+            seekbarWrapper.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -8),
+            seekbarWrapper.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -18),
+            seekbarWrapper.heightAnchor.constraint(equalToConstant: 32),
+            
+            slider.leadingAnchor.constraint(equalTo: seekbarWrapper.leadingAnchor),
+            slider.trailingAnchor.constraint(equalTo: seekbarWrapper.trailingAnchor),
+            slider.topAnchor.constraint(equalTo: seekbarWrapper.topAnchor),
+            slider.bottomAnchor.constraint(equalTo: seekbarWrapper.bottomAnchor)
         ])
     }
 
@@ -558,8 +644,8 @@ class PlayerControlsController: UIViewController {
             self.titleLabel.transform = CGAffineTransform(translationX: 0, y: 50)
             self.titleLabel.alpha = 0.0
 
-            self.progressBar.transform = CGAffineTransform(translationX: 0, y: 50)
-            self.progressBar.alpha = 0.0
+            self.seekbarWrapper.transform = CGAffineTransform(translationX: 0, y: 50)
+            self.seekbarWrapper.alpha = 0.0
 
             self.skipEpisodeButton.transform = CGAffineTransform(translationX: 0, y: -50)
             self.skipEpisodeButton.alpha = 0.0
@@ -596,8 +682,8 @@ class PlayerControlsController: UIViewController {
             self.titleLabel.transform = .identity
             self.titleLabel.alpha = 1.0
 
-            self.progressBar.transform = .identity
-            self.progressBar.alpha = 1.0
+            self.seekbarWrapper.transform = .identity
+            self.seekbarWrapper.alpha = 1.0
 
             self.currentTimeLabel.transform = .identity
             self.currentTimeLabel.alpha = 1.0

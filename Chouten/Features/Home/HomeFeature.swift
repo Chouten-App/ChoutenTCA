@@ -5,6 +5,7 @@
 //  Created by Inumaki on 19.04.24.
 //
 
+import Core
 import ComposableArchitecture
 import Combine
 import SwiftUI
@@ -63,13 +64,15 @@ struct HomeFeature: Reducer {
                             var collections = await self.databaseClient.fetchCollections()
                             let continueWatching = await self.databaseClient.fetchContinueWatching()
                             
-                            collections.append(continueWatching)
+                            // await self.databaseClient.clearCollection(continueWatching.id)
+                            
+                            collections.insert(continueWatching, at: 0)
                             
                             await send(.view(.setCollections(collections)))
                             
                             print("Collections count: \(collections.count)")
                             print("Collections first item: \(collections.first)")
-                            print("Continue watching count: \(continueWatching.list.count)")
+                            print(continueWatching.list)
                         }
                     )
                 case .setCollections(let data):
@@ -103,18 +106,21 @@ struct HomeFeature: Reducer {
                                 flag: .none
                             )
                         )
+                        await send(.view(.onAppear))
                     }
                 case .deleteCollection(let collectionId):
                     return .run { send in
                         print("Deleting collection for \(collectionId).")
-                        await self.databaseClient.removeCollection(collectionId, "");
+                        await self.databaseClient.removeCollection(collectionId, "")
+                        await send(.view(.onAppear))
                     }
                 case .createCollection(let name):
-                    return .run { _ in
+                    return .run { send in
                         print("Creating collection for \(name)...")
                         
                         let result = await self.databaseClient.createCollection(name)
                         print("Collection created with name \(result)!")
+                        await send(.view(.onAppear))
                     }
                 }
             }

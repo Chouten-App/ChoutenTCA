@@ -5,6 +5,7 @@
 //  Created by Inumaki on 14.06.24.
 //
 
+import Core
 import Combine
 import Dependencies
 import Foundation

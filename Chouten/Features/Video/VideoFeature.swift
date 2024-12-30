@@ -5,6 +5,7 @@
 //  Created by Inumaki on 15.05.24.
 //
 
+import Core
 import Combine
 import ComposableArchitecture
 import SwiftUI
@@ -12,6 +13,7 @@ import SwiftUI
 @Reducer
 struct VideoFeature: Reducer {
     @Dependency(\.relayClient) var relayClient
+    @Dependency(\.databaseClient) var databaseClient
 
     @ObservableState
     struct State: FeatureState {
@@ -39,6 +41,7 @@ struct VideoFeature: Reducer {
             case setServers(_ data: [SourceList])
             case getSources(_ url: String)
             case setSources(_ data: MediaStream)
+            case updateContinueWatching(_ infoData: InfoData, _ mediaData: MediaItem, _ progress: Double, _ duration: Double)
         }
 
         @CasePathable
@@ -98,8 +101,18 @@ struct VideoFeature: Reducer {
                     state.videoData = data
                     state.status = .success
                     return .none
+                case .updateContinueWatching(let infoData, let mediaData, let progress, let duration):
+                    if let moduleId = UserDefaults.standard.string(forKey: "selectedModuleId") {
+                        return .merge(
+                            .run { send in
+                                await self.databaseClient.addToContinueWatching(moduleId, CollectionItem(infoData: infoData, url: infoData.url, mediaItem: mediaData, flag: .none), progress, duration)
+                            }
+                        )
+                    }
+                    return .none
                 }
             }
         }
     }
 }
+

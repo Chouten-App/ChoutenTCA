@@ -5,6 +5,7 @@
 //  Created by Inumaki on 09.02.24.
 //
 
+import Core
 import AVKit
 import ComposableArchitecture
 import UIKit
@@ -36,6 +37,8 @@ class PlayerVC: UIViewController {
     var nextEpisodeStartTime: Date?
     var nextEpisodeDuration: TimeInterval = 5.0 // 5 seconds
     var isShowingNextEpisodeButton = false
+    
+    let resourceLoaderDelegate = VideoResourceLoaderDelegate()
     
     private var shouldForceLandscape: Bool = false {
         didSet {
@@ -161,10 +164,17 @@ class PlayerVC: UIViewController {
                     
                     var asset: AVURLAsset? = nil
                     
+                    let customURL = url.absoluteString.replacingOccurrences(of: "https", with: "custom-scheme")
+                    
+                    // guard let schemedUrl = URL(string: customURL) else { return }
+                    
+                    let schemedUrl = url
+                    
                     if let headers = videoData.headers,
                        !headers.isEmpty {
                         // check media type
                         if url.absoluteString.contains("m3u8") {
+                            asset = AVURLAsset(url: schemedUrl, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
                             // reverse proxy
                             /*
                             guard let videoURL = proxy.reverseProxyURL(from: url) else {
@@ -184,18 +194,23 @@ class PlayerVC: UIViewController {
                             setupPlayer()
                              */
                         } else { // if url.absoluteString.contains(".mp4") {
-                            asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
+                            asset = AVURLAsset(url: schemedUrl, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
                         }
                     } else {
-                        asset = AVURLAsset(url: url)
+                        asset = AVURLAsset(url: schemedUrl)
                     }
                     
                     guard let asset else { return }
+                    
+                    // asset.resourceLoader.setDelegate(resourceLoaderDelegate, queue: DispatchQueue.main)
                     
                     let item = AVPlayerItem(asset: asset)
                     playerVM.setCurrentItem(item)
                     
                     setupPlayer(item: item)
+                    
+                    item.addObserver(self, forKeyPath: "loadedTimeRanges", options: .new, context: nil)
+                    playerVM.player.automaticallyWaitsToMinimizeStalling = true
                 }
             default:
                 break
@@ -220,10 +235,20 @@ class PlayerVC: UIViewController {
                 if let duration = playerVM.duration {
                     // update subtitles
                     self.subtitleRenderer.updateSubtitles(for: time)
+                    
+                    // update continue watching
+                    if self.playerVM.isPlaying {
+                        // needs to be "debounced" or smth to not cause db corruption
+                        // store.send(.view(.updateContinueWatching(info, data)))
+                    }
+                    
 
                     self.view.layoutIfNeeded()
                     UIView.animate(withDuration: 0.1) {
-                        self.controls.progressBar.updateProgress(time.seconds / duration)
+                        print("CHANGE SLIDER")
+                        self.controls.blockValueChange = true
+                        self.controls.slider.viewModel.value = time.seconds / duration
+                        // self.controls.progressBar.updateProgress(time.seconds / duration)
                         self.view.layoutIfNeeded()
                     }
                 }
@@ -503,6 +528,24 @@ class PlayerVC: UIViewController {
         if keyPath == "frame" {
             adjustCustomViewForPiP()
         }
+        
+        if keyPath == "loadedTimeRanges" {
+            guard let playerItem = object as? AVPlayerItem else { return }
+            
+            let timeRanges = playerItem.loadedTimeRanges
+            if let timeRange = timeRanges.first?.timeRangeValue {
+                let bufferedDuration = CMTimeGetSeconds(timeRange.duration)
+                let currentTime = CMTimeGetSeconds(playerItem.currentTime())
+                let totalDuration = CMTimeGetSeconds(playerItem.duration)
+                
+                // Check if enough content is buffered
+                if bufferedDuration > currentTime + 5 { // Check for a 5-second buffer ahead
+                    print("Sufficient buffer loaded.")
+                } else {
+                    print("Buffering... Not enough content ahead.")
+                }
+            }
+        }
     }
 
     private func adjustCustomViewForPiP() {
@@ -609,9 +652,18 @@ extension PlayerVC: PlayerControlsDelegate {
         shouldForceLandscape = false
 
         self.applyGeometryUpdate(interfaceOrientation: .portrait)
+        
+        self.store.send(.view(.updateContinueWatching(self.info, self.data, playerVM.currentTime, playerVM.duration ?? 1.0)))
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.dismiss(animated: true, completion: nil)
+            // self.dismiss(animated: true, completion: nil)
+            let transition = CATransition()
+            transition.duration = 0.3 // Adjust duration as needed
+            transition.type = .fade
+            if let navController = self.navigationController {
+                navController.view.layer.add(transition, forKey: nil)
+                navController.popViewController(animated: false)
+            }
         }
     }
 

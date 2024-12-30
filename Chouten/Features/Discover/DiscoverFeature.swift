@@ -5,6 +5,7 @@
 //  Created by Inumaki on 19.04.24.
 //
 
+import Core
 import ComposableArchitecture
 import Combine
 import SwiftUI
@@ -62,6 +63,7 @@ struct DiscoverFeature: Reducer {
                             }
                         }
                     )
+
                 case .setDiscoverSections(let data):
                     state.discoverSections = data
                     return .none

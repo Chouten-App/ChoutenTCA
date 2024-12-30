@@ -5,6 +5,7 @@
 //  Created by Eltik on 30.7.24.
 //
 
+import Core
 import Foundation
 import Dependencies
 import CoreData
@@ -304,15 +305,30 @@ extension DatabaseClient: DependencyKey {
                     print("\(error)")
                 }
             },
+            clearCollection: { collectionId in
+                let fetchRequest: NSFetchRequest<UserContinueWatching> = UserContinueWatching.fetchRequest()
+
+                do {
+                    // Fetch the collection
+                    let items = try context.fetch(fetchRequest)
+                    
+                    for item in items {
+                        context.delete(item)
+                    }
+                    
+                    try context.save()
+                    print("Successfully deleted associated items for collectionId: \(collectionId)")
+                } catch {
+                    print("Error deleting collection!")
+                    print("\(error)")
+                }
+            },
             fetchContinueWatching: {
                 let randomId = UUID().uuidString
                 var result = HomeSection(id: randomId, title: "Continue Watching", type: 3, list: [])
                 
-                return result
-                /*
-
                 // Create a fetch request for the ContinueWatching entity
-                let fetchRequest: NSFetchRequest<ContinueWatching> = ContinueWatching.fetchRequest()
+                let fetchRequest: NSFetchRequest<UserContinueWatching> = UserContinueWatching.fetchRequest()
                 
                 do {
                     // Fetch all continue watching items
@@ -327,15 +343,16 @@ extension DatabaseClient: DependencyKey {
                         }
                         
                         do {
-                            let itemData = try JSONDecoder().decode(CollectionItem.self, from: infoDataString.data(using: .utf8)!)
+                            let infoData = try JSONDecoder().decode(InfoData.self, from: infoDataString)
+                            let mediaData = try JSONDecoder().decode(MediaItem.self, from: episodeDataString)
                             let homeData = HomeData(
-                                url: itemData.url,
-                                titles: Titles(primary: itemData.infoData.titles.primary, secondary: itemData.infoData.titles.secondary ?? ""),
-                                description: itemData.infoData.description,
-                                poster: itemData.infoData.poster,
+                                url: infoData.url,
+                                titles: Titles(primary: infoData.titles.primary, secondary: mediaData.title ?? "Episode \(mediaData.number.removeTrailingZeros())"),
+                                description: infoData.description,
+                                poster: mediaData.thumbnail ?? infoData.poster,
                                 label: Label(text: "Test", color: ""),
-                                indicator: "\(itemData.flag.rawValue)",
-                                status: itemData.flag,
+                                indicator: "00:00 / 24:01", // "\(item.flag.rawValue)",
+                                status: ItemStatus.inprogress, // item.flag,
                                 current: nil,
                                 total: nil
                             )
@@ -353,15 +370,17 @@ extension DatabaseClient: DependencyKey {
                 }
 
                 return result
-                 */
             },
-            addToContinueWatching: { moduleId, infoData in
+            addToContinueWatching: { moduleId, collectionItem, progress, duration in
                 // Create a new ContinueWatching instance
                 let continueWatching = UserContinueWatching(context: context)
 
                 // Assign values to the attributes
                 continueWatching.moduleId = moduleId
-                continueWatching.infoData = try? JSONEncoder().encode(infoData) // yourInfoData must be JSON serializable
+                continueWatching.progress = progress
+                continueWatching.duration = duration
+                continueWatching.infoData = try? JSONEncoder().encode(collectionItem.infoData)
+                continueWatching.episodeData = try? JSONEncoder().encode(collectionItem.mediaData)
 
                 // Save the context
                 do {

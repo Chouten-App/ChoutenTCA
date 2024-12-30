@@ -5,6 +5,7 @@
 //  Created by Inumaki on 06.03.24.
 //
 
+import Core
 import UIKit
 
 class RepoSelectorHeader: UIView {
@@ -135,6 +136,7 @@ class RepoSelectorHeader: UIView {
 
             titleLabel.leadingAnchor.constraint(equalTo: repoPicture.trailingAnchor, constant: 12),
             titleLabel.topAnchor.constraint(equalTo: repoPicture.topAnchor, constant: 12),
+            titleLabel.trailingAnchor.constraint(equalTo: versionWrapper.leadingAnchor),
 
             authorLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             authorLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 2),

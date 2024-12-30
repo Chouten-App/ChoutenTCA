@@ -5,6 +5,7 @@
 //  Created by Eltik on 30.7.24.
 //
 
+import Core
 import Dependencies
 import Foundation
 
@@ -24,10 +25,10 @@ struct DatabaseClient: Sendable {
     let updateItemInCollection: @Sendable (_ collectionId: String, _ moduleId: String, _ infoData: CollectionItem) async -> Void
     let removeFromCollection: @Sendable (_ collectionId: String, _ moduleId: String, _ infoData: CollectionItem) async -> Void
     let removeCollection: @Sendable (_ collectionId: String, _ moduleId: String) async -> Void
-    
+    let clearCollection: @Sendable (_ collectionId: String) async -> Void
     
     let fetchContinueWatching: @Sendable () async -> HomeSection
-    let addToContinueWatching: @Sendable (_ moduleId: String, _ infoData: CollectionItem) async -> Void
+    let addToContinueWatching: @Sendable (_ moduleId: String, _ collectionItem: CollectionItem, _ progress: Double, _ duration: Double) async -> Void
 }
 
 extension DependencyValues {

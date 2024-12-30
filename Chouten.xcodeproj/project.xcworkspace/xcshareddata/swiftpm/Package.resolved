@@ -1,5 +1,5 @@
 {
-  "originHash" : "35f9e68a72e60380d0348150adbdd73ded3f8cbc2c93b4272a0b95a194bf235b",
+  "originHash" : "2e7cf3f5d70da5374dcacaab5281571fd4abfd546d2209e4bd5731dc33975d69",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "0ead44350d2737db384908569c012fe67c421e4d",
         "version" : "12.8.0"
+      }
+    },
+    {
+      "identity" : "slyderin",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/EdgarDegas/Slyderin",
+      "state" : {
+        "revision" : "2ffba9c4781ab6abfda275fcc5ef7a074f4642ae",
+        "version" : "0.2.0"
       }
     },
     {

@@ -5,6 +5,7 @@
 //  Created by Inumaki on 13/10/2024.
 //
 
+import Core
 import Dependencies
 import UIKit
 
@@ -107,7 +108,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 let modulePath = try repoClient.getModulePathForId(id: moduleId)
 
                 if let modulePath {
-                    var module = try relayClient.loadModule(
+                    let module = try relayClient.loadModule(
                         fileURL: modulePath
                     )
                     NotificationCenter.default.post(name: .changedModule, object: module)

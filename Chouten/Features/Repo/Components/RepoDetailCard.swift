@@ -5,6 +5,7 @@
 //  Created by Inumaki on 10.06.24.
 //
 
+import Core
 import UIKit
 
 class RepoDetailCard: UIView {

@@ -5,9 +5,10 @@
 //  Created by Inumaki on 13.07.24.
 //
 
+import Core
 import UIKit
 
-class ListCellHome: UICollectionViewCell, SelfConfiguringCellHome {
+class ListCellHome: UICollectionViewCell, SelfConfiguringCellHome, UIContextMenuInteractionDelegate {
     static let reuseIdentifier: String = "ListCellHome"
     
     var data: HomeData? = nil
@@ -74,6 +75,8 @@ class ListCellHome: UICollectionViewCell, SelfConfiguringCellHome {
     
     private var tapGestureRecognizer: UITapGestureRecognizer!
     private var longPressGestureRecognizer: UILongPressGestureRecognizer!
+    
+    private var contextMenuInteraction: UIContextMenuInteraction!
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -100,12 +103,9 @@ class ListCellHome: UICollectionViewCell, SelfConfiguringCellHome {
         tapGestureRecognizer.numberOfTouchesRequired = 1
         tapGestureRecognizer.numberOfTapsRequired = 1
 
-        longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
-        longPressGestureRecognizer.delegate = self
-        longPressGestureRecognizer.minimumPressDuration = 0.2
+        contextMenuInteraction = UIContextMenuInteraction(delegate: self)
 
         addGestureRecognizer(tapGestureRecognizer)
-        addGestureRecognizer(longPressGestureRecognizer)
 
         NSLayoutConstraint.activate([
             imageView.widthAnchor.constraint(equalToConstant: 100),
@@ -149,6 +149,7 @@ class ListCellHome: UICollectionViewCell, SelfConfiguringCellHome {
         
         imageView.setAsyncImage(url: data.poster)
         titleLabel.text = data.titles.primary
+        titleLabel.numberOfLines = 2
         countLabel.text = "\(data.current != nil ? String(data.current!) : "~")/\(data.total != nil ? String(data.total!) : "~")"
 
         indicatorLabel.text = data.indicator
@@ -206,6 +207,26 @@ extension ListCellHome: UIGestureRecognizerDelegate {
             break
         }
     }
+    
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+            guard let data = self.data else { return nil }
+
+            // Create actions for the context menu
+            let action1 = UIAction(title: "Action 1", image: UIImage(systemName: "star")) { action in
+                print("Action 1 selected")
+                // Handle your action here...
+            }
+
+            let action2 = UIAction(title: "Action 2", image: UIImage(systemName: "trash")) { action in
+                print("Action 2 selected")
+                // Handle your action here...
+            }
+
+            // Create the menu configuration
+            return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+                return UIMenu(title: "", children: [action1, action2])
+            }
+        }
 
     // UIGestureRecognizerDelegate method to allow simultaneous recognition with other gestures
      func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {

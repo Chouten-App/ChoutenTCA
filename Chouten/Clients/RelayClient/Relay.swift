@@ -5,6 +5,7 @@
 //  Created by Inumaki on 25.01.24.
 //
 
+import Core
 import JavaScriptCore
 import Nuke
 import OSLog
@@ -70,7 +71,7 @@ extension JSValue {
     }
 }
 
- enum ModuleType {
+enum ModuleType {
     case video
     case book
     case text

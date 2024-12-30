@@ -5,6 +5,7 @@
 //  Created by Inumaki on 08.02.24.
 //
 
+import Core
 import UIKit
 
 class TagDisplay: UIView {

@@ -5,6 +5,7 @@
 //  Created by Inumaki on 25.06.24.
 //
 
+import Core
 import ComposableArchitecture
 import UIKit
 
@@ -166,7 +167,7 @@ class ModuleSelectorView: UIViewController, UIScrollViewDelegate, ModuleCardDele
                 moduleCard.layer.borderColor = ThemeManager.shared.getColor(for: moduleCard.module.id == id ? .accent : .border).cgColor
             }
         }
-        // NotificationCenter.default.post(name: .updatedSelectedModule, object: nil)
+        NotificationCenter.default.post(name: .updatedSelectedModule, object: nil)
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {

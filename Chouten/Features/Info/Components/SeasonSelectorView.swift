@@ -5,6 +5,7 @@
 //  Created by Inumaki on 27.06.24.
 //
 
+import Core
 import UIKit
 
 class SeasonLabelTapGestureRecognizer: UITapGestureRecognizer {
