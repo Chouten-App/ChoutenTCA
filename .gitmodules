@@ -1,0 +1,6 @@
+[submodule "Core"]
+	path = Core
+	url = git@github.com:Chouten-App/Core.git
+[submodule "Relay"]
+	path = Relay
+	url = git@github.com:Chouten-App/Relay.git
