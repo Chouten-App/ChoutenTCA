@@ -104,8 +104,8 @@ class TopBar: UIView {
     }
 
     @objc func handleTap() {
+        print("*** handleTap ***")
         if doneText.text == "Done" {
-            print("DOne")
             let scenes = UIApplication.shared.connectedScenes
             if let windowScene = scenes.first as? UIWindowScene,
                let window = windowScene.windows.first,
@@ -113,7 +113,6 @@ class TopBar: UIView {
                 navController.dismiss(animated: true)
             }
         } else {
-            print("BAck")
             // remove other view and vc like appearance or logs
             if let parentVC = self.parentViewController {
                 if let childVC = parentVC.children.first(where: { $0.view.tag == 1000 }) {
@@ -483,6 +482,8 @@ class SettingsView: UIViewController {
         view.addSubview(loginVC.view)
         topbar.configure(settingsText: "Login", doneText: "Back")
         topbar.isUserInteractionEnabled = true
+        view.bringSubviewToFront(topbar)
+        topbar.layer.zPosition = 100
 
         UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveEaseOut) {
             loginVC.view.alpha = 1.0
@@ -505,6 +506,8 @@ class SettingsView: UIViewController {
         addChild(tempVC)
         view.addSubview(tempVC.view)
         topbar.configure(settingsText: "Appearance", doneText: "Back")
+         view.bringSubviewToFront(topbar)
+         topbar.layer.zPosition = 100
 
         UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveEaseOut) {
             tempVC.view.alpha = 1.0
@@ -526,6 +529,8 @@ class SettingsView: UIViewController {
         addChild(tempVC)
         view.addSubview(tempVC.view)
         topbar.configure(settingsText: "Developer", doneText: "Back")
+        view.bringSubviewToFront(topbar)
+        topbar.layer.zPosition = 100
 
         UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveEaseOut) {
             tempVC.view.alpha = 1.0
