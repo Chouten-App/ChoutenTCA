@@ -95,8 +95,7 @@ class ModuleSelectorView: UIViewController, UIScrollViewDelegate, ModuleCardDele
     }
 
     private func loadRepos() {
-        let moduleId = UserDefaults.standard.string(forKey: "selectedModuleId")
-
+       // TODO: Maybe change this to use the load module component / same as discover topbar
         do {
             repos = try repoClient.getRepos()
 
@@ -162,11 +161,58 @@ class ModuleSelectorView: UIViewController, UIScrollViewDelegate, ModuleCardDele
 
     func updateSelectedModule(id: String) {
         UserDefaults.standard.setValue(id, forKey: "selectedModuleId")
+        NotificationCenter.default.post(name: .selectedModuleChange, object: nil, userInfo: ["moduleId": id])
+        
         contentView.arrangedSubviews.forEach { view in
-            if let moduleCard = view as? ModuleCard {
-                moduleCard.layer.borderColor = ThemeManager.shared.getColor(for: moduleCard.module.id == id ? .accent : .border).cgColor
+            guard let moduleCard = view as? ModuleCard else { return }
+            
+            let isSelected = (moduleCard.module.id == id)
+            
+            // We’ll remove any old shape layers to avoid stacking them
+            moduleCard.layer.sublayers?.removeAll(where: { $0.name == "SlidingBorderLayer" })
+            
+            if isSelected {
+                // 1) Hide or reset the default border
+                moduleCard.layer.borderWidth = 0
+                
+                // 2) Create a shape layer for the sliding border
+                let shapeLayer = CAShapeLayer()
+                shapeLayer.name = "SlidingBorderLayer" // so we can remove it in the future
+                shapeLayer.path = UIBezierPath(
+                    roundedRect: moduleCard.bounds,
+                    cornerRadius: moduleCard.layer.cornerRadius
+                ).cgPath
+                
+                // The stroke color = "accent" color
+                let accentColor = ThemeManager.shared.getColor(for: .accent).cgColor
+                shapeLayer.strokeColor = accentColor
+                shapeLayer.fillColor = UIColor.clear.cgColor
+                shapeLayer.lineWidth = 2
+                
+                // Initially, set strokeEnd to 0 (nothing drawn)
+                shapeLayer.strokeStart = 0
+                shapeLayer.strokeEnd = 0
+                
+                // 3) Animate the strokeEnd to 1 (full border)
+                let animation = CABasicAnimation(keyPath: "strokeEnd")
+                animation.fromValue = 0
+                animation.toValue = 1
+                animation.duration = 0.3 // Adjust as needed
+                
+                // Add layer + animation
+                moduleCard.layer.addSublayer(shapeLayer)
+                shapeLayer.add(animation, forKey: nil)
+                
+                // Ensure strokeEnd is 1 after animation completes
+                shapeLayer.strokeEnd = 1
+                
+            } else {
+                // If not selected, revert to default border
+                moduleCard.layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
+                moduleCard.layer.borderWidth = 0.5
             }
         }
+        
         NotificationCenter.default.post(name: .updatedSelectedModule, object: nil)
     }
 

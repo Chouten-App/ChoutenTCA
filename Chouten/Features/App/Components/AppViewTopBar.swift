@@ -6,10 +6,14 @@
 //
 
 import UIKit
+import Core
+import ComposableArchitecture
 
- class AppViewTopBar: UIView {
-
-     let blurView: UIView = {
+class AppViewTopBar: UIView {
+    
+    @Dependency(\.repoClient) var repoClient
+    
+    let blurView: UIView = {
         let effect = UIBlurEffect(style: .systemUltraThinMaterialDark)
         let view = UIVisualEffectView(effect: effect)
         view.layer.borderWidth = 0.5
@@ -17,14 +21,14 @@ import UIKit
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-
-     let wrapper: UIView = {
+    
+    let wrapper: UIView = {
         let wrapper = UIView()
         wrapper.translatesAutoresizingMaskIntoConstraints = false
         return wrapper
     }()
-
-     let label: UILabel = {
+    
+    let label: UILabel = {
         let label = UILabel()
         label.text = "Discover"
         label.textColor = ThemeManager.shared.getColor(for: .fg)
@@ -32,8 +36,8 @@ import UIKit
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-
-     let settingsImageWrapper: UIView = {
+    
+    let settingsImageWrapper: UIView = {
         let view = UIView()
         view.backgroundColor = ThemeManager.shared.getColor(for: .overlay)
         view.layer.cornerRadius = 16
@@ -43,8 +47,8 @@ import UIKit
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-
-     let settingsImage: UIImageView = {
+    
+    let settingsImage: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "pfp")
         imageView.tintColor = ThemeManager.shared.getColor(for: .fg)
@@ -52,45 +56,87 @@ import UIKit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
-
-     let interactionWrapper: UIView = {
+    
+    let settingsImageWrapper2: UIView = {
+        let view = UIView()
+        view.backgroundColor = ThemeManager.shared.getColor(for: .overlay)
+        view.layer.cornerRadius = 16
+        view.layer.borderWidth = 0.5
+        view.clipsToBounds = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    let settingsImage2: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "icon")
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    let buttonStack: UIStackView = {
+        let buttonStack = UIStackView()
+        buttonStack.translatesAutoresizingMaskIntoConstraints = false
+        buttonStack.axis = .horizontal
+        buttonStack.alignment = .center
+        buttonStack.distribution = .equalSpacing
+        buttonStack.spacing = 20
+        return buttonStack
+    }()
+    
+    let interactionWrapper: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-
-     weak var delegate: AppViewTopBarDelegate?
-
-     init() {
+    
+    weak var delegate: AppViewTopBarDelegate?
+    
+    init() {
         super.init(frame: .zero)
         configure()
         setupConstraints()
-    }
 
-    override  init(frame: CGRect) {
+        // This is used to load the Icons. 1. on start and 2. on repo change
+        setInitialRepoIcon()
+        setupObservers()
+    }
+    
+    override init(frame: CGRect) {
         super.init(frame: frame)
         configure()
         setupConstraints()
+        
+        // same as above
+        setInitialRepoIcon()
+        setupObservers()
     }
-
-     required init?(coder: NSCoder) {
+    
+    required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     private func configure() {
         translatesAutoresizingMaskIntoConstraints = false
         wrapper.addSubview(blurView)
         wrapper.addSubview(label)
+        
         settingsImageWrapper.addSubview(settingsImage)
-        wrapper.addSubview(settingsImageWrapper)
+        settingsImageWrapper2.addSubview(settingsImage2)
+        
+        buttonStack.addArrangedSubview(settingsImageWrapper)
+        buttonStack.addArrangedSubview(settingsImageWrapper2)
+        
+        wrapper.addSubview(buttonStack)
+        
         addSubview(wrapper)
-        addSubview(interactionWrapper)
-
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showSettingsPopover))
-        interactionWrapper.isUserInteractionEnabled = true
-        interactionWrapper.addGestureRecognizer(tapGesture)
+                addSubview(interactionWrapper)
+                
+                let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showSettingsPopover))
+                interactionWrapper.isUserInteractionEnabled = true
+                interactionWrapper.addGestureRecognizer(tapGesture)
     }
-
+    
     private func setupConstraints() {
         NSLayoutConstraint.activate([
             wrapper.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width + 2),
@@ -98,71 +144,84 @@ import UIKit
             wrapper.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 1),
             wrapper.topAnchor.constraint(equalTo: topAnchor, constant: -1),
             wrapper.bottomAnchor.constraint(equalTo: bottomAnchor),
-
+            
             blurView.leadingAnchor.constraint(equalTo: wrapper.leadingAnchor),
             blurView.trailingAnchor.constraint(equalTo: wrapper.trailingAnchor),
             blurView.topAnchor.constraint(equalTo: wrapper.topAnchor),
             blurView.bottomAnchor.constraint(equalTo: wrapper.bottomAnchor),
-
+            
             label.centerYAnchor.constraint(equalTo: settingsImageWrapper.centerYAnchor),
             label.leadingAnchor.constraint(equalTo: wrapper.leadingAnchor, constant: 20),
             label.trailingAnchor.constraint(equalTo: wrapper.trailingAnchor, constant: -20),
-
+            
+            buttonStack.trailingAnchor.constraint(equalTo: wrapper.trailingAnchor, constant: -20),
+            buttonStack.bottomAnchor.constraint(equalTo: wrapper.bottomAnchor, constant: -15),
+            
             settingsImageWrapper.widthAnchor.constraint(equalToConstant: 32),
             settingsImageWrapper.heightAnchor.constraint(equalToConstant: 32),
-            settingsImageWrapper.trailingAnchor.constraint(equalTo: wrapper.trailingAnchor, constant: -20),
-            settingsImageWrapper.bottomAnchor.constraint(equalTo: wrapper.bottomAnchor, constant: -12),
-
+            
+            settingsImageWrapper2.widthAnchor.constraint(equalToConstant: 32),
+            settingsImageWrapper2.heightAnchor.constraint(equalToConstant: 32),
+            
             settingsImage.centerXAnchor.constraint(equalTo: settingsImageWrapper.centerXAnchor),
             settingsImage.centerYAnchor.constraint(equalTo: settingsImageWrapper.centerYAnchor),
-
+            
+            settingsImage2.heightAnchor.constraint(equalTo: settingsImageWrapper2.heightAnchor),
+            settingsImage2.widthAnchor.constraint(equalTo: settingsImageWrapper2.widthAnchor),
+            settingsImage2.centerXAnchor.constraint(equalTo: settingsImageWrapper2.centerXAnchor),
+            settingsImage2.centerYAnchor.constraint(equalTo: settingsImageWrapper2.centerYAnchor),
+            
             interactionWrapper.leadingAnchor.constraint(equalTo: leadingAnchor),
             interactionWrapper.trailingAnchor.constraint(equalTo: trailingAnchor),
             interactionWrapper.topAnchor.constraint(equalTo: topAnchor),
             interactionWrapper.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
     }
-
-    override  func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-
-        if self.traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            updateAppearance()
+    
+    // Set Repo at app launch
+    private func setInitialRepoIcon() {
+        
+        let questionmarkicon: () = self.settingsImage2.image = UIImage(systemName: "questionmark.circle")?.applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
+        
+        if let (module, repo) = Chouten.loadModules() {
+            Chouten.getIconData(for: module, repo: repo) { iconPath in
+                if let iconPath = iconPath {
+                    let image = UIImage(contentsOfFile: iconPath)
+                    if let image = image {
+                        self.settingsImage2.image = image
+                    } else {
+                        // TODO: Add Warning that Module image is broken
+                        questionmarkicon
+                    }
+                } else {
+                    questionmarkicon
+                }
+            }
+        } else {
+            print("No module found.")
+            questionmarkicon
         }
     }
-
-    func updateAppearance() {
-        blurView.layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
-        label.textColor = ThemeManager.shared.getColor(for: .fg)
-
-        settingsImageWrapper.backgroundColor = ThemeManager.shared.getColor(for: .overlay)
-        settingsImageWrapper.layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
-
-        settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
-    }
-
+    
     @objc private func showSettingsPopover() {
         delegate?.didTapButton()
-        /*
-        let settingsView = SettingsView() // Replace with your actual SettingsView
-        let popoverController = settingsView.popoverPresentationController
-        popoverController?.sourceView = self
-        popoverController?.sourceRect = self.bounds
-        popoverController?.permittedArrowDirections = .any
-        popoverController?.delegate = self
-
-        // Present the popover
-        let scenes = UIApplication.shared.connectedScenes
-        let windowScene = scenes.first as? UIWindowScene
-
-        if let viewController = windowScene?.windows.first(where: \.isKeyWindow)?.rootViewController {
-            viewController.present(settingsView, animated: true, completion: nil)
-        }*/
     }
-}
+    
+    
+    private func setupObservers() {
+        NotificationCenter.default.addObserver(self,
+           selector: #selector(handleModuleChange(_:)),
+           name: .selectedModuleChange,
+           object: nil)
+    }
 
-extension AppViewTopBar: UIPopoverPresentationControllerDelegate {
-     func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
-        .none
+    @objc private func handleModuleChange(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let moduleId = userInfo["moduleId"] as? String else { return }
+
+        print("Selected module changed to: \(moduleId)")
+
+        setInitialRepoIcon()
+        
     }
 }
