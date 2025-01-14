@@ -71,6 +71,8 @@ import UIKit
         )
 
         super.init(nibName: nil, bundle: nil)
+         
+        setupObservers()
         
         NotificationCenter.default.addObserver(forName: .changedModule, object: nil, queue: nil) { notification in
             if let result = notification.object as? Module {
@@ -108,54 +110,87 @@ import UIKit
         fatalError("init(coder:) has not been implemented")
     }
 
-    override  func viewDidLoad() {
-        super.viewDidLoad()
+     override  func viewDidLoad() {
+         super.viewDidLoad()
+         
+         view.backgroundColor = ThemeManager.shared.getColor(for: .bg)
+         topBar.blurView.alpha = 0.0
+         
+         for index in 0..<tabs.count {
+             let tab = tabs[index]
+             tab.view.tag = index
+             tab.view.alpha = selectedTab == index ? 1.0 : 0.0
+             addChild(tab)
+             view.addSubview(tab.view)
+         }
+         
+         configure()
+         setupConstraints()
+         
+         if let discoverView = tabs[1] as? DiscoverView {
+             discoverView.collectionView.delegate = self
+         }
+         
+         observe { [weak self] in
+             guard let self else { return }
+             
+             self.topBar.label.text = store.selected.rawValue
+             
+             switch store.selected {
+             case .home:
+                 self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
+                 self.topBar.settingsImage.image = UIImage(systemName: "person")?
+                     .withRenderingMode(.alwaysTemplate)
+                     .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
+                 self.topBar.settingsImageWrapper2.isHidden = true
+             case .discover:
+                 self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
+                 self.topBar.settingsImage.image = UIImage(systemName: "magnifyingglass")?
+                     .withRenderingMode(.alwaysTemplate)
+                     .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
+                 self.topBar.settingsImageWrapper2.isHidden = false
+                 self.topBar.settingsImage2.tintColor = ThemeManager.shared.getColor(for: .fg)
+                 updateTitle()
+                 
+                 
+             case .repos:
+                 self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
+                 self.topBar.settingsImage.image = UIImage(systemName: "plus")?
+                     .withRenderingMode(.alwaysTemplate)
+                     .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
+                 self.topBar.settingsImageWrapper2.isHidden = true
+             }
+         }
+         
+         store.send(.view(.onAppear))
+     }
+     
+     private func setupObservers() {
+         NotificationCenter.default.addObserver(self,
+            selector: #selector(handleModuleChange(_:)),
+            name: .selectedModuleChange,
+            object: nil)
+     }
 
-        view.backgroundColor = ThemeManager.shared.getColor(for: .bg)
-        topBar.blurView.alpha = 0.0
+     @objc private func handleModuleChange(_ notification: Notification) {
+         updateTitle()
+     }
+     
+     private func updateTitle() {
+         let tab = store.selected.rawValue
+         
+         if tab == "Discover" {
+             if let (module, _) = Chouten.loadModules() {
+                 self.topBar.label.text = module.name
+             } else {
+                 self.topBar.label.text = "Select Module"
+             }
+         }
+     }
+     
+     
 
-        for index in 0..<tabs.count {
-            let tab = tabs[index]
-            tab.view.tag = index
-            tab.view.alpha = selectedTab == index ? 1.0 : 0.0
-            addChild(tab)
-            view.addSubview(tab.view)
-        }
-
-        configure()
-        setupConstraints()
-
-        if let discoverView = tabs[1] as? DiscoverView {
-            discoverView.collectionView.delegate = self
-        }
-
-        observe { [weak self] in
-            guard let self else { return }
-            
-            self.topBar.label.text = store.selected.rawValue
-            
-            switch store.selected {
-            case .home:
-                self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
-                self.topBar.settingsImage.image = UIImage(systemName: "person")?
-                    .withRenderingMode(.alwaysTemplate)
-                    .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
-                // self.topBar.settingsImage.image = UIImage(named: "pfp")
-            case .discover:
-                self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
-                self.topBar.settingsImage.image = UIImage(systemName: "magnifyingglass")?
-                    .withRenderingMode(.alwaysTemplate)
-                    .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
-            case .repos:
-                self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
-                self.topBar.settingsImage.image = UIImage(systemName: "plus")?
-                    .withRenderingMode(.alwaysTemplate)
-                    .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
-            }
-        }
-
-        store.send(.view(.onAppear))
-    }
+     
 
     private func configure() {
         moduleSelector.selectedModuleTitle.text = module?.name
@@ -248,6 +283,7 @@ extension AppViewController: CustomTabbarDelegate {
             store.send(.view(.changeTab(.home)))
         case 1:
             store.send(.view(.changeTab(.discover)))
+            
         case 2:
             store.send(.view(.changeTab(.repos)))
         case _:
@@ -281,6 +317,7 @@ extension AppViewController: CustomTabbarDelegate {
                             tab.view.transform = CGAffineTransform(translationX: -offset, y: 0)
                         }
                     }
+                    topBar.label.text = "Homee"
                 case 2:
                     // if moving from repo to smth
                     animate {
@@ -420,3 +457,5 @@ extension AppViewController: UIPopoverPresentationControllerDelegate {
         .none
     }
 }
+
+
