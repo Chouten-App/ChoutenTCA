@@ -9,7 +9,8 @@ import Core
 import Dependencies
 
 
-func loadModules() -> (RepoModule, RepoMetadata)? {
+
+func loadSelectedModule() -> (RepoModule, RepoMetadata)? {
     @Dependency(\.repoClient) var repoClient
     
     do {
@@ -30,7 +31,6 @@ func loadModules() -> (RepoModule, RepoMetadata)? {
         print("Error loading repositories: \(error.localizedDescription)")
     }
     
-    print("No module found.")
     return nil
 }
 
@@ -48,7 +48,6 @@ func getIconData(for module: RepoModule, repo: RepoMetadata, completion: @escapi
             // Try loading the image as JPG
             if (try? Data(contentsOf: imageUrl.appendingPathComponent("icon.jpg"))) != nil {
                 let imagePath = imageUrl.appendingPathComponent("icon.jpg").path
-                print("Loaded JPG icon for module \(module.id)")
                 DispatchQueue.main.async {
                     completion(imagePath)
                 }
@@ -57,15 +56,12 @@ func getIconData(for module: RepoModule, repo: RepoMetadata, completion: @escapi
             // Try loading the image as PNG if JPG is unavailable
             else if (try? Data(contentsOf: imageUrl.appendingPathComponent("icon.png"))) != nil {
                 let imagePath = imageUrl.appendingPathComponent("icon.png").path
-                print("Loaded PNG icon for module \(module.id)")
                 DispatchQueue.main.async {
                     completion(imagePath)
                 }
                 return
             }
         }
-        
-        print("No icon found for module \(module.id).")
         DispatchQueue.main.async {
             completion(nil)
         }

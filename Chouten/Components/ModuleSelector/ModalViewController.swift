@@ -57,6 +57,7 @@ class ModalViewController: UIViewController {
     }()
 
     let moduleSelectorView = ModuleSelectorView()
+    let topBar = TopBar()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -83,9 +84,6 @@ class ModalViewController: UIViewController {
     func updateAppearance() {
         wrapper.backgroundColor = ThemeManager.shared.getColor(for: .bg)
         wrapper.layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
-        titleWrapper.backgroundColor = ThemeManager.shared.getColor(for: .container)
-        selectedModuleTitle.textColor = ThemeManager.shared.getColor(for: .fg)
-        dragBar.backgroundColor = ThemeManager.shared.getColor(for: .fg)
     }
 
     // Other methods...
@@ -118,11 +116,9 @@ class ModalViewController: UIViewController {
     }
 
     private func configure() {
+        topBar.configure(settingsText: "Modules", doneText: "Done")
         view.addSubview(wrapper)
-        wrapper.addSubview(titleWrapper)
-        titleWrapper.addSubview(selectedModuleTitle)
-        titleWrapper.addSubview(dragBar)
-
+        wrapper.addSubview(topBar)
         addChild(moduleSelectorView)
         wrapper.addSubview(moduleSelectorView.view)
 
@@ -131,28 +127,22 @@ class ModalViewController: UIViewController {
 
     private func setupConstraints() {
         NSLayoutConstraint.activate([
+            // Wrapper constraints
             wrapper.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             wrapper.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             wrapper.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             wrapper.topAnchor.constraint(equalTo: view.topAnchor),
 
-            titleWrapper.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            titleWrapper.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            titleWrapper.topAnchor.constraint(equalTo: wrapper.topAnchor),
-            titleWrapper.heightAnchor.constraint(equalToConstant: 46),
+            // TopBar constraints (inside wrapper)
+            topBar.topAnchor.constraint(equalTo: wrapper.topAnchor),
+            topBar.leadingAnchor.constraint(equalTo: wrapper.leadingAnchor),
+            topBar.trailingAnchor.constraint(equalTo: wrapper.trailingAnchor),
+            topBar.heightAnchor.constraint(equalToConstant: 52),
 
-            selectedModuleTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            selectedModuleTitle.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            selectedModuleTitle.topAnchor.constraint(equalTo: wrapper.topAnchor, constant: 12),
-
-            dragBar.widthAnchor.constraint(equalToConstant: 24),
-            dragBar.heightAnchor.constraint(equalToConstant: 4),
-            dragBar.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            dragBar.topAnchor.constraint(equalTo: wrapper.topAnchor, constant: 6),
-
+            // ModuleSelectorView constraints
             moduleSelectorView.view.leadingAnchor.constraint(equalTo: wrapper.leadingAnchor),
             moduleSelectorView.view.trailingAnchor.constraint(equalTo: wrapper.trailingAnchor),
-            moduleSelectorView.view.topAnchor.constraint(equalTo: titleWrapper.bottomAnchor),
+            moduleSelectorView.view.topAnchor.constraint(equalTo: topBar.bottomAnchor),
             moduleSelectorView.view.bottomAnchor.constraint(equalTo: wrapper.bottomAnchor)
         ])
 

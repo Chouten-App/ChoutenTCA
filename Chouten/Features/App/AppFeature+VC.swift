@@ -180,16 +180,34 @@ import UIKit
          let tab = store.selected.rawValue
          
          if tab == "Discover" {
-             if let (module, _) = Chouten.loadModules() {
-                 self.topBar.label.text = module.name
+             
+             let questionmarkicon: () = self.topBar.settingsImage2.image = UIImage(systemName: "questionmark.circle")?.applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
+             
+             if let (module, repo) = Chouten.loadSelectedModule() {
+                 Chouten.getIconData(for: module, repo: repo) { iconPath in
+                     if let iconPath = iconPath {
+                         let image = UIImage(contentsOfFile: iconPath)
+                         if let image = image {
+                             self.topBar.settingsImage2.image = image
+                             
+                         } else {
+                             // TODO: Add Warning that Module image is broken
+                             questionmarkicon
+                         }
+                     } else {
+                         questionmarkicon
+                     }
+                     
+                     self.topBar.label.text = module.name
+                 }
              } else {
+                 print("No module found.")
+                 questionmarkicon
                  self.topBar.label.text = "Select Module"
              }
+             
          }
      }
-     
-     
-
      
 
     private func configure() {
@@ -223,10 +241,12 @@ import UIKit
 
         NSLayoutConstraint.activate([
             // ModuleSelector constraints
+            /*
             moduleSelector.view.bottomAnchor.constraint(equalTo: tabBar.topAnchor, constant: 12), // Adjusted to -14 for spacing
             moduleSelector.view.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: -1),
             moduleSelector.view.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 1),
-
+            */
+             
             // TabBar constraints
             tabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -448,6 +468,27 @@ extension AppViewController: AppViewTopBarDelegate {
 
             navController.present(vc, animated: true, completion: nil)
         }
+    }
+    
+    func didTapModuleIcon() {
+        
+        let scenes = UIApplication.shared.connectedScenes
+
+        guard let windowScene = scenes.first as? UIWindowScene,
+              let window = windowScene.windows.first,
+              let navController = window.rootViewController as? UINavigationController else {
+            return
+        }
+        
+        let moduleSelector = ModalViewController()
+        
+        let popoverController = moduleSelector.popoverPresentationController
+        popoverController?.sourceView = self.view
+        popoverController?.sourceRect = self.view.bounds
+        popoverController?.permittedArrowDirections = .any
+        popoverController?.delegate = self
+        
+        navController.present(moduleSelector, animated: true, completion: nil)
     }
 }
 

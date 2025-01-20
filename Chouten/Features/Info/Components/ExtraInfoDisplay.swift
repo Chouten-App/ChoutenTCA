@@ -16,22 +16,46 @@ class ExtraInfoDisplay: UIView {
     let stack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.alignment = .center
-        stack.spacing = 8
+        stack.alignment = .leading
+        stack.spacing = 4
         stack.translatesAutoresizingMaskIntoConstraints = false
         return stack
     }()
 
     let tagsDisplay: TagDisplay
 
+    private var isDescriptionExpanded = false
+    
+    private var fullDescriptionText = ""
+    private var truncatedDescriptionText = ""
+    
     let descriptionLabel: UILabel = {
         let label           = UILabel()
         label.textColor     = ThemeManager.shared.getColor(for: .fg)
         label.font          = UIFont.systemFont(ofSize: 14)
         label.alpha         = 0.7
-        label.numberOfLines = 9
-        label.lineBreakMode = .byCharWrapping
+        label.numberOfLines = 3
+        label.lineBreakMode = .byWordWrapping
         return label
+    }()
+    
+    let showMoreButton: UIButton = {
+        var config = UIButton.Configuration.plain()
+        config.attributedTitle = AttributedString(
+            NSAttributedString(
+                string: "Show More",
+                attributes: [
+                    .font: UIFont.systemFont(ofSize: 13, weight: .bold),
+                    .foregroundColor: UIColor.fg
+                ]
+            )
+        )
+        config.contentInsets = .zero
+        
+        let button = UIButton(configuration: config)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.contentHorizontalAlignment = .leading
+        return button
     }()
     
     let chapterButton: UIButton = {
@@ -115,7 +139,11 @@ class ExtraInfoDisplay: UIView {
         if !infoData.tags.isEmpty {
             stack.addArrangedSubview(tagsDisplay)
         }
+        
         stack.addArrangedSubview(descriptionLabel)
+        stack.addArrangedSubview(showMoreButton)
+        
+        showMoreButton.addTarget(self, action: #selector(toggleDescription), for: .touchUpInside)
 
         addSubview(stack)
     }
@@ -138,13 +166,9 @@ class ExtraInfoDisplay: UIView {
         if !infoData.tags.isEmpty {
             stack.addArrangedSubview(tagsDisplay)
         }
+        
         stack.addArrangedSubview(descriptionLabel)
-
-        let paragraphStyle = NSMutableParagraphStyle()
-        let attstr = NSMutableAttributedString(string: infoData.sanitizedDescription)
-        paragraphStyle.hyphenationFactor = 1.0
-        attstr.addAttribute(.paragraphStyle, value: paragraphStyle, range: NSRange(0..<attstr.length))
-        descriptionLabel.attributedText = attstr
+        stack.addArrangedSubview(showMoreButton)
         
         countdownTitle.font = .systemFont(ofSize: 12, weight: .bold)
         countdownTitle.alpha = 1.0
@@ -154,6 +178,135 @@ class ExtraInfoDisplay: UIView {
         countdownTime.setContentCompressionResistancePriority(.required, for: .horizontal) // Ensure it resists compression
         
         chapterButton.addTarget(self, action: #selector(castMedia), for: .touchUpInside)
+        
+        fullDescriptionText = infoData.sanitizedDescription
+
+        // Manually generate truncated text if needed
+        truncatedDescriptionText = truncateTo3LinesWithEllipsis(
+            text: fullDescriptionText,
+            font: descriptionLabel.font ?? UIFont.systemFont(ofSize: 14),
+            labelWidth: UIScreen.main.bounds.width - 40,
+            maxLines: 3
+        )
+        
+        if truncatedDescriptionText == fullDescriptionText {
+            showMoreButton.isHidden = true
+            descriptionLabel.text = fullDescriptionText
+        } else {
+            showMoreButton.isHidden = false
+            descriptionLabel.text = truncatedDescriptionText
+        }
+    }
+    
+    private func truncateTo3LinesWithEllipsis(
+        text: String,
+        font: UIFont,
+        labelWidth: CGFloat,
+        maxLines: Int
+    ) -> String {
+        
+        // First, measure full text
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineBreakMode = .byWordWrapping
+        
+        let fullAttrStr = NSAttributedString(
+            string: text,
+            attributes: [
+                .font: font,
+                .paragraphStyle: paragraphStyle
+            ]
+        )
+        
+        let boundingRect = fullAttrStr.boundingRect(
+            with: CGSize(width: labelWidth, height: CGFloat.greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            context: nil
+        )
+        
+        // Calculate max allowed height
+        let singleLineHeight = font.lineHeight
+        let maxHeight = singleLineHeight * CGFloat(maxLines)
+        
+        // If it fits, return full text
+        if boundingRect.height <= maxHeight {
+            return text
+        }
+        
+        // Otherwise, do a binary search for the largest substring that fits
+        var left = 0
+        var right = text.count
+        var bestFit = ""
+        
+        while left <= right {
+            let mid = (left + right) / 2
+            // Test substring
+            let testString = String(text.prefix(mid)) + "..."
+            
+            let testAttrStr = NSAttributedString(
+                string: testString,
+                attributes: [
+                    .font: font,
+                    .paragraphStyle: paragraphStyle
+                ]
+            )
+            let testRect = testAttrStr.boundingRect(
+                with: CGSize(width: labelWidth, height: CGFloat.greatestFiniteMagnitude),
+                options: [.usesLineFragmentOrigin, .usesFontLeading],
+                context: nil
+            )
+            
+            if testRect.height <= maxHeight {
+                // Fits, so see if we can do better (longer)
+                bestFit = testString
+                left = mid + 1
+            } else {
+                // Too tall, shorten substring
+                right = mid - 1
+            }
+        }
+        
+        return bestFit
+    }
+
+    @objc private func toggleDescription() {
+        isDescriptionExpanded.toggle()
+        
+        // Do a crossfade transition on the label
+        UIView.transition(
+            with: descriptionLabel,
+            duration: 0.25,
+            options: .transitionCrossDissolve,
+            animations: { [weak self] in
+                guard let self = self else { return }
+                
+                if self.isDescriptionExpanded {
+                    self.descriptionLabel.numberOfLines = 0
+                    self.descriptionLabel.text = self.fullDescriptionText
+                    self.showMoreButton.configuration?.attributedTitle = AttributedString(
+                        NSAttributedString(
+                            string: "Show Less",
+                            attributes: [
+                                .font: UIFont.systemFont(ofSize: 13, weight: .bold),
+                                .foregroundColor: UIColor.fg
+                            ]
+                        )
+                    )
+                } else {
+                    self.descriptionLabel.numberOfLines = 3
+                    self.descriptionLabel.text = self.truncatedDescriptionText
+                    self.showMoreButton.configuration?.attributedTitle = AttributedString(
+                        NSAttributedString(
+                            string: "Show More",
+                            attributes: [
+                                .font: UIFont.systemFont(ofSize: 13, weight: .bold),
+                                .foregroundColor: UIColor.fg
+                            ]
+                        )
+                    )
+                }
+            },
+            completion: nil
+        )
     }
     
     @objc func castMedia() {
@@ -200,7 +353,8 @@ class ExtraInfoDisplay: UIView {
             countdownStack.heightAnchor.constraint(equalToConstant: 40),
             countdownStack.widthAnchor.constraint(equalToConstant: 110),
             
-            descriptionLabel.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 40)
+            descriptionLabel.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 40),
+            showMoreButton.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 40)
         ])
 
         if !infoData.tags.isEmpty {

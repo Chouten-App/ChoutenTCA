@@ -64,14 +64,12 @@ struct HomeFeature: Reducer {
                             var collections = await self.databaseClient.fetchCollections()
                             let continueWatching = await self.databaseClient.fetchContinueWatching()
                             
-                            // await self.databaseClient.clearCollection(continueWatching.id)
-                            
                             collections.insert(continueWatching, at: 0)
                             
                             await send(.view(.setCollections(collections)))
                             
-                            print("Collections count: \(collections.count)")
-                            print("Collections first item: \(collections.first)")
+                            print("Second *** Collections count: \(collections.count)")
+                            print("Collections item: \(String(describing: collections))")
                             print(continueWatching.list)
                         }
                     )

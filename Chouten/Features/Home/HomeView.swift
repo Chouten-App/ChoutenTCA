@@ -159,6 +159,11 @@ class HomeView: UIViewController {
     
     func createDataSource() {
         dataSource = UICollectionViewDiffableDataSource<HomeSection, HomeData>(collectionView: collectionView) { collectionView, indexPath, data in
+            print("*** datsource")
+            print(collectionView)
+            print("")
+            print(indexPath)
+            print(data)
             
             switch self.store.collections[indexPath.section].type {
             case 3:
@@ -230,6 +235,7 @@ class HomeView: UIViewController {
 
     func createCompositionalLayout() -> UICollectionViewLayout {
         let layout = UICollectionViewCompositionalLayout { sectionIndex, layoutEnvironment in
+            
             let section = self.store.collections[sectionIndex]
 
             switch section.type {
@@ -251,19 +257,25 @@ class HomeView: UIViewController {
     }
     
     func createContinueWatchingCarousel(using section: HomeSection) -> NSCollectionLayoutSection {
-        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1))
-        let layoutItem = NSCollectionLayoutItem(layoutSize: itemSize)
+            let itemSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(0.9),
+                heightDimension: .fractionalHeight(1.0)
+            )
+            let layoutItem = NSCollectionLayoutItem(layoutSize: itemSize)
 
-        let groupSize = NSCollectionLayoutSize(widthDimension: .absolute(280), heightDimension: .absolute(190))
-        let layoutGroup = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [layoutItem])
+            let groupSize = NSCollectionLayoutSize(
+                widthDimension: .absolute(280),
+                heightDimension: .absolute(190)
+            )
+        let layoutGroup = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [layoutItem])
+            layoutGroup.interItemSpacing = .fixed(12)
 
-        let layoutSection = NSCollectionLayoutSection(group: layoutGroup)
-        layoutSection.orthogonalScrollingBehavior = .continuousGroupLeadingBoundary
-        layoutSection.interGroupSpacing = 12
-        layoutSection.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
+            let layoutSection = NSCollectionLayoutSection(group: layoutGroup)
+            layoutSection.orthogonalScrollingBehavior = .continuousGroupLeadingBoundary
+            layoutSection.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
 
-        return layoutSection
-    }
+            return layoutSection
+        }
 
     func createListSection(using section: HomeSection, isLast: Bool = false) -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1))

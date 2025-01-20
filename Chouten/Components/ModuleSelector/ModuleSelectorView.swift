@@ -11,6 +11,14 @@ import UIKit
 
 class ModuleSelectorView: UIViewController, UIScrollViewDelegate, ModuleCardDelegate {
     @Dependency(\.repoClient) var repoClient
+    
+    private let effectView: UIVisualEffectView = {
+        let blurEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        let effectView = UIVisualEffectView(effect: blurEffect)
+        effectView.alpha = 0.0
+        effectView.translatesAutoresizingMaskIntoConstraints = false
+        return effectView
+    }()
 
     let scrollView: UIScrollView = {
         let scrollView                              = UIScrollView()
@@ -62,6 +70,7 @@ class ModuleSelectorView: UIViewController, UIScrollViewDelegate, ModuleCardDele
     }
 
     private func configure() {
+        view.addSubview(effectView)
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
 
@@ -85,7 +94,7 @@ class ModuleSelectorView: UIViewController, UIScrollViewDelegate, ModuleCardDele
             repoSwitcherScroll.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.85),
             repoSwitcherScroll.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             repoSwitcherScroll.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
-            repoSwitcherScroll.heightAnchor.constraint(equalToConstant: 130), // Adjusted height for visibility
+            repoSwitcherScroll.heightAnchor.constraint(equalToConstant: 130),
 
             repoSwitcherContent.topAnchor.constraint(equalTo: repoSwitcherScroll.contentLayoutGuide.topAnchor),
             repoSwitcherContent.bottomAnchor.constraint(equalTo: repoSwitcherScroll.contentLayoutGuide.bottomAnchor),
@@ -95,7 +104,6 @@ class ModuleSelectorView: UIViewController, UIScrollViewDelegate, ModuleCardDele
     }
 
     private func loadRepos() {
-       // TODO: Maybe change this to use the load module component / same as discover topbar
         do {
             repos = try repoClient.getRepos()
 
