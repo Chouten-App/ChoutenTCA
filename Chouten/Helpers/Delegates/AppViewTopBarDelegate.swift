@@ -9,4 +9,5 @@ import Foundation
 
 protocol AppViewTopBarDelegate: AnyObject {
     func didTapButton()
+    func didTapModuleIcon()
 }

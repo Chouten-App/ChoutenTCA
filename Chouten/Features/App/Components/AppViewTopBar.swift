@@ -84,11 +84,13 @@ class AppViewTopBar: UIView {
         return buttonStack
     }()
     
+    /* OLD
     let interactionWrapper: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
+    */
     
     weak var delegate: AppViewTopBarDelegate?
     
@@ -96,20 +98,12 @@ class AppViewTopBar: UIView {
         super.init(frame: .zero)
         configure()
         setupConstraints()
-
-        // This is used to load the Icons. 1. on start and 2. on repo change
-        setInitialRepoIcon()
-        setupObservers()
     }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         configure()
         setupConstraints()
-        
-        // same as above
-        setInitialRepoIcon()
-        setupObservers()
     }
     
     required init?(coder: NSCoder) {
@@ -130,11 +124,21 @@ class AppViewTopBar: UIView {
         wrapper.addSubview(buttonStack)
         
         addSubview(wrapper)
-                addSubview(interactionWrapper)
+        
+        /*OLD
+        addSubview(interactionWrapper)
                 
-                let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showSettingsPopover))
-                interactionWrapper.isUserInteractionEnabled = true
-                interactionWrapper.addGestureRecognizer(tapGesture)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showSettingsPopover))
+        interactionWrapper.isUserInteractionEnabled = true
+        interactionWrapper.addGestureRecognizer(tapGesture)
+        */
+        let tapGestureSettingsIcon = UITapGestureRecognizer(target: self, action: #selector(showSettingsPopover))
+        settingsImageWrapper.isUserInteractionEnabled = true
+        settingsImageWrapper.addGestureRecognizer(tapGestureSettingsIcon)
+        
+        let tapGestureModuleIcon = UITapGestureRecognizer(target: self, action: #selector(showModulesPopover))
+        settingsImageWrapper2.isUserInteractionEnabled = true
+        settingsImageWrapper2.addGestureRecognizer(tapGestureModuleIcon)
     }
     
     private func setupConstraints() {
@@ -171,57 +175,22 @@ class AppViewTopBar: UIView {
             settingsImage2.centerXAnchor.constraint(equalTo: settingsImageWrapper2.centerXAnchor),
             settingsImage2.centerYAnchor.constraint(equalTo: settingsImageWrapper2.centerYAnchor),
             
+            /*
+             -OLD Wrapper for Tab
             interactionWrapper.leadingAnchor.constraint(equalTo: leadingAnchor),
             interactionWrapper.trailingAnchor.constraint(equalTo: trailingAnchor),
             interactionWrapper.topAnchor.constraint(equalTo: topAnchor),
             interactionWrapper.bottomAnchor.constraint(equalTo: bottomAnchor)
+             */
         ])
     }
     
-    // Set Repo at app launch
-    private func setInitialRepoIcon() {
-        
-        let questionmarkicon: () = self.settingsImage2.image = UIImage(systemName: "questionmark.circle")?.applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
-        
-        if let (module, repo) = Chouten.loadModules() {
-            Chouten.getIconData(for: module, repo: repo) { iconPath in
-                if let iconPath = iconPath {
-                    let image = UIImage(contentsOfFile: iconPath)
-                    if let image = image {
-                        self.settingsImage2.image = image
-                    } else {
-                        // TODO: Add Warning that Module image is broken
-                        questionmarkicon
-                    }
-                } else {
-                    questionmarkicon
-                }
-            }
-        } else {
-            print("No module found.")
-            questionmarkicon
-        }
-    }
     
     @objc private func showSettingsPopover() {
         delegate?.didTapButton()
     }
     
-    
-    private func setupObservers() {
-        NotificationCenter.default.addObserver(self,
-           selector: #selector(handleModuleChange(_:)),
-           name: .selectedModuleChange,
-           object: nil)
-    }
-
-    @objc private func handleModuleChange(_ notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let moduleId = userInfo["moduleId"] as? String else { return }
-
-        print("Selected module changed to: \(moduleId)")
-
-        setInitialRepoIcon()
-        
+    @objc private func showModulesPopover() {
+        delegate?.didTapModuleIcon()
     }
 }
