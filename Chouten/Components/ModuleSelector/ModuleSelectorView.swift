@@ -68,6 +68,9 @@ class ModuleSelectorView: UIViewController, UIScrollViewDelegate, ModuleCardDele
         repoSwitcherScroll.delegate = self
         loadRepos()
     }
+    
+    let noModulesTitleCard = TitleCard("No repos installed", description: "Install one using the input field on the \"Discover\" Page or by clicking the \"Add to Chouten\" button on any Repo supported by Chouten")
+
 
     private func configure() {
         view.addSubview(effectView)
@@ -75,22 +78,33 @@ class ModuleSelectorView: UIViewController, UIScrollViewDelegate, ModuleCardDele
         scrollView.addSubview(contentView)
 
         contentView.addArrangedSubview(repoSwitcherScroll)
+        contentView.addArrangedSubview(noModulesTitleCard)
         repoSwitcherScroll.addSubview(repoSwitcherContent)
     }
 
     private func setupConstraints() {
         NSLayoutConstraint.activate([
+            
+            // ScrollView constraints
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.topAnchor.constraint(equalTo: view.topAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
 
+            // Content view and other constraints
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            
+            // Title card constraints
+            noModulesTitleCard.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
+            noModulesTitleCard.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 35),
+            noModulesTitleCard.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -35),
+            
 
+            // RepoSwitcherScroll constraints
             repoSwitcherScroll.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.85),
             repoSwitcherScroll.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             repoSwitcherScroll.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
@@ -102,12 +116,12 @@ class ModuleSelectorView: UIViewController, UIScrollViewDelegate, ModuleCardDele
             repoSwitcherContent.trailingAnchor.constraint(equalTo: repoSwitcherScroll.contentLayoutGuide.trailingAnchor)
         ])
     }
-
     private func loadRepos() {
         do {
             repos = try repoClient.getRepos()
 
             for repo in repos {
+                noModulesTitleCard.isHidden = true
                 let repoHeader = RepoSelectorHeader(repo)
                 repoSwitcherContent.addArrangedSubview(repoHeader)
 

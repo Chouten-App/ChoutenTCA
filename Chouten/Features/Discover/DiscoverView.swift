@@ -68,6 +68,7 @@ class DiscoverView: UIViewController {
             guard let self else { return }
             
             if !store.discoverSections.isEmpty {
+                
                 print("Found Data")
                 loadingView.view.isHidden = true
                 collectionView.isHidden = false

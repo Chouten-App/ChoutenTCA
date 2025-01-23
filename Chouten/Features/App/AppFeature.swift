@@ -91,7 +91,7 @@ struct AppFeature: Reducer {
           case .install(let url):
               return .none
 
-              guard let checkedUrl = URL(string: url) else {
+              guard URL(string: url) != nil else {
                   return .send(.view(.onAppear))
               }
 

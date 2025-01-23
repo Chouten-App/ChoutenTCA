@@ -83,12 +83,17 @@ class RepoView: UIViewController, UITextFieldDelegate {
         super.viewDidLoad()
 
         view.backgroundColor = ThemeManager.shared.getColor(for: .bg)
+        
+        // No Modules Title Card
+        let noModulesTitleCard = TitleCard("No repos installed", description: "Install one using the input field above or by clicking the \"Add to Chouten\" button on any Repo supported by Chouten")
 
         textField.delegate = self
 
         textFieldWrapper.addSubview(textField)
 
         textFieldWrapper.tag = 100
+        
+        reposStack.addSubview(noModulesTitleCard)
 
         stack.addArrangedSubview(textFieldWrapper)
         stack.addArrangedSubview(reposStack)
@@ -108,6 +113,11 @@ class RepoView: UIViewController, UITextFieldDelegate {
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 70),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -80),
+            
+            noModulesTitleCard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            noModulesTitleCard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            noModulesTitleCard.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            noModulesTitleCard.centerXAnchor.constraint(equalTo: view.centerXAnchor),
 
             stack.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 20),
             stack.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -20),
@@ -125,6 +135,8 @@ class RepoView: UIViewController, UITextFieldDelegate {
             guard let self else { return }
 
             if !store.repos.isEmpty {
+                // Hide noModuleTitleCard
+                noModulesTitleCard.isHidden = true
                 // reset repos list
                 reposStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
@@ -138,6 +150,10 @@ class RepoView: UIViewController, UITextFieldDelegate {
                     repoDetail.addGestureRecognizer(tapGesture)
                     reposStack.addArrangedSubview(repoDetail)
                 }
+            }
+            else {
+                // unHide noModuleTitleCard
+                noModulesTitleCard.isHidden = false
             }
         }
     }
