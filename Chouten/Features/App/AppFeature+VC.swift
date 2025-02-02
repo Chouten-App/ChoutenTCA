@@ -117,19 +117,29 @@ import UIKit
          topBar.blurView.alpha = 0.0
          
          for index in 0..<tabs.count {
-             let tab = tabs[index]
-             tab.view.tag = index
-             tab.view.alpha = selectedTab == index ? 1.0 : 0.0
-             addChild(tab)
-             view.addSubview(tab.view)
-         }
+            let tab = tabs[index]
+            tab.view.tag = index
+            tab.view.alpha = selectedTab == index ? 1.0 : 0.0
+            addChild(tab)
+            view.addSubview(tab.view)
+        }
          
          configure()
          setupConstraints()
          
+         
+         if let homeView = tabs[0] as? HomeView {
+             homeView.collectionView.delegate = self
+         }
+         
          if let discoverView = tabs[1] as? DiscoverView {
              discoverView.collectionView.delegate = self
          }
+         
+         if let repoView = tabs[2] as? RepoView {
+             repoView.scrollView.delegate = self
+         }
+         
          
          observe { [weak self] in
              guard let self else { return }
@@ -337,7 +347,6 @@ extension AppViewController: CustomTabbarDelegate {
                             tab.view.transform = CGAffineTransform(translationX: -offset, y: 0)
                         }
                     }
-                    topBar.label.text = "Homee"
                 case 2:
                     // if moving from repo to smth
                     animate {
@@ -384,9 +393,8 @@ extension AppViewController: CustomTabbarDelegate {
 }
 
 extension AppViewController: UIScrollViewDelegate, UICollectionViewDelegate {
-     func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let offsetY = -scrollView.contentOffset.y - 40
-
         topBar.blurView.alpha = -offsetY / 60
     }
 
@@ -430,45 +438,46 @@ extension AppViewController: UIScrollViewDelegate, UICollectionViewDelegate {
 
 
 extension AppViewController: AppViewTopBarDelegate {
-     func didTapButton() {
-        let scenes = UIApplication.shared.connectedScenes
+    
+    func didTapButton() {
+    let scenes = UIApplication.shared.connectedScenes
 
-        guard let windowScene = scenes.first as? UIWindowScene,
-              let window = windowScene.windows.first,
-              let navController = window.rootViewController as? UINavigationController else {
-            return
-        }
-
-        var vc: UIViewController
-        switch store.state.selected {
-        case .home:
-            // open popup
-            vc = SettingsView()
-            let popoverController = vc.popoverPresentationController
-            popoverController?.sourceView = self.view
-            popoverController?.sourceRect = self.view.bounds
-            popoverController?.permittedArrowDirections = .any
-            popoverController?.delegate = self
-
-            navController.present(vc, animated: true, completion: nil)
-        case .discover:
-            vc = SearchView()
-
-            navController.navigationBar.isHidden = true
-
-            navController.pushViewController(vc, animated: true)
-        case .repos:
-            vc = RepoInstallPopup(store: self.repoStore)
-
-            let popoverController = vc.popoverPresentationController
-            popoverController?.sourceView = self.view
-            popoverController?.sourceRect = self.view.bounds
-            popoverController?.permittedArrowDirections = .any
-            popoverController?.delegate = self
-
-            navController.present(vc, animated: true, completion: nil)
-        }
+    guard let windowScene = scenes.first as? UIWindowScene,
+            let window = windowScene.windows.first,
+            let navController = window.rootViewController as? UINavigationController else {
+        return
     }
+
+    var vc: UIViewController
+    switch store.state.selected {
+    case .home:
+        // open popup
+        vc = SettingsView()
+        let popoverController = vc.popoverPresentationController
+        popoverController?.sourceView = self.view
+        popoverController?.sourceRect = self.view.bounds
+        popoverController?.permittedArrowDirections = .any
+        popoverController?.delegate = self
+
+        navController.present(vc, animated: true, completion: nil)
+    case .discover:
+        vc = SearchView()
+
+        navController.navigationBar.isHidden = true
+
+        navController.pushViewController(vc, animated: true)
+    case .repos:
+        vc = RepoInstallPopup(store: self.repoStore)
+
+        let popoverController = vc.popoverPresentationController
+        popoverController?.sourceView = self.view
+        popoverController?.sourceRect = self.view.bounds
+        popoverController?.permittedArrowDirections = .any
+        popoverController?.delegate = self
+
+        navController.present(vc, animated: true, completion: nil)
+    }
+}
     
     func didTapModuleIcon() {
         
@@ -490,6 +499,7 @@ extension AppViewController: AppViewTopBarDelegate {
         
         navController.present(moduleSelector, animated: true, completion: nil)
     }
+    
 }
 
 

@@ -92,7 +92,7 @@ import UIKit
     }
     
     func configure(with data: HomeData) {
-        translatesAutoresizingMaskIntoConstraints = false
+        translatesAutoresizingMaskIntoConstraints = true
         backgroundColor = ThemeManager.shared.getColor(for: .container)
         layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
         layer.borderWidth = 0.5

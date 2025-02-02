@@ -25,6 +25,9 @@ class HomeView: UIViewController {
     var isSelectionMode: Bool = false
     var selectedItems: Set<IndexPath> = []
     
+    private var cancellables = Set<AnyCancellable>()
+    
+    
     let soonLabel: UILabel = {
         let label = UILabel()
         label.text = "Coming Soon!"
@@ -43,7 +46,7 @@ class HomeView: UIViewController {
         super.init(nibName: nil, bundle: nil)
 
         store.send(.view(.onAppear))
-        reloadData()
+        observeCollectionChanges()
     }
 
     required init?(coder: NSCoder) {
@@ -64,16 +67,26 @@ class HomeView: UIViewController {
         configure()
         createDataSource()
 
-        observe { [weak self] in
-            guard let self else { return }
+         observe { [weak self] in
+             guard let self else { return }
 
-            if !self.store.collections.isEmpty {
-                self.reloadData()
-            }
-        }
-        
+             if !self.store.collections.isEmpty {
+                 self.reloadData()
+             }
+         }
         setupConstraints()
     }
+    
+    private func observeCollectionChanges() {
+            store.publisher.collections
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in
+                    guard let self = self else { return }
+                    
+                    self.reloadData()
+                }
+                .store(in: &cancellables)
+        }
 
     private func configure() {
         let scenes = UIApplication.shared.connectedScenes
@@ -159,12 +172,6 @@ class HomeView: UIViewController {
     
     func createDataSource() {
         dataSource = UICollectionViewDiffableDataSource<HomeSection, HomeData>(collectionView: collectionView) { collectionView, indexPath, data in
-            print("*** datsource")
-            print(collectionView)
-            print("")
-            print(indexPath)
-            print(data)
-            
             switch self.store.collections[indexPath.section].type {
             case 3:
                 return self.configure(ContinueWatchingCard.self, with: data, for: indexPath)
@@ -268,7 +275,7 @@ class HomeView: UIViewController {
                 heightDimension: .absolute(190)
             )
         let layoutGroup = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [layoutItem])
-            layoutGroup.interItemSpacing = .fixed(12)
+            layoutGroup.interItemSpacing = .fixed(20)
 
             let layoutSection = NSCollectionLayoutSection(group: layoutGroup)
             layoutSection.orthogonalScrollingBehavior = .continuousGroupLeadingBoundary
@@ -426,6 +433,7 @@ class HomeView: UIViewController {
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+        cancellables.removeAll()
     }
 }
 

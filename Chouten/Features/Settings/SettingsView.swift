@@ -8,6 +8,7 @@
 import Combine
 import ComposableArchitecture
 import UIKit
+import Core
 
 extension UIView {
     var parentViewController: UIViewController? {
@@ -25,6 +26,9 @@ extension UIView {
 }
 
 class SettingsView: UIViewController {
+    // Testing purpose
+    @Dependency(\.databaseClient) var databaseClient
+    
     let stack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
@@ -336,6 +340,56 @@ class SettingsView: UIViewController {
 
         return view
     }()
+    
+    /*
+     For Testing because Modules are broken
+     */
+    let addContinueWatching: UIView = {
+        let view = UIView()
+        view.backgroundColor = ThemeManager.shared.getColor(for: .container)
+        view.layer.cornerRadius = 20
+        view.layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
+        view.layer.borderWidth = 0.5
+        view.translatesAutoresizingMaskIntoConstraints = false
+
+        let iconView = CircleButton(icon: "document.badge.plus")
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+
+        let label = UILabel()
+        label.text = "Add Continue Watching"
+        label.font = .systemFont(ofSize: 15, weight: .bold)
+        label.textColor = ThemeManager.shared.getColor(for: .fg)
+        label.translatesAutoresizingMaskIntoConstraints = false
+
+        let chevronView = UIImageView()
+        chevronView.image = UIImage(systemName: "plus.app")?
+            .withRenderingMode(.alwaysTemplate)
+            .applyingSymbolConfiguration(
+                .init(
+                    font: .systemFont(ofSize: 14)
+                )
+            )
+        chevronView.tintColor = ThemeManager.shared.getColor(for: .fg)
+        chevronView.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(iconView)
+        view.addSubview(label)
+        view.addSubview(chevronView)
+
+        NSLayoutConstraint.activate([
+            iconView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+            iconView.topAnchor.constraint(equalTo: view.topAnchor, constant: 12),
+            iconView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
+
+            label.centerYAnchor.constraint(equalTo: iconView.centerYAnchor),
+            label.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 8),
+
+            chevronView.centerYAnchor.constraint(equalTo: iconView.centerYAnchor),
+            chevronView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12)
+        ])
+
+        return view
+    }()
 
 
     let topbar = TopBar()
@@ -369,6 +423,7 @@ class SettingsView: UIViewController {
         stack.addArrangedSubview(settingDisplay)
         stack.addArrangedSubview(logDisplay)
         stack.addArrangedSubview(aboutDisplay)
+        stack.addArrangedSubview(addContinueWatching)
         stack.addArrangedSubview(labelStack)
 
         view.addSubview(stack)
@@ -403,6 +458,11 @@ class SettingsView: UIViewController {
         aboutDisplay.isUserInteractionEnabled = true
         let tapGestureAbout = UITapGestureRecognizer(target: self, action: #selector(goToAbout))
         aboutDisplay.addGestureRecognizer(tapGestureAbout)
+        
+        //Testing
+        addContinueWatching.isUserInteractionEnabled = true
+        let tapContinue = UITapGestureRecognizer(target: self, action: #selector(addToContinueWatching))
+        addContinueWatching.addGestureRecognizer(tapContinue)
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -505,6 +565,44 @@ class SettingsView: UIViewController {
         UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveEaseOut) {
             tempVC.view.alpha = 1.0
             tempVC.view.transform = .identity
+        }
+    }
+    
+    @objc private func addToContinueWatching() {
+        // Generate dummy data with required fields
+        let infoData = InfoData(
+            titles: Titles(primary: "Dummy Title \(Int.random(in: 1...100))", secondary: "Subtitle"),
+            tags: ["Action", "Adventure"],
+            description: "This is a dummy description.",
+            poster: "https://example.com/thumbnail.jpg",
+            banner: nil,
+            status: "Ongoing",
+            mediaType: "Episodes",
+            yearReleased: 2024,
+            seasons: [],
+            mediaList: []
+        )
+        
+        let mediaData = MediaItem(
+            url: "https://example.com/media",
+            number: 1.0,
+            title: "Dummy Media \(Int.random(in: 1...100))",
+            thumbnail: "https://example.com/media_thumbnail.jpg",
+            description: "Sample media description."
+        )
+
+        let progress = Double.random(in: 0...1) // Random progress
+        let duration = Double.random(in: 60...3600) // Random duration (10 mins to 1 hour)
+
+        // Call the DatabaseClient to add the entry
+        Task {
+            await databaseClient.addToContinueWatching(
+                "module_123", // Replace with your module ID
+                CollectionItem(infoData: infoData, url: infoData.url, mediaItem: mediaData, flag: .none),
+                progress,
+                duration
+            )
+            print("Added to Continue Watching: \(infoData.titles.primary)")
         }
     }
 }

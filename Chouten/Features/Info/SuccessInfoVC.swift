@@ -193,6 +193,9 @@ class SuccessInfoVC: UIViewController {
         
         //topBar.bookmarkButton.addTarget(self, action: #selector(bookmarkButtonTapped), for: .touchUpInside)
         headerDisplay.bookmarkButton.onTap = {
+            self.view.showErrorDisplay(message: "WIP", description: "Bookmark is not yet implemented")
+            
+            /*
             let collectionMenuVC = CollectionMenuVC()
             collectionMenuVC.delegate = self
 
@@ -203,7 +206,9 @@ class SuccessInfoVC: UIViewController {
             }
 
             self.present(collectionMenuVC, animated: true, completion: nil)
+             */
         }
+             
 
         view.addSubview(seasonSelector)
 
