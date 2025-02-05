@@ -10,7 +10,15 @@ import ComposableArchitecture
 import Network
 import UIKit
 
- class AppViewController: UIViewController {
+/*
+ Not Really Working
+protocol AppViewDelegate: AnyObject {
+    func setTopBlur(offset: CGFloat)
+}
+ */
+
+class AppViewController: UIViewController {
+    
     var module: Module?
     var store: Store<AppFeature.State, AppFeature.Action>
     var repoStore: Store<RepoFeature.State, RepoFeature.Action>
@@ -24,6 +32,10 @@ import UIKit
     let monitor = NWPathMonitor()
 
     var isOffline = false
+     
+     // Delegates
+    weak var homeViewDelegate: HomeViewDelegate?
+    weak var repoViewDelegate: RepoViewDelegate?
 
     let offlineBanner: UIView = {
         let view = UIView()
@@ -113,6 +125,7 @@ import UIKit
      override  func viewDidLoad() {
          super.viewDidLoad()
          
+         
          view.backgroundColor = ThemeManager.shared.getColor(for: .bg)
          topBar.blurView.alpha = 0.0
          
@@ -127,11 +140,7 @@ import UIKit
          configure()
          setupConstraints()
          
-         
-         if let homeView = tabs[0] as? HomeView {
-             homeView.collectionView.delegate = self
-         }
-         
+         /*
          if let discoverView = tabs[1] as? DiscoverView {
              discoverView.collectionView.delegate = self
          }
@@ -139,8 +148,9 @@ import UIKit
          if let repoView = tabs[2] as? RepoView {
              repoView.scrollView.delegate = self
          }
-         
-         
+          */
+        
+
          observe { [weak self] in
              guard let self else { return }
              
@@ -148,12 +158,15 @@ import UIKit
              
              switch store.selected {
              case .home:
+                 self.topBar.blurView.alpha = 0
+                 homeViewDelegate?.getScrollOffset()
                  self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
                  self.topBar.settingsImage.image = UIImage(systemName: "person")?
                      .withRenderingMode(.alwaysTemplate)
                      .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
                  self.topBar.settingsImageWrapper2.isHidden = true
              case .discover:
+                 self.topBar.blurView.alpha = 0
                  self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
                  self.topBar.settingsImage.image = UIImage(systemName: "magnifyingglass")?
                      .withRenderingMode(.alwaysTemplate)
@@ -161,9 +174,8 @@ import UIKit
                  self.topBar.settingsImageWrapper2.isHidden = false
                  self.topBar.settingsImage2.tintColor = ThemeManager.shared.getColor(for: .fg)
                  updateTitle()
-                 
-                 
-             case .repos:
+            case .repos:
+                 self.topBar.blurView.alpha = 0
                  self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
                  self.topBar.settingsImage.image = UIImage(systemName: "plus")?
                      .withRenderingMode(.alwaysTemplate)
@@ -291,6 +303,10 @@ import UIKit
     }
 }
 
+
+// MARK: Extensions
+
+
 extension AppViewController: CustomTabbarDelegate {
     // animation helper function
     func animate(closure: @escaping () -> Void) {
@@ -393,10 +409,13 @@ extension AppViewController: CustomTabbarDelegate {
 }
 
 extension AppViewController: UIScrollViewDelegate, UICollectionViewDelegate {
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+   
+    /*func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let offsetY = -scrollView.contentOffset.y - 40
         topBar.blurView.alpha = -offsetY / 60
-    }
+        }
+     */
+     
 
      func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let scenes = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -435,7 +454,6 @@ extension AppViewController: UIScrollViewDelegate, UICollectionViewDelegate {
         }
     }
 }
-
 
 extension AppViewController: AppViewTopBarDelegate {
     
@@ -509,4 +527,11 @@ extension AppViewController: UIPopoverPresentationControllerDelegate {
     }
 }
 
-
+/*
+ extension AppViewController: AppViewDelegate {
+ func setTopBlur(offset: CGFloat) {
+ print("set")
+ self.topBar.blurView.alpha = offset / 60
+ }
+ }
+ */

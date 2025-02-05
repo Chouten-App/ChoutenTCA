@@ -15,7 +15,12 @@ struct FooterKind {
     static let emptySectionFooter = "EmptySectionFooter"
 }
 
-class HomeView: UIViewController {
+protocol HomeViewDelegate: AnyObject {
+    func getScrollOffset()
+}
+
+class HomeView: UIViewController, HomeViewDelegate{
+    
     var store: Store<HomeFeature.State, HomeFeature.Action>
     
     var collectionView: UICollectionView!
@@ -26,7 +31,6 @@ class HomeView: UIViewController {
     var selectedItems: Set<IndexPath> = []
     
     private var cancellables = Set<AnyCancellable>()
-    
     
     let soonLabel: UILabel = {
         let label = UILabel()
@@ -46,7 +50,6 @@ class HomeView: UIViewController {
         super.init(nibName: nil, bundle: nil)
 
         store.send(.view(.onAppear))
-        observeCollectionChanges()
     }
 
     required init?(coder: NSCoder) {
@@ -75,18 +78,8 @@ class HomeView: UIViewController {
              }
          }
         setupConstraints()
+        collectionView.delegate = self
     }
-    
-    private func observeCollectionChanges() {
-            store.publisher.collections
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] _ in
-                    guard let self = self else { return }
-                    
-                    self.reloadData()
-                }
-                .store(in: &cancellables)
-        }
 
     private func configure() {
         let scenes = UIApplication.shared.connectedScenes
@@ -364,8 +357,7 @@ class HomeView: UIViewController {
         for indexPath in selectedItems {
             store.send(.view(.deleteItem(store.collections[indexPath.section].id, store.collections[indexPath.section].list[indexPath.item])))
         }
-        
-        // Update collection view
+
         
         // Clear selection
         selectedItems.removeAll()
@@ -431,11 +423,26 @@ class HomeView: UIViewController {
         present(alertController, animated: true, completion: nil)
     }
     
+    func getScrollOffset() {
+        updateTopBarBlur(offsetY: -collectionView.contentOffset.y - 140)
+    }
+    
+    private func updateTopBarBlur(offsetY: CGFloat) {
+        //Parent View Access
+        if let appViewController = self.parent as? AppViewController {
+            appViewController.topBar.blurView.alpha = -offsetY / 60
+        }
+        
+    }
+    
     deinit {
         NotificationCenter.default.removeObserver(self)
         cancellables.removeAll()
     }
 }
+
+
+// MARK: Extensions
 
 extension HomeView: SectionHeaderHomeDelegate {
     func didUpdateCollectionName(of collectionId: String, to name: String) {
@@ -462,5 +469,14 @@ extension HomeView: UICollectionViewDelegate {
 extension HomeView: AddCollectionFooterDelegate {
     func createCollection() {
         store.send(.view(.createCollection("Collection")))
+    }
+}
+
+extension HomeView: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = -scrollView.contentOffset.y - 140
+        //Delegate Not working, needs to be fixed if parent access is bad
+        //appViewDelegate?.setTopBlur(offset: -offsetY)
+        updateTopBarBlur(offsetY: offsetY)
     }
 }

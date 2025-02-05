@@ -10,7 +10,7 @@ import Combine
 import ComposableArchitecture
 import UIKit
 
-class DiscoverView: UIViewController {
+class DiscoverView: UIViewController, UICollectionViewDelegate {
     var store: Store<DiscoverFeature.State, DiscoverFeature.Action>
 
     var collectionView: UICollectionView!
@@ -37,7 +37,7 @@ class DiscoverView: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = ThemeManager.shared.getColor(for: .bg)
-
+        
         // setup collectionview
         collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createCompositionalLayout())
         collectionView.translatesAutoresizingMaskIntoConstraints = false
@@ -46,13 +46,13 @@ class DiscoverView: UIViewController {
         collectionView.contentInset = UIEdgeInsets(top: 40, left: 0, bottom: 0, right: 0)
         collectionView.showsVerticalScrollIndicator = false
         collectionView.showsHorizontalScrollIndicator = false
-
+        
         view.addSubview(loadingView.view)
         addChild(loadingView)
         loadingView.didMove(toParent: self)
-
+        
         view.addSubview(collectionView)
-
+        
         // register cells
         collectionView.register(CarouselCell.self, forCellWithReuseIdentifier: CarouselCell.reuseIdentifier)
         collectionView.register(ListCell.self, forCellWithReuseIdentifier: ListCell.reuseIdentifier)
@@ -61,9 +61,9 @@ class DiscoverView: UIViewController {
             forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
             withReuseIdentifier: SectionHeader.reuseIdentifier
         )
-
+        
         createDataSource()
-
+        
         observe { [weak self] in
             guard let self else { return }
             
@@ -83,13 +83,13 @@ class DiscoverView: UIViewController {
                 collectionView.isHidden = true
             }
         }
-
+        
         let scenes = UIApplication.shared.connectedScenes
         let windowScene = scenes.first as? UIWindowScene
         let window = windowScene?.windows.first
-
+        
         let topPadding = window?.safeAreaInsets.top ?? 0.0
-
+        
         NSLayoutConstraint.activate([
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -105,6 +105,7 @@ class DiscoverView: UIViewController {
                 loadingView.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
         }
+        collectionView.delegate = self
     }
 
     func configure<T: SelfConfiguringCell>(_ cellType: T.Type, with data: DiscoverData, for indexPath: IndexPath) -> T {
@@ -235,8 +236,28 @@ class DiscoverView: UIViewController {
     @objc func handleChangedModule() {
         store.send(.view(.onAppear))
     }
+    
+    private func updateTopBarBlur(offsetY: CGFloat) {
+        //Parent View Access
+        if let appViewController = self.parent as? AppViewController {
+            appViewController.topBar.blurView.alpha = -offsetY / 60
+        }
+        
+    }
 
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+}
+
+
+// Extensions
+
+extension DiscoverView: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = -scrollView.contentOffset.y - 40
+        //Delegate Not working, needs to be fixed if parent access is bad
+        //appViewDelegate?.setTopBlur(offset: -offsetY)
+        updateTopBarBlur(offsetY: offsetY)
     }
 }
