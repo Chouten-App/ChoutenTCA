@@ -8,6 +8,7 @@
 import Combine
 import ComposableArchitecture
 import UIKit
+import Core
 
 extension UIView {
     var parentViewController: UIViewController? {
@@ -24,115 +25,10 @@ extension UIView {
     }
 }
 
-class TopBar: UIView {
-    // MARK: - Properties
-    private let effectView: UIVisualEffectView = {
-        let blurEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
-        let effectView = UIVisualEffectView(effect: blurEffect)
-        effectView.alpha = 0.0
-        effectView.translatesAutoresizingMaskIntoConstraints = false
-        return effectView
-    }()
-
-    private let doneText: UILabel = {
-        let label = UILabel()
-        label.text = "Done"
-        label.textColor = ThemeManager.shared.getColor(for: .fg)
-        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-
-    private let settingsText: UILabel = {
-        let label = UILabel()
-        label.text = "Settings"
-        label.textColor = ThemeManager.shared.getColor(for: .fg)
-        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-
-    // MARK: - Initializer
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupView()
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupView()
-    }
-
-    // MARK: - Setup
-    private func setupView() {
-        self.translatesAutoresizingMaskIntoConstraints = false
-
-        addSubview(effectView)
-        sendSubviewToBack(effectView)
-
-        addSubview(doneText)
-        addSubview(settingsText)
-
-        NSLayoutConstraint.activate([
-            doneText.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20),
-            doneText.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -12),
-
-            settingsText.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            settingsText.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -12),
-
-            effectView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            effectView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            effectView.topAnchor.constraint(equalTo: self.topAnchor),
-            effectView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
-        ])
-
-        doneText.isUserInteractionEnabled = true
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-        doneText.addGestureRecognizer(tapGesture)
-    }
-
-    // MARK: - Configuration
-    func configure(settingsText: String, doneText: String) {
-        self.settingsText.text = settingsText
-        self.doneText.text = doneText
-
-    }
-
-    func updateAppearance() {
-        doneText.textColor = ThemeManager.shared.getColor(for: .fg)
-        settingsText.textColor = ThemeManager.shared.getColor(for: .fg)
-    }
-
-    @objc func handleTap() {
-        print("*** handleTap ***")
-        if doneText.text == "Done" {
-            let scenes = UIApplication.shared.connectedScenes
-            if let windowScene = scenes.first as? UIWindowScene,
-               let window = windowScene.windows.first,
-               let navController = window.rootViewController as? UINavigationController {
-                navController.dismiss(animated: true)
-            }
-        } else {
-            // remove other view and vc like appearance or logs
-            if let parentVC = self.parentViewController {
-                if let childVC = parentVC.children.first(where: { $0.view.tag == 1000 }) {
-                    UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveEaseOut, animations: {
-                        childVC.view.alpha = 0.0
-                        childVC.view.transform = CGAffineTransform(translationX: 0, y: parentVC.view.frame.height)
-                    }) { _ in
-                        childVC.view.removeFromSuperview()
-                        childVC.removeFromParent()
-                        if let settingsVC = parentVC as? SettingsView {
-                            settingsVC.topbar.configure(settingsText: "Settings", doneText: "Done")
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 class SettingsView: UIViewController {
+    // Testing purpose
+    @Dependency(\.databaseClient) var databaseClient
+    
     let stack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
@@ -397,6 +293,104 @@ class SettingsView: UIViewController {
 
         return view
     }()
+    
+    let aboutDisplay: UIView = {
+        let view = UIView()
+        view.backgroundColor = ThemeManager.shared.getColor(for: .container)
+        view.layer.cornerRadius = 20
+        view.layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
+        view.layer.borderWidth = 0.5
+        view.translatesAutoresizingMaskIntoConstraints = false
+
+        let iconView = CircleButton(icon: "info.circle")
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+
+        let label = UILabel()
+        label.text = "About"
+        label.font = .systemFont(ofSize: 15, weight: .bold)
+        label.textColor = ThemeManager.shared.getColor(for: .fg)
+        label.translatesAutoresizingMaskIntoConstraints = false
+
+        let chevronView = UIImageView()
+        chevronView.image = UIImage(systemName: "chevron.right")?
+            .withRenderingMode(.alwaysTemplate)
+            .applyingSymbolConfiguration(
+                .init(
+                    font: .systemFont(ofSize: 14)
+                )
+            )
+        chevronView.tintColor = ThemeManager.shared.getColor(for: .fg)
+        chevronView.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(iconView)
+        view.addSubview(label)
+        view.addSubview(chevronView)
+
+        NSLayoutConstraint.activate([
+            iconView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+            iconView.topAnchor.constraint(equalTo: view.topAnchor, constant: 12),
+            iconView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
+
+            label.centerYAnchor.constraint(equalTo: iconView.centerYAnchor),
+            label.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 8),
+
+            chevronView.centerYAnchor.constraint(equalTo: iconView.centerYAnchor),
+            chevronView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12)
+        ])
+
+        return view
+    }()
+    
+    /*
+     For Testing because Modules are broken
+     */
+    let addContinueWatching: UIView = {
+        let view = UIView()
+        view.backgroundColor = ThemeManager.shared.getColor(for: .container)
+        view.layer.cornerRadius = 20
+        view.layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
+        view.layer.borderWidth = 0.5
+        view.translatesAutoresizingMaskIntoConstraints = false
+
+        let iconView = CircleButton(icon: "document.badge.plus")
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+
+        let label = UILabel()
+        label.text = "Add Continue Watching"
+        label.font = .systemFont(ofSize: 15, weight: .bold)
+        label.textColor = ThemeManager.shared.getColor(for: .fg)
+        label.translatesAutoresizingMaskIntoConstraints = false
+
+        let chevronView = UIImageView()
+        chevronView.image = UIImage(systemName: "plus.app")?
+            .withRenderingMode(.alwaysTemplate)
+            .applyingSymbolConfiguration(
+                .init(
+                    font: .systemFont(ofSize: 14)
+                )
+            )
+        chevronView.tintColor = ThemeManager.shared.getColor(for: .fg)
+        chevronView.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(iconView)
+        view.addSubview(label)
+        view.addSubview(chevronView)
+
+        NSLayoutConstraint.activate([
+            iconView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+            iconView.topAnchor.constraint(equalTo: view.topAnchor, constant: 12),
+            iconView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
+
+            label.centerYAnchor.constraint(equalTo: iconView.centerYAnchor),
+            label.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 8),
+
+            chevronView.centerYAnchor.constraint(equalTo: iconView.centerYAnchor),
+            chevronView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12)
+        ])
+
+        return view
+    }()
+
 
     let topbar = TopBar()
 
@@ -428,6 +422,8 @@ class SettingsView: UIViewController {
         stack.addArrangedSubview(notLoggedInView)
         stack.addArrangedSubview(settingDisplay)
         stack.addArrangedSubview(logDisplay)
+        stack.addArrangedSubview(aboutDisplay)
+        //stack.addArrangedSubview(addContinueWatching)
         stack.addArrangedSubview(labelStack)
 
         view.addSubview(stack)
@@ -458,6 +454,15 @@ class SettingsView: UIViewController {
         logDisplay.isUserInteractionEnabled = true
         let tapGesture3 = UITapGestureRecognizer(target: self, action: #selector(goToLog))
         logDisplay.addGestureRecognizer(tapGesture3)
+        
+        aboutDisplay.isUserInteractionEnabled = true
+        let tapGestureAbout = UITapGestureRecognizer(target: self, action: #selector(goToAbout))
+        aboutDisplay.addGestureRecognizer(tapGestureAbout)
+        
+        //Testing
+        addContinueWatching.isUserInteractionEnabled = true
+        let tapContinue = UITapGestureRecognizer(target: self, action: #selector(addToContinueWatching))
+        addContinueWatching.addGestureRecognizer(tapContinue)
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -512,7 +517,7 @@ class SettingsView: UIViewController {
         UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveEaseOut) {
             tempVC.view.alpha = 1.0
             tempVC.view.transform = CGAffineTransform(translationX: 0, y: 0)
-        }  
+        }
          */
         
         // navController.pushViewController(tempVC, animated: true)
@@ -538,5 +543,66 @@ class SettingsView: UIViewController {
         }
          
          
+    }
+    
+    @objc func goToAbout() {
+        let tempVC = AboutVC()
+
+        tempVC.view.tag = 1000
+
+        addChild(tempVC)
+        view.addSubview(tempVC.view)
+        tempVC.didMove(toParent: self)
+
+        topbar.configure(settingsText: "About", doneText: "Back")
+        view.bringSubviewToFront(topbar)
+        topbar.layer.zPosition = 100
+
+        // Animation for smooth appearance
+        tempVC.view.alpha = 0.0
+        tempVC.view.transform = CGAffineTransform(translationX: 0, y: 50)
+        
+        UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveEaseOut) {
+            tempVC.view.alpha = 1.0
+            tempVC.view.transform = .identity
+        }
+    }
+    
+    @objc private func addToContinueWatching() {
+        // Generate dummy data with required fields
+        let infoData = InfoData(
+            titles: Titles(primary: "Dummy Title \(Int.random(in: 1...100))", secondary: "Subtitle"),
+            tags: ["Action", "Adventure"],
+            description: "This is a dummy description.",
+            poster: "https://example.com/thumbnail.jpg",
+            banner: nil,
+            status: "Ongoing",
+            mediaType: "Episodes",
+            yearReleased: 2024,
+            seasons: [],
+            mediaList: []
+        )
+        
+        let mediaData = MediaItem(
+            url: "https://example.com/media",
+            number: 1.0,
+            title: "Dummy Media \(Int.random(in: 1...100))",
+            thumbnail: "https://example.com/media_thumbnail.jpg",
+            description: "Sample media description."
+        )
+
+        let progress = Double.random(in: 0...1) // Random progress
+        let duration = Double.random(in: 60...3600) // Random duration (10 mins to 1 hour)
+
+        // Call the DatabaseClient to add the entry
+        Task {
+            await databaseClient.addToContinueWatching(
+                "module_123", // Replace with your module ID
+                CollectionItem(infoData: infoData, url: infoData.url, mediaItem: mediaData, flag: .none),
+                progress,
+                duration
+            )
+            print("Added to Continue Watching: \(infoData.titles.primary)")
+        }
     }
 }

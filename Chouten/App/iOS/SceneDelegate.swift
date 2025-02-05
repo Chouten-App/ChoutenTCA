@@ -45,7 +45,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             print(error.localizedDescription)
         }
 
-        if let urlContext = connectionOptions.urlContexts.first {
+        if connectionOptions.urlContexts.first != nil {
             // handleOpenURL(urlContext.url)
         }
         

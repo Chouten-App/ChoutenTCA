@@ -10,7 +10,8 @@ import ComposableArchitecture
 import Network
 import UIKit
 
- class AppViewController: UIViewController {
+class AppViewController: UIViewController {
+    
     var module: Module?
     var store: Store<AppFeature.State, AppFeature.Action>
     var repoStore: Store<RepoFeature.State, RepoFeature.Action>
@@ -24,6 +25,10 @@ import UIKit
     let monitor = NWPathMonitor()
 
     var isOffline = false
+     
+     // Delegates
+    weak var homeViewDelegate: HomeViewDelegate?
+    weak var repoViewDelegate: RepoViewDelegate?
 
     let offlineBanner: UIView = {
         let view = UIView()
@@ -113,24 +118,33 @@ import UIKit
      override  func viewDidLoad() {
          super.viewDidLoad()
          
+         
          view.backgroundColor = ThemeManager.shared.getColor(for: .bg)
          topBar.blurView.alpha = 0.0
          
          for index in 0..<tabs.count {
-             let tab = tabs[index]
-             tab.view.tag = index
-             tab.view.alpha = selectedTab == index ? 1.0 : 0.0
-             addChild(tab)
-             view.addSubview(tab.view)
-         }
+            let tab = tabs[index]
+            tab.view.tag = index
+            tab.view.alpha = selectedTab == index ? 1.0 : 0.0
+            addChild(tab)
+            view.addSubview(tab.view)
+        }
          
          configure()
          setupConstraints()
          
+         /*
          if let discoverView = tabs[1] as? DiscoverView {
              discoverView.collectionView.delegate = self
          }
          
+         
+         if let repoView = tabs[2] as? RepoView {
+             repoView.scrollView.delegate = self
+         }
+          */
+        
+
          observe { [weak self] in
              guard let self else { return }
              
@@ -138,12 +152,15 @@ import UIKit
              
              switch store.selected {
              case .home:
+                 self.topBar.blurView.alpha = 0
+                 homeViewDelegate?.getScrollOffset()
                  self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
                  self.topBar.settingsImage.image = UIImage(systemName: "person")?
                      .withRenderingMode(.alwaysTemplate)
                      .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
                  self.topBar.settingsImageWrapper2.isHidden = true
              case .discover:
+                 self.topBar.blurView.alpha = 0
                  self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
                  self.topBar.settingsImage.image = UIImage(systemName: "magnifyingglass")?
                      .withRenderingMode(.alwaysTemplate)
@@ -151,9 +168,8 @@ import UIKit
                  self.topBar.settingsImageWrapper2.isHidden = false
                  self.topBar.settingsImage2.tintColor = ThemeManager.shared.getColor(for: .fg)
                  updateTitle()
-                 
-                 
-             case .repos:
+            case .repos:
+                 self.topBar.blurView.alpha = 0
                  self.topBar.settingsImage.tintColor = ThemeManager.shared.getColor(for: .fg)
                  self.topBar.settingsImage.image = UIImage(systemName: "plus")?
                      .withRenderingMode(.alwaysTemplate)
@@ -281,6 +297,10 @@ import UIKit
     }
 }
 
+
+// MARK: Extensions
+
+
 extension AppViewController: CustomTabbarDelegate {
     // animation helper function
     func animate(closure: @escaping () -> Void) {
@@ -337,7 +357,6 @@ extension AppViewController: CustomTabbarDelegate {
                             tab.view.transform = CGAffineTransform(translationX: -offset, y: 0)
                         }
                     }
-                    topBar.label.text = "Homee"
                 case 2:
                     // if moving from repo to smth
                     animate {
@@ -383,12 +402,15 @@ extension AppViewController: CustomTabbarDelegate {
     }
 }
 
+/*
+ --- Moved this Code to DiscoverView Delegate, can be changed if better method found ---
+ 
 extension AppViewController: UIScrollViewDelegate, UICollectionViewDelegate {
-     func scrollViewDidScroll(_ scrollView: UIScrollView) {
+   
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let offsetY = -scrollView.contentOffset.y - 40
-
         topBar.blurView.alpha = -offsetY / 60
-    }
+        }
 
      func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let scenes = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -427,48 +449,49 @@ extension AppViewController: UIScrollViewDelegate, UICollectionViewDelegate {
         }
     }
 }
-
+*/
 
 extension AppViewController: AppViewTopBarDelegate {
-     func didTapButton() {
-        let scenes = UIApplication.shared.connectedScenes
+    
+    func didTapButton() {
+    let scenes = UIApplication.shared.connectedScenes
 
-        guard let windowScene = scenes.first as? UIWindowScene,
-              let window = windowScene.windows.first,
-              let navController = window.rootViewController as? UINavigationController else {
-            return
-        }
-
-        var vc: UIViewController
-        switch store.state.selected {
-        case .home:
-            // open popup
-            vc = SettingsView()
-            let popoverController = vc.popoverPresentationController
-            popoverController?.sourceView = self.view
-            popoverController?.sourceRect = self.view.bounds
-            popoverController?.permittedArrowDirections = .any
-            popoverController?.delegate = self
-
-            navController.present(vc, animated: true, completion: nil)
-        case .discover:
-            vc = SearchView()
-
-            navController.navigationBar.isHidden = true
-
-            navController.pushViewController(vc, animated: true)
-        case .repos:
-            vc = RepoInstallPopup(store: self.repoStore)
-
-            let popoverController = vc.popoverPresentationController
-            popoverController?.sourceView = self.view
-            popoverController?.sourceRect = self.view.bounds
-            popoverController?.permittedArrowDirections = .any
-            popoverController?.delegate = self
-
-            navController.present(vc, animated: true, completion: nil)
-        }
+    guard let windowScene = scenes.first as? UIWindowScene,
+            let window = windowScene.windows.first,
+            let navController = window.rootViewController as? UINavigationController else {
+        return
     }
+
+    var vc: UIViewController
+    switch store.state.selected {
+    case .home:
+        // open popup
+        vc = SettingsView()
+        let popoverController = vc.popoverPresentationController
+        popoverController?.sourceView = self.view
+        popoverController?.sourceRect = self.view.bounds
+        popoverController?.permittedArrowDirections = .any
+        popoverController?.delegate = self
+
+        navController.present(vc, animated: true, completion: nil)
+    case .discover:
+        vc = SearchView()
+
+        navController.navigationBar.isHidden = true
+
+        navController.pushViewController(vc, animated: true)
+    case .repos:
+        vc = RepoInstallPopup(store: self.repoStore)
+
+        let popoverController = vc.popoverPresentationController
+        popoverController?.sourceView = self.view
+        popoverController?.sourceRect = self.view.bounds
+        popoverController?.permittedArrowDirections = .any
+        popoverController?.delegate = self
+
+        navController.present(vc, animated: true, completion: nil)
+    }
+}
     
     func didTapModuleIcon() {
         
@@ -490,6 +513,7 @@ extension AppViewController: AppViewTopBarDelegate {
         
         navController.present(moduleSelector, animated: true, completion: nil)
     }
+    
 }
 
 
@@ -499,4 +523,11 @@ extension AppViewController: UIPopoverPresentationControllerDelegate {
     }
 }
 
-
+/*
+ extension AppViewController: AppViewDelegate {
+ func setTopBlur(offset: CGFloat) {
+ print("set")
+ self.topBar.blurView.alpha = offset / 60
+ }
+ }
+ */

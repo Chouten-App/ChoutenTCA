@@ -59,6 +59,9 @@
 			exceptions = (
 				31B9856D2CBC54A600965288 /* Exceptions for "Chouten" folder in "Chouten" target */,
 			);
+			explicitFileTypes = {
+				Features/Settings/About/profileCardSmall.swift = sourcecode.swift;
+			};
 			path = Chouten;
 			sourceTree = "<group>";
 		};
@@ -87,13 +90,13 @@
 			isa = PBXGroup;
 			children = (
 				E93D198E2CE2E87700B24766 /* Chouten-Bridging-Header.h */,
+				E93D19892CE2E69A00B24766 /* CAFilter.h */,
 				E93D167D2CE2131F00B24766 /* Relay */,
 				E93D167C2CE212CA00B24766 /* Core */,
 				31B987D62CC55CB800965288 /* README.md */,
 				31B9855D2CBC54A300965288 /* Chouten */,
 				31B986122CC5368500965288 /* Frameworks */,
 				31B9855C2CBC54A300965288 /* Products */,
-				E93D19892CE2E69A00B24766 /* CAFilter.h */,
 			);
 			sourceTree = "<group>";
 		};

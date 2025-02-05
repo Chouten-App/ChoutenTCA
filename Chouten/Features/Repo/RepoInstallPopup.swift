@@ -41,7 +41,7 @@ class RepoInstallPopup: UIViewController {
         doneText.textColor = ThemeManager.shared.getColor(for: .fg)
         doneText.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         doneText.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let hiddenText = UILabel()
         hiddenText.text = "Done"
         hiddenText.textColor = ThemeManager.shared.getColor(for: .fg)
@@ -79,6 +79,7 @@ class RepoInstallPopup: UIViewController {
 
         return bar
     }()
+
 
     let textFieldWrapper: UIView = {
         let view = UIView()
@@ -448,7 +449,7 @@ class RepoInstallPopup: UIViewController {
 
             textFieldWrapper.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             textFieldWrapper.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            textFieldWrapper.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 20),
+            textFieldWrapper.topAnchor.constraint(equalTo: topbar.topAnchor, constant: topPadding + 20),
 
             textField.leadingAnchor.constraint(equalTo: textFieldWrapper.leadingAnchor, constant: 12),
             textField.trailingAnchor.constraint(equalTo: textFieldWrapper.trailingAnchor, constant: -12),
@@ -494,6 +495,7 @@ class RepoInstallPopup: UIViewController {
     }
 
     @objc func handleTap(_ sender: UITapGestureRecognizer) {
+        print("§tabbb")
         if let stringValue = sender.associatedString {
             if selectedModules.contains(stringValue) {
                 selectedModules.removeAll(where: { $0 == stringValue })

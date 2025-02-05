@@ -67,10 +67,6 @@ struct HomeFeature: Reducer {
                             collections.insert(continueWatching, at: 0)
                             
                             await send(.view(.setCollections(collections)))
-                            
-                            print("Second *** Collections count: \(collections.count)")
-                            print("Collections item: \(String(describing: collections))")
-                            print(continueWatching.list)
                         }
                     )
                 case .setCollections(let data):

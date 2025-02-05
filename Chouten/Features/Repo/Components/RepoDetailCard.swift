@@ -85,7 +85,8 @@ class RepoDetailCard: UIView {
 
             subtitle.topAnchor.constraint(equalTo: title.bottomAnchor, constant: 4),
             subtitle.leadingAnchor.constraint(equalTo: repoPicture.trailingAnchor, constant: 8),
-            subtitle.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12)
+            subtitle.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12),
+            subtitle.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -15),
         ])
     }
 }
