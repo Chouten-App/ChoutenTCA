@@ -36,7 +36,6 @@
 /* Begin PBXFileReference section */
 		31B9855B2CBC54A300965288 /* Chouten.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Chouten.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		31B987D62CC55CB800965288 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		6F0AE22F2D53AF280008C4B1 /* Untitled.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Untitled.swift; sourceTree = "<group>"; };
 		AE7914742CD82B9E003BBFFE /* GoogleCast.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = GoogleCast.xcframework; sourceTree = "<group>"; };
 		E93D167C2CE212CA00B24766 /* Core */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Core; sourceTree = "<group>"; };
 		E93D167D2CE2131F00B24766 /* Relay */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Relay; sourceTree = "<group>"; };
@@ -90,7 +89,6 @@
 		31B985522CBC54A300965288 = {
 			isa = PBXGroup;
 			children = (
-				6F0AE22F2D53AF280008C4B1 /* Untitled.swift */,
 				E93D198E2CE2E87700B24766 /* Chouten-Bridging-Header.h */,
 				E93D19892CE2E69A00B24766 /* CAFilter.h */,
 				E93D167D2CE2131F00B24766 /* Relay */,

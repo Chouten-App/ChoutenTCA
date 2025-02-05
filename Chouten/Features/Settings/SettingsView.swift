@@ -423,7 +423,7 @@ class SettingsView: UIViewController {
         stack.addArrangedSubview(settingDisplay)
         stack.addArrangedSubview(logDisplay)
         stack.addArrangedSubview(aboutDisplay)
-        stack.addArrangedSubview(addContinueWatching)
+        //stack.addArrangedSubview(addContinueWatching)
         stack.addArrangedSubview(labelStack)
 
         view.addSubview(stack)
