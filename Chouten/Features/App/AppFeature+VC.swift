@@ -197,7 +197,10 @@ class AppViewController: UIViewController {
          
          if tab == "Discover" {
              
-             let questionmarkicon: () = self.topBar.settingsImage2.image = UIImage(systemName: "questionmark.circle")?.applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
+             let questionmarkicon: () =
+                self.topBar.settingsImage2.image = UIImage(systemName: "questionmark")?
+                 .withRenderingMode(.alwaysTemplate)
+                 .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 12)))
              
              if let (module, repo) = Chouten.loadSelectedModule() {
                  Chouten.getIconData(for: module, repo: repo) { iconPath in
@@ -219,7 +222,7 @@ class AppViewController: UIViewController {
              } else {
                  print("No module found.")
                  questionmarkicon
-                 self.topBar.label.text = "Select Module"
+                 self.topBar.label.text = "Discover"
              }
              
          }

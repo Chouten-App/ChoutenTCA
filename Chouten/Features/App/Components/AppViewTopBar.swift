@@ -70,6 +70,8 @@ class AppViewTopBar: UIView {
     let settingsImage2: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "icon")
+        imageView.tintColor = ThemeManager.shared.getColor(for: .fg)
+        imageView.contentMode = .scaleAspectFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -170,8 +172,6 @@ class AppViewTopBar: UIView {
             settingsImage.centerXAnchor.constraint(equalTo: settingsImageWrapper.centerXAnchor),
             settingsImage.centerYAnchor.constraint(equalTo: settingsImageWrapper.centerYAnchor),
             
-            settingsImage2.heightAnchor.constraint(equalTo: settingsImageWrapper2.heightAnchor),
-            settingsImage2.widthAnchor.constraint(equalTo: settingsImageWrapper2.widthAnchor),
             settingsImage2.centerXAnchor.constraint(equalTo: settingsImageWrapper2.centerXAnchor),
             settingsImage2.centerYAnchor.constraint(equalTo: settingsImageWrapper2.centerYAnchor),
             

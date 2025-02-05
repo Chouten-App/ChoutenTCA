@@ -16,6 +16,7 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
     var collectionView: UICollectionView!
 
     let loadingView = DiscoverLoadingView()
+    let noRepoInstalledView = TitleCard("No Module Installed.", description: "Please install and select a module using publicly available repos.")
 
     var dataSource: UICollectionViewDiffableDataSource<DiscoverSection, DiscoverData>?
 
@@ -47,9 +48,10 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
         collectionView.showsVerticalScrollIndicator = false
         collectionView.showsHorizontalScrollIndicator = false
         
-        view.addSubview(loadingView.view)
-        addChild(loadingView)
-        loadingView.didMove(toParent: self)
+        view.addSubview(noRepoInstalledView)
+        // view.addSubview(loadingView.view)
+        // addChild(loadingView)
+        // loadingView.didMove(toParent: self)
         
         view.addSubview(collectionView)
         
@@ -93,6 +95,11 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 40),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -140),
+            
+            // No Repo Selected
+            noRepoInstalledView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            noRepoInstalledView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            noRepoInstalledView.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 80)
         ])
         
         if loadingView.parent != nil {
