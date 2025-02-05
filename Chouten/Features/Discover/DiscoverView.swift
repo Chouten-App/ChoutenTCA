@@ -75,8 +75,6 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
                 reloadData()
             }
             
-            //NEW: Add DiscoverLoadView when List is Empty
-            // - Prevents Lists from other Module to show when a Module wont Load
             else if store.state.discoverSections.isEmpty {
                 reloadData()
                 loadingView.view.isHidden = false
@@ -251,7 +249,7 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
 }
 
 
-// Extensions
+// MARK: Extensions
 
 extension DiscoverView: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -260,4 +258,36 @@ extension DiscoverView: UIScrollViewDelegate {
         //appViewDelegate?.setTopBlur(offset: -offsetY)
         updateTopBarBlur(offsetY: offsetY)
     }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+       guard let scenes = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+             let window = scenes.windows.first,
+             let navController = window.rootViewController as? UINavigationController else {
+           return
+       }
+
+       guard let data = dataSource?.itemIdentifier(for: indexPath) else {
+           return
+       }
+
+       let tempVC = InfoViewRefactor(url: data.url)
+
+       navController.navigationBar.isHidden = true
+       navController.pushViewController(tempVC, animated: true)
+   }
+
+   // Fade in new cells
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+       cell.alpha = 0
+       UIView.animate(withDuration: 0.2) {
+           cell.alpha = 1
+       }
+   }
+
+   // Fade out removed cells
+    func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+       UIView.animate(withDuration: 0.2) {
+           cell.alpha = 0
+       }
+   }
 }

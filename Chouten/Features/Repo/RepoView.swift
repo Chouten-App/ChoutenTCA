@@ -14,10 +14,6 @@ class MyTapGesture: UITapGestureRecognizer {
     var data: RepoMetadata?
 }
 
-protocol RepoViewDelegate: AnyObject {
-    func getScrollOffset()
-}
-
 class RepoView: UIViewController, UITextFieldDelegate, RepoViewDelegate {
     var store: Store<RepoFeature.State, RepoFeature.Action>
 
@@ -208,7 +204,7 @@ class RepoView: UIViewController, UITextFieldDelegate, RepoViewDelegate {
 }
 
 
-//Extensions
+// MARK: Extensions
 
 extension RepoView: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {

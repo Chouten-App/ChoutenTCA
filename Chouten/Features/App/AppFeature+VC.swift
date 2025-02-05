@@ -10,13 +10,6 @@ import ComposableArchitecture
 import Network
 import UIKit
 
-/*
- Not Really Working
-protocol AppViewDelegate: AnyObject {
-    func setTopBlur(offset: CGFloat)
-}
- */
-
 class AppViewController: UIViewController {
     
     var module: Module?
@@ -144,6 +137,7 @@ class AppViewController: UIViewController {
          if let discoverView = tabs[1] as? DiscoverView {
              discoverView.collectionView.delegate = self
          }
+         
          
          if let repoView = tabs[2] as? RepoView {
              repoView.scrollView.delegate = self
@@ -408,14 +402,15 @@ extension AppViewController: CustomTabbarDelegate {
     }
 }
 
+/*
+ --- Moved this Code to DiscoverView Delegate, can be changed if better method found ---
+ 
 extension AppViewController: UIScrollViewDelegate, UICollectionViewDelegate {
    
-    /*func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let offsetY = -scrollView.contentOffset.y - 40
         topBar.blurView.alpha = -offsetY / 60
         }
-     */
-     
 
      func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let scenes = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -454,6 +449,7 @@ extension AppViewController: UIScrollViewDelegate, UICollectionViewDelegate {
         }
     }
 }
+*/
 
 extension AppViewController: AppViewTopBarDelegate {
     

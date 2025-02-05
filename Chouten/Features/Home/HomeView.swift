@@ -15,9 +15,6 @@ struct FooterKind {
     static let emptySectionFooter = "EmptySectionFooter"
 }
 
-protocol HomeViewDelegate: AnyObject {
-    func getScrollOffset()
-}
 
 class HomeView: UIViewController, HomeViewDelegate{
     
@@ -472,6 +469,7 @@ extension HomeView: AddCollectionFooterDelegate {
     }
 }
 
+// MARK: Extensions
 extension HomeView: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let offsetY = -scrollView.contentOffset.y - 140
