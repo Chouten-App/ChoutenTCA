@@ -174,6 +174,8 @@ class AppViewTopBar: UIView {
             
             settingsImage2.centerXAnchor.constraint(equalTo: settingsImageWrapper2.centerXAnchor),
             settingsImage2.centerYAnchor.constraint(equalTo: settingsImageWrapper2.centerYAnchor),
+            settingsImage2.widthAnchor.constraint(equalTo: settingsImageWrapper2.widthAnchor),
+            settingsImage2.heightAnchor.constraint(equalTo: settingsImageWrapper2.heightAnchor),
             
             /*
              -OLD Wrapper for Tab
