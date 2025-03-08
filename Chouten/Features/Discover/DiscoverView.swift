@@ -44,7 +44,7 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.clipsToBounds = false
         collectionView.backgroundColor = .clear
-        collectionView.contentInset = UIEdgeInsets(top: 40, left: 0, bottom: 0, right: 0)
+        collectionView.contentInset = UIEdgeInsets(top: 40, left: 0, bottom: 80, right: 0)
         collectionView.showsVerticalScrollIndicator = false
         collectionView.showsHorizontalScrollIndicator = false
         
@@ -71,8 +71,8 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
             guard let self else { return }
             
             if !store.discoverSections.isEmpty {
-                
                 print("Found Data")
+                noRepoInstalledView.isHidden = true
                 loadingView.view.isHidden = true
                 collectionView.isHidden = false
                 reloadData()
@@ -96,7 +96,7 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding + 40),
-            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -140),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
             // No Repo Selected
             noRepoInstalledView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
