@@ -57,7 +57,7 @@ class MediaListDisplay: UIView {
 
     func updateData(with index: Int? = nil) {
         if let index {
-            mediaListIndex = index
+            paginationIndex = index
         }
 
         contentView.arrangedSubviews
