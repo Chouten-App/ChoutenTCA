@@ -208,6 +208,7 @@ class AppViewController: UIViewController {
                          let image = UIImage(contentsOfFile: iconPath)
                          if let image = image {
                              self.topBar.settingsImage2.image = image
+                             self.topBar.settingsImage2.contentMode = .scaleAspectFill
                              
                          } else {
                              // TODO: Add Warning that Module image is broken

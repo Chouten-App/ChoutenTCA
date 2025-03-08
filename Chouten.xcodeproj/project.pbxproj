@@ -219,7 +219,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = 9PQ6RD47C7;
+				DEVELOPMENT_TEAM = A9QQBWPHB7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Chouten/App/Shared/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Chouten;
@@ -261,7 +261,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = 9PQ6RD47C7;
+				DEVELOPMENT_TEAM = A9QQBWPHB7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Chouten/App/Shared/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Chouten;

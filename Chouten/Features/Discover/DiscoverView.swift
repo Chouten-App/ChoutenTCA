@@ -49,9 +49,10 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
         collectionView.showsHorizontalScrollIndicator = false
         
         view.addSubview(noRepoInstalledView)
-        // view.addSubview(loadingView.view)
-        // addChild(loadingView)
-        // loadingView.didMove(toParent: self)
+        view.addSubview(loadingView.view)
+        addChild(loadingView)
+        loadingView.didMove(toParent: self)
+        loadingView.view.isHidden = true
         
         view.addSubview(collectionView)
         
@@ -79,6 +80,7 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
             
             else if store.state.discoverSections.isEmpty {
                 reloadData()
+                noRepoInstalledView.isHidden = true
                 loadingView.view.isHidden = false
                 collectionView.isHidden = true
             }
@@ -159,6 +161,8 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
     }
 
     func reloadData() {
+        if self.store.discoverSections.isEmpty { return }
+        
         var snapshot = NSDiffableDataSourceSnapshot<DiscoverSection, DiscoverData>()
         snapshot.appendSections(self.store.discoverSections)
 
