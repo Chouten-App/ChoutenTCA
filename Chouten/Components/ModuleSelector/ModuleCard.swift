@@ -89,10 +89,12 @@ class ModuleCard: UIView {
     }
 
     private func configure() {
-        backgroundColor = ThemeManager.shared.getColor(for: .container)
-        layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
-        layer.borderWidth = 0.5
-        layer.cornerRadius = 12
+        if selector {
+            backgroundColor = ThemeManager.shared.getColor(for: .container)
+            layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
+            layer.borderWidth = 0.5
+            layer.cornerRadius = 12
+        }
         translatesAutoresizingMaskIntoConstraints = false
 
         // set data
@@ -165,9 +167,9 @@ class ModuleCard: UIView {
 //        heightConstraint.priority = .defaultHigh
 
         NSLayoutConstraint.activate([
-            // widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 40),
-
-            modulePicture.leadingAnchor.constraint(equalTo: leadingAnchor, constant: selector ? 12 : 16),
+            widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width - 40),
+            
+            modulePicture.leadingAnchor.constraint(equalTo: leadingAnchor, constant: selector ? 12 : 0),
             modulePicture.centerYAnchor.constraint(equalTo: centerYAnchor),
             modulePicture.widthAnchor.constraint(equalToConstant: 44),
             modulePicture.heightAnchor.constraint(equalToConstant: 44),
@@ -190,7 +192,7 @@ class ModuleCard: UIView {
                 statusWrapper.widthAnchor.constraint(equalToConstant: 20),
                 statusWrapper.heightAnchor.constraint(equalToConstant: 20),
                 statusWrapper.centerYAnchor.constraint(equalTo: centerYAnchor),
-                statusWrapper.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16)
+                statusWrapper.trailingAnchor.constraint(equalTo: trailingAnchor)
             ])
         }
     }
