@@ -9,6 +9,7 @@ import UIKit
 
 class ProgressBar: UIView {
     let progress: Double = 0.5
+    private var progressWidthConstraint: NSLayoutConstraint!
     
     let progressView: UIView = {
         let view = UIView()
@@ -33,9 +34,25 @@ class ProgressBar: UIView {
         NSLayoutConstraint.activate([
             progressView.leadingAnchor.constraint(equalTo: leadingAnchor),
             progressView.topAnchor.constraint(equalTo: topAnchor),
-            progressView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            progressView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: progress)
+            progressView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
+        
+        // Create a width constraint for progress
+        progressWidthConstraint = progressView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: progress)
+        progressWidthConstraint.isActive = true
+    }
+    
+    func updateProgress(_ newProgress: Double) {
+        // Ensure progress is within valid range
+        let boundedProgress = max(0.0, min(1.0, newProgress))
+        
+        // Update width constraint
+        progressWidthConstraint.isActive = false
+        progressWidthConstraint = progressView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: boundedProgress)
+        progressWidthConstraint.isActive = true
+        
+        // Update UI immediately if needed
+        layoutIfNeeded()
     }
     
     required init?(coder: NSCoder) {

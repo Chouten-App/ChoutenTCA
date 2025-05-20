@@ -77,13 +77,18 @@ final class PlayerViewModel: ObservableObject {
     func setCurrentItem(_ item: AVPlayerItem) {
         currentTime = .zero
         duration = nil
+        isLoading = true
         player.replaceCurrentItem(with: item)
 
         item.publisher(for: \.status)
             .filter({ $0 == .readyToPlay })
             .sink(receiveValue: { [weak self] _ in
-                self?.isLoading = false
-                self?.duration = item.asset.duration.seconds
+                guard let self = self else { return }
+                self.isLoading = false
+                self.duration = item.asset.duration.seconds
+                
+                // Automatically start playing when ready
+                self.player.play()
             })
             .store(in: &subscriptions)
     }

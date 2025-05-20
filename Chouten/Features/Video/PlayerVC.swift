@@ -9,6 +9,7 @@ import Core
 import AVKit
 import ComposableArchitecture
 import UIKit
+import Combine
 
 // swiftlint:disable type_body_length
 class PlayerVC: UIViewController {
@@ -26,6 +27,9 @@ class PlayerVC: UIViewController {
 
     private var timeObserver: Any?
     private var blackOverlayView: UIView?
+    private var cancellables = Set<AnyCancellable>()
+    private var progressSaveTimer: Timer?
+    private var lastSavedProgress: Double = 0
 
     var showUI = true
 
@@ -37,8 +41,6 @@ class PlayerVC: UIViewController {
     var nextEpisodeStartTime: Date?
     var nextEpisodeDuration: TimeInterval = 5.0 // 5 seconds
     var isShowingNextEpisodeButton = false
-    
-    let resourceLoaderDelegate = VideoResourceLoaderDelegate()
     
     private var shouldForceLandscape: Bool = false {
         didSet {
@@ -82,6 +84,36 @@ class PlayerVC: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    /// Setup video playback configuration
+    private func setupPlaybackConfiguration() {
+        print("⚙️ Setting up video playback configuration")
+        
+        // Setup longer timeouts for network requests
+        URLSessionConfiguration.default.timeoutIntervalForRequest = 30
+        URLSessionConfiguration.default.timeoutIntervalForResource = 60
+        
+        // Additional settings for URLSession
+        URLSessionConfiguration.default.waitsForConnectivity = true
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Setup video playback configuration
+        setupPlaybackConfiguration()
+        
+        // Observe changes to isPlaying property
+        playerVM.$isPlaying
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isPlaying in
+                guard let self = self else { return }
+                let image = UIImage(systemName: isPlaying ? "pause.fill" : "play.fill")?
+                    .withRenderingMode(.alwaysTemplate)
+                    .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 52)))
+                self.controls.playPauseButton.image = image
+            }
+            .store(in: &cancellables)
+    }
+    
     func configure() {
         view.backgroundColor = .black
 
@@ -164,40 +196,26 @@ class PlayerVC: UIViewController {
                     
                     var asset: AVURLAsset? = nil
                     
-                    let customURL = url.absoluteString.replacingOccurrences(of: "https", with: "custom-scheme")
-                    
-                    // guard let schemedUrl = URL(string: customURL) else { return }
-                    
-                    let schemedUrl = url
-                    
                     if let headers = videoData.headers,
                        !headers.isEmpty {
-                        // check media type
+                        // Check if it's an m3u8 stream
                         if url.absoluteString.contains("m3u8") {
-                            asset = AVURLAsset(url: schemedUrl, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
-                            // reverse proxy
-                            /*
-                            guard let videoURL = proxy.reverseProxyURL(from: url) else {
-                                print("Invalid url format")
-                                asset = AVURLAsset(url: url)
-                                
-                                let item = AVPlayerItem(asset: asset)
-                                playerVM.setCurrentItem(item)
-                                
-                                setupPlayer()
-                                return
-                            }
+                            print("🎬 Setting up m3u8 stream with headers")
                             
-                            let playerItem = AVPlayerItem(url: videoURL)
-                            playerVM.setCurrentItem(item)
-                            self.proxy.start()
-                            setupPlayer()
-                             */
-                        } else { // if url.absoluteString.contains(".mp4") {
-                            asset = AVURLAsset(url: schemedUrl, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
+                            // Create options with headers and MIME type hint
+                            let assetOptions: [String: Any] = [
+                                "AVURLAssetHTTPHeaderFieldsKey": headers,
+                                "AVURLAssetOutOfBandMIMETypeKey": "application/x-mpegURL"
+                            ]
+                            
+                            asset = AVURLAsset(url: url, options: assetOptions)
+                        } else {
+                            // For non-m3u8 content (mp4, etc.)
+                            asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
                         }
                     } else {
-                        asset = AVURLAsset(url: schemedUrl)
+                        // No headers needed
+                        asset = AVURLAsset(url: url)
                     }
                     
                     guard let asset else { return }
@@ -209,6 +227,7 @@ class PlayerVC: UIViewController {
                     
                     setupPlayer(item: item)
                     
+                    // Just keep the loaded time ranges observer for buffering
                     item.addObserver(self, forKeyPath: "loadedTimeRanges", options: .new, context: nil)
                     playerVM.player.automaticallyWaitsToMinimizeStalling = true
                 }
@@ -220,10 +239,19 @@ class PlayerVC: UIViewController {
     
     func setupPlayer(item: AVPlayerItem) {
         controls.showPlayButton()
+        
+        // Update the play/pause button right away using the correct property for UIImageView
+        let image = UIImage(systemName: playerVM.isPlaying ? "pause.fill" : "play.fill")?
+            .withRenderingMode(.alwaysTemplate)
+            .applyingSymbolConfiguration(.init(font: .systemFont(ofSize: 52)))
+        controls.playPauseButton.image = image
 
         controls.duration = item.asset.duration.seconds
         controls.durationLabel.text = self.formatTime(item.asset.duration.seconds)
-
+        
+        // Start progress saving timer
+        startProgressSaveTimer()
+        
         timeObserver = playerVM.player
             .addPeriodicTimeObserver(
                 forInterval: CMTime(seconds: 1, preferredTimescale: 1),
@@ -236,13 +264,6 @@ class PlayerVC: UIViewController {
                     // update subtitles
                     self.subtitleRenderer.updateSubtitles(for: time)
                     
-                    // update continue watching
-                    if self.playerVM.isPlaying {
-                        // needs to be "debounced" or smth to not cause db corruption
-                        // store.send(.view(.updateContinueWatching(info, data)))
-                    }
-                    
-
                     self.view.layoutIfNeeded()
                     UIView.animate(withDuration: 0.1) {
                         print("CHANGE SLIDER")
@@ -261,6 +282,53 @@ class PlayerVC: UIViewController {
         self.controls.data = store.videoData
         self.controls.selectedSourceIndex = 0
         self.controls.updateData()
+    }
+
+    // Add function to start progress save timer
+    private func startProgressSaveTimer() {
+        // Stop any existing timer first
+        stopProgressSaveTimer()
+        
+        // Create a new timer that saves progress every 5 seconds
+        progressSaveTimer = Timer.scheduledTimer(
+            timeInterval: 5.0,
+            target: self,
+            selector: #selector(saveCurrentProgress),
+            userInfo: nil,
+            repeats: true
+        )
+    }
+    
+    // Add function to stop progress save timer
+    private func stopProgressSaveTimer() {
+        progressSaveTimer?.invalidate()
+        progressSaveTimer = nil
+    }
+    
+    // Function to save current progress
+    @objc private func saveCurrentProgress() {
+        // Make sure we have a valid duration
+        guard let duration = playerVM.duration, 
+              duration > 0 else {
+            print("Cannot save progress: Invalid duration")
+            return
+        }
+        
+        let currentProgress = playerVM.currentTime
+        let watchPercentage = currentProgress / duration
+        
+        // Only save if progress is less than 95% (not completed)
+        if watchPercentage < 0.95 {
+            lastSavedProgress = currentProgress
+            print("Saving current progress: \(currentProgress)/\(duration)")
+            
+            // Check if the module ID is available
+            if let moduleId = UserDefaults.standard.string(forKey: "selectedModuleId") {
+                self.store.send(.view(.updateContinueWatching(self.info, self.data, currentProgress, duration)))
+            } else {
+                print("Warning: No selectedModuleId found in UserDefaults")
+            }
+        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -536,13 +604,12 @@ class PlayerVC: UIViewController {
             if let timeRange = timeRanges.first?.timeRangeValue {
                 let bufferedDuration = CMTimeGetSeconds(timeRange.duration)
                 let currentTime = CMTimeGetSeconds(playerItem.currentTime())
-                let totalDuration = CMTimeGetSeconds(playerItem.duration)
                 
-                // Check if enough content is buffered
-                if bufferedDuration > currentTime + 5 { // Check for a 5-second buffer ahead
-                    print("Sufficient buffer loaded.")
+                // Simple buffering check
+                if bufferedDuration > currentTime + 5 {
+                    print("Sufficient buffer loaded")
                 } else {
-                    print("Buffering... Not enough content ahead.")
+                    print("Buffering...")
                 }
             }
         }
@@ -563,10 +630,30 @@ class PlayerVC: UIViewController {
         subtitleRenderer.updateBottomPadding(multiplier: multiplier)
     }
 
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        stopProgressSaveTimer()
+    }
+
     deinit {
+        // Save final progress
+        saveCurrentProgress()
+        
+        // Clean up timer
+        stopProgressSaveTimer()
+        
         if let observer = timeObserver {
             playerVM.player.removeTimeObserver(observer)
         }
+        
+        // Clean up any observers
+        if let currentItem = playerVM.player.currentItem {
+            currentItem.removeObserver(self, forKeyPath: "loadedTimeRanges")
+        }
+        
+        // Cancel all Combine subscriptions
+        cancellables.forEach { $0.cancel() }
+        cancellables.removeAll()
     }
 }
 // swiftlint:enable type_body_length
@@ -623,6 +710,12 @@ extension PlayerVC: PlayerControlsDelegate {
         playerVM.isEditingCurrentTime = true
         playerVM.currentTime = (playerVM.duration ?? 0.0) * progress
         playerVM.isEditingCurrentTime = false
+        
+        // Save progress after manual seeking
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            guard let self = self else { return }
+            self.saveCurrentProgress()
+        }
     }
 
     func skipTime(offset: Double) {
@@ -653,7 +746,21 @@ extension PlayerVC: PlayerControlsDelegate {
 
         self.applyGeometryUpdate(interfaceOrientation: .portrait)
         
-        self.store.send(.view(.updateContinueWatching(self.info, self.data, playerVM.currentTime, playerVM.duration ?? 1.0)))
+        // Only save to continue watching if the video hasn't been watched to completion (less than 95%)
+        let currentProgress = playerVM.currentTime
+        let totalDuration = playerVM.duration ?? 1.0
+        let watchPercentage = currentProgress / totalDuration
+        
+        if watchPercentage < 0.95 {
+            // Save to continue watching only if not watched completely
+            self.store.send(.view(.updateContinueWatching(self.info, self.data, currentProgress, totalDuration)))
+        } else {
+            // If video is completed, explicitly remove it from continue watching
+            if let moduleId = UserDefaults.standard.string(forKey: "selectedModuleId") {
+                self.store.send(.view(.removeFromContinueWatching(moduleId, self.info.url)))
+            }
+            print("Video completed: removing from continue watching")
+        }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             // self.dismiss(animated: true, completion: nil)
@@ -687,6 +794,9 @@ extension PlayerVC: PlayerControlsDelegate {
             return
         }
 
+        // Save progress before changing quality
+        saveCurrentProgress()
+        
         // store current time
         let storedCurrentTime = self.playerVM.currentTime
 

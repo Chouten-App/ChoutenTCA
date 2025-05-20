@@ -29,6 +29,8 @@ struct DatabaseClient: Sendable {
     
     let fetchContinueWatching: @Sendable () async -> HomeSection
     let addToContinueWatching: @Sendable (_ moduleId: String, _ collectionItem: CollectionItem, _ progress: Double, _ duration: Double) async -> Void
+    let removeFromContinueWatching: @Sendable (_ moduleId: String, _ url: String) async -> Void
+    let cleanupDuplicateContinueWatching: @Sendable () async -> Void
 }
 
 extension DependencyValues {

@@ -106,6 +106,16 @@ import UIKit
         subtitleLabel.text = data.titles.secondary ?? ""
         timeLabel.text = data.indicator
         
+        // Set the progress bar value
+        if let current = data.current, let total = data.total, total > 0 {
+            let progress = Double(current) / Double(total)
+            progressView.updateProgress(progress)
+            print("Setting progress for \(data.titles.primary): \(progress) (\(current)/\(total))")
+        } else {
+            // Default to no progress if missing values
+            progressView.updateProgress(0)
+        }
+        
         addSubview(imageView)
         overlayView.addSubview(titleLabel)
         overlayView.addSubview(subtitleLabel)

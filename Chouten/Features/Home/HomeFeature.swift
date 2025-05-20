@@ -61,6 +61,10 @@ struct HomeFeature: Reducer {
                         .run { send in
                             await self.databaseClient.initDB()
                             
+                            // Clean up duplicate entries in continue watching
+                            await self.databaseClient.cleanupDuplicateContinueWatching()
+                            
+                            // Fetch collections and continue watching data
                             var collections = await self.databaseClient.fetchCollections()
                             let continueWatching = await self.databaseClient.fetchContinueWatching()
                             

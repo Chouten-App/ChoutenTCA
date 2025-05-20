@@ -42,6 +42,7 @@ struct VideoFeature: Reducer {
             case getSources(_ url: String)
             case setSources(_ data: MediaStream)
             case updateContinueWatching(_ infoData: InfoData, _ mediaData: MediaItem, _ progress: Double, _ duration: Double)
+            case removeFromContinueWatching(_ moduleId: String, _ url: String)
         }
 
         @CasePathable
@@ -110,9 +111,14 @@ struct VideoFeature: Reducer {
                         )
                     }
                     return .none
+                case .removeFromContinueWatching(let moduleId, let url):
+                    return .merge(
+                        .run { send in
+                            await self.databaseClient.removeFromContinueWatching(moduleId, url)
+                        }
+                    )
                 }
             }
         }
     }
 }
-
