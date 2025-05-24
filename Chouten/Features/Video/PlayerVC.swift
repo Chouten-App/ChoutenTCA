@@ -263,8 +263,8 @@ class PlayerVC: UIViewController {
             }
         }
         
-        // Start progress saving timer
-        startProgressSaveTimer()
+        // Don't start progress saving timer immediately - wait for video to be ready
+        // startProgressSaveTimer()
         
         timeObserver = playerVM.player
             .addPeriodicTimeObserver(
@@ -275,6 +275,10 @@ class PlayerVC: UIViewController {
 
                 self.controls.currentTimeLabel.text = self.formatTime(time.seconds)
                 if let duration = playerVM.duration {
+                    // Start progress save timer only when we have a valid duration
+                    if self.progressSaveTimer == nil && duration > 0 {
+                        self.startProgressSaveTimer()
+                    }
                     // update subtitles
                     self.subtitleRenderer.updateSubtitles(for: time)
                     

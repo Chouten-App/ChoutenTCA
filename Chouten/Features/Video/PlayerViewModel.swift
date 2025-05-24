@@ -81,14 +81,23 @@ final class PlayerViewModel: ObservableObject {
         player.replaceCurrentItem(with: item)
 
         item.publisher(for: \.status)
-            .filter({ $0 == .readyToPlay })
-            .sink(receiveValue: { [weak self] _ in
+            .sink(receiveValue: { [weak self] status in
                 guard let self = self else { return }
-                self.isLoading = false
-                self.duration = item.asset.duration.seconds
                 
-                // Automatically start playing when ready
-                self.player.play()
+                switch status {
+                case .readyToPlay:
+                    self.isLoading = false
+                    self.duration = item.asset.duration.seconds
+                    
+                    // Automatically start playing when ready
+                    self.player.play()
+                case .failed:
+                    print("❌ PlayerVM: Item failed to load: \(item.error?.localizedDescription ?? "Unknown error")")
+                case .unknown:
+                    break
+                @unknown default:
+                    break
+                }
             })
             .store(in: &subscriptions)
     }
