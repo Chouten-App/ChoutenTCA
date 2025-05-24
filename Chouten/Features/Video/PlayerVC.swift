@@ -19,6 +19,7 @@ class PlayerVC: UIViewController {
     let info: InfoData
     var index: Int
     var selectedMediaListIndex: Int = 0
+    var savedProgress: Double? = nil
 
     let playerVM = PlayerViewModel()
     let subtitleRenderer = SubtitleRenderer()
@@ -66,10 +67,11 @@ class PlayerVC: UIViewController {
 
     var mediaSelector = MediaSelector()
 
-    init(data: MediaItem, info: InfoData, index: Int) {
+    init(data: MediaItem, info: InfoData, index: Int, savedProgress: Double? = nil) {
         self.data = data
         self.info = info
         self.index = index
+        self.savedProgress = savedProgress
         
         store = .init(
             initialState: .init(),
@@ -248,6 +250,18 @@ class PlayerVC: UIViewController {
 
         controls.duration = item.asset.duration.seconds
         controls.durationLabel.text = self.formatTime(item.asset.duration.seconds)
+        
+        // If we have saved progress, seek to that position
+        if let savedProgress = savedProgress, savedProgress > 0 {
+            let seekTime = CMTime(seconds: savedProgress, preferredTimescale: 1000)
+            playerVM.player.seek(to: seekTime) { [weak self] completed in
+                if completed {
+                    print("Successfully seeked to saved progress: \(savedProgress) seconds")
+                    // Clear the saved progress so it doesn't interfere with future seeks
+                    self?.savedProgress = nil
+                }
+            }
+        }
         
         // Start progress saving timer
         startProgressSaveTimer()

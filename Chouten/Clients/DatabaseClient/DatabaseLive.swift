@@ -94,7 +94,8 @@ extension DatabaseClient: DependencyKey {
                                             indicator: "\(collectionItem.flag.rawValue)",
                                             status: collectionItem.flag,
                                             current: nil,
-                                            total: nil
+                                            total: nil,
+                                            moduleId: nil
                                         )
                                         data.append(homeData)
                                     }
@@ -404,7 +405,8 @@ extension DatabaseClient: DependencyKey {
                                 indicator: timeIndicator,
                                 status: ItemStatus.inprogress,
                                 current: Int(progress), // Convert to Int
-                                total: Int(duration)    // Convert to Int
+                                total: Int(duration),    // Convert to Int
+                                moduleId: moduleId
                             )
                             result.list.append(homeData)
                         } catch {
@@ -420,6 +422,43 @@ extension DatabaseClient: DependencyKey {
                 }
 
                 return result
+            },
+            fetchContinueWatchingData: { url in
+                // Create a fetch request for the ContinueWatching entity
+                let fetchRequest: NSFetchRequest<UserContinueWatching> = UserContinueWatching.fetchRequest()
+                
+                do {
+                    // Fetch all continue watching items
+                    let continueWatchingItems = try context.fetch(fetchRequest)
+                    
+                    for item in continueWatchingItems {
+                        // Parse each item to find the matching URL
+                        guard let infoDataString = item.infoData,
+                              let episodeDataString = item.episodeData else {
+                            continue
+                        }
+                        
+                        do {
+                            // Decode the stored data
+                            let infoData = try JSONDecoder().decode(InfoData.self, from: infoDataString)
+                            let mediaData = try JSONDecoder().decode(MediaItem.self, from: episodeDataString)
+                            
+                            // Check if this is the item we're looking for
+                            if infoData.url == url {
+                                let progress = item.progress
+                                let duration = item.duration
+                                return (infoData, mediaData, progress, duration)
+                            }
+                        } catch {
+                            print("Error decoding continue watching item: \(error)")
+                            continue
+                        }
+                    }
+                } catch {
+                    print("Error fetching continue watching data: \(error)")
+                }
+                
+                return nil
             },
             addToContinueWatching: { moduleId, collectionItem, progress, duration in
                 // Validate inputs to prevent nil values
@@ -467,7 +506,7 @@ extension DatabaseClient: DependencyKey {
                             return
                         }
                         
-                        // Find matching items
+                        // Find items from the same series (by infoData.url) - we only want to keep the latest episode per series
                         for item in items {
                             if let itemInfoDataString = item.infoData,
                                let itemEpisodeDataString = item.episodeData {
@@ -478,13 +517,20 @@ extension DatabaseClient: DependencyKey {
                                     let infoUrlsMatch = itemInfoData.url == infoData.url
                                     let mediaUrlsMatch = itemMediaData.url == mediaData.url
                                     
-                                    if infoUrlsMatch && mediaUrlsMatch {
-                                        if existingItem == nil {
-                                            existingItem = item
-                                            print("Found primary match for: \(itemInfoData.titles.primary)")
+                                    if infoUrlsMatch {
+                                        if mediaUrlsMatch {
+                                            // Same series, same episode - this is an update to existing progress
+                                            if existingItem == nil {
+                                                existingItem = item
+                                                print("Found exact match for: \(itemInfoData.titles.primary) - \(itemMediaData.title ?? "Episode \(itemMediaData.number.removeTrailingZeros())")")
+                                            } else {
+                                                duplicates.append(item)
+                                                print("Found duplicate to remove: \(itemInfoData.titles.primary) - \(itemMediaData.title ?? "Episode \(itemMediaData.number.removeTrailingZeros())")")
+                                            }
                                         } else {
+                                            // Same series, different episode - remove old episode as we only want the latest
                                             duplicates.append(item)
-                                            print("Found duplicate to remove: \(itemInfoData.titles.primary)")
+                                            print("Found old episode from same series to remove: \(itemInfoData.titles.primary) - \(itemMediaData.title ?? "Episode \(itemMediaData.number.removeTrailingZeros())")")
                                         }
                                     }
                                 } catch {
@@ -601,11 +647,11 @@ extension DatabaseClient: DependencyKey {
                         let items = try taskContext.fetch(fetchRequest)
                         print("Found \(items.count) continue watching items to check for duplicates")
                         
-                        // Dictionary to track unique content by URL pairs
-                        var contentMap: [String: UserContinueWatching] = [:]
+                        // Dictionary to track unique series by infoData.url (one entry per series)
+                        var seriesMap: [String: UserContinueWatching] = [:]
                         var duplicatesToRemove: [UserContinueWatching] = []
                         
-                        // Identify duplicates based on content keys
+                        // Keep only the latest episode per series
                         for item in items {
                             if let infoDataString = item.infoData,
                                let episodeDataString = item.episodeData {
@@ -613,22 +659,31 @@ extension DatabaseClient: DependencyKey {
                                     let infoData = try JSONDecoder().decode(InfoData.self, from: infoDataString)
                                     let mediaData = try JSONDecoder().decode(MediaItem.self, from: episodeDataString)
                                     
-                                    // Create a unique content key
-                                    let contentKey = infoData.url + "-" + mediaData.url
+                                    // Use series URL as the key (not episode-specific)
+                                    let seriesKey = infoData.url
                                     
-                                    if let existingItem = contentMap[contentKey] {
-                                        // Found duplicate - keep the one with the latest progress
-                                        if item.progress > existingItem.progress {
-                                            // This item has more progress, so keep it and mark the existing one as duplicate
+                                    if let existingItem = seriesMap[seriesKey] {
+                                        // Found another episode from the same series - keep the one with higher episode number or latest progress
+                                        let existingEpisodeData = try JSONDecoder().decode(MediaItem.self, from: existingItem.episodeData!)
+                                        
+                                        // Prefer higher episode number, fallback to progress if episode numbers are the same
+                                        let shouldKeepNewItem = mediaData.number > existingEpisodeData.number || 
+                                                              (mediaData.number == existingEpisodeData.number && item.progress > existingItem.progress)
+                                        
+                                        if shouldKeepNewItem {
+                                            // Keep the newer episode/progress and mark the existing one as duplicate
                                             duplicatesToRemove.append(existingItem)
-                                            contentMap[contentKey] = item
+                                            seriesMap[seriesKey] = item
+                                            print("Keeping newer episode: \(infoData.titles.primary) - Episode \(mediaData.number.removeTrailingZeros())")
                                         } else {
-                                            // The existing item has more progress, so mark this one as duplicate
+                                            // Keep the existing item and mark this one as duplicate
                                             duplicatesToRemove.append(item)
+                                            print("Keeping existing episode: \(infoData.titles.primary) - Episode \(existingEpisodeData.number.removeTrailingZeros())")
                                         }
                                     } else {
-                                        // First time seeing this content, add to map
-                                        contentMap[contentKey] = item
+                                        // First episode from this series, add to map
+                                        seriesMap[seriesKey] = item
+                                        print("First episode for series: \(infoData.titles.primary) - Episode \(mediaData.number.removeTrailingZeros())")
                                     }
                                 } catch {
                                     print("Error decoding data during cleanup: \(error)")
@@ -650,6 +705,53 @@ extension DatabaseClient: DependencyKey {
                         }
                     } catch {
                         print("Error cleaning up duplicate continue watching entries: \(error)")
+                    }
+                }
+            },
+            clearAllData: {
+                // Use a dedicated context for this operation
+                let taskContext = persistentContainer.newBackgroundContext()
+                taskContext.performAndWait {
+                    do {
+                        // Delete all UserContinueWatching entries
+                        let continueWatchingRequest: NSFetchRequest<UserContinueWatching> = UserContinueWatching.fetchRequest()
+                        let continueWatchingItems = try taskContext.fetch(continueWatchingRequest)
+                        print("Deleting \(continueWatchingItems.count) continue watching entries...")
+                        
+                        for item in continueWatchingItems {
+                            taskContext.delete(item)
+                        }
+                        
+                        // Delete all UserItem entries
+                        let itemRequest: NSFetchRequest<UserItem> = UserItem.fetchRequest()
+                        let items = try taskContext.fetch(itemRequest)
+                        print("Deleting \(items.count) collection items...")
+                        
+                        for item in items {
+                            taskContext.delete(item)
+                        }
+                        
+                        // Delete all UserCollection entries
+                        let collectionRequest: NSFetchRequest<UserCollection> = UserCollection.fetchRequest()
+                        let collections = try taskContext.fetch(collectionRequest)
+                        print("Deleting \(collections.count) collections...")
+                        
+                        for collection in collections {
+                            taskContext.delete(collection)
+                        }
+                        
+                        // Save all changes
+                        if taskContext.hasChanges {
+                            try taskContext.save()
+                            print("Successfully cleared all database content:")
+                            print("- \(continueWatchingItems.count) continue watching entries")
+                            print("- \(items.count) collection items")
+                            print("- \(collections.count) collections")
+                        } else {
+                            print("No data to clear - database was already empty")
+                        }
+                    } catch {
+                        print("Error clearing all database content: \(error)")
                     }
                 }
             }

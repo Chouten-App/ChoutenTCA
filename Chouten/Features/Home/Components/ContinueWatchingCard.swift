@@ -100,7 +100,21 @@ import UIKit
         clipsToBounds = true
         
         imageView.setAsyncImage(url: data.poster)
-        moduleImageView.setAsyncImage(url: "https://www.chouten.app/Icon.png")
+        
+        // Set module icon if moduleId is available
+        if let moduleId = data.moduleId {
+            Chouten.getModuleIconData(for: moduleId) { [weak self] iconPath in
+                if let iconPath = iconPath, let image = UIImage(contentsOfFile: iconPath) {
+                    self?.moduleImageView.image = image
+                } else {
+                    // Fallback to Chouten logo if module icon not found
+                    self?.moduleImageView.setAsyncImage(url: "https://www.chouten.app/Icon.png")
+                }
+            }
+        } else {
+            // Fallback to Chouten logo if no moduleId
+            moduleImageView.setAsyncImage(url: "https://www.chouten.app/Icon.png")
+        }
         
         titleLabel.text = data.titles.primary
         subtitleLabel.text = data.titles.secondary ?? ""

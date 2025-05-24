@@ -452,6 +452,19 @@ extension HomeView: UICollectionViewDelegate {
         if isSelectionMode {
             selectedItems.insert(indexPath)
             updateUIForSelection()
+            return
+        }
+        
+        // Handle normal navigation
+        let section = store.collections[indexPath.section]
+        let data = section.list[indexPath.item]
+        
+        // Check if this is a continue watching section (type 3)
+        if section.type == 3 {
+            handleContinueWatchingTap(for: data)
+        } else {
+            // Handle other types of content (navigate to InfoView)
+            navigateToInfo(url: data.url)
         }
     }
     
@@ -460,6 +473,66 @@ extension HomeView: UICollectionViewDelegate {
             selectedItems.remove(indexPath)
             updateUIForSelection()
         }
+    }
+    
+    private func handleContinueWatchingTap(for data: HomeData) {
+        // Get the full continue watching data from the database
+        Task {
+            do {
+                let continueWatchingData = await self.getContinueWatchingData(for: data.url)
+                
+                if let (infoData, mediaData, savedProgress, duration) = continueWatchingData {
+                    DispatchQueue.main.async {
+                        self.navigateToPlayer(infoData: infoData, mediaData: mediaData, savedProgress: savedProgress, duration: duration)
+                    }
+                } else {
+                    print("Failed to get continue watching data for \(data.titles.primary)")
+                    // Fallback to normal info navigation
+                    DispatchQueue.main.async {
+                        self.navigateToInfo(url: data.url)
+                    }
+                }
+            }
+        }
+    }
+    
+    private func getContinueWatchingData(for url: String) async -> (InfoData, MediaItem, Double, Double)? {
+        // Access the database client through the dependency system
+        return await withDependencies(from: self.store) {
+            @Dependency(\.databaseClient) var databaseClient
+            return await databaseClient.fetchContinueWatchingData(url)
+        }
+    }
+    
+    private func navigateToPlayer(infoData: InfoData, mediaData: MediaItem, savedProgress: Double, duration: Double) {
+        guard let scenes = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = scenes.windows.first,
+              let navController = window.rootViewController as? UINavigationController else {
+            return
+        }
+        
+        // Create PlayerVC with the media data, info, and saved progress
+        let playerVC = PlayerVC(data: mediaData, info: infoData, index: 0, savedProgress: savedProgress)
+        playerVC.modalPresentationStyle = .fullScreen
+        
+        let transition = CATransition()
+        transition.duration = 0.3
+        transition.type = .fade
+        navController.view.layer.add(transition, forKey: nil)
+        navController.navigationBar.isHidden = true
+        navController.pushViewController(playerVC, animated: false)
+    }
+    
+    private func navigateToInfo(url: String) {
+        guard let scenes = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = scenes.windows.first,
+              let navController = window.rootViewController as? UINavigationController else {
+            return
+        }
+        
+        let infoVC = InfoViewRefactor(url: url)
+        navController.navigationBar.isHidden = true
+        navController.pushViewController(infoVC, animated: true)
     }
 }
 

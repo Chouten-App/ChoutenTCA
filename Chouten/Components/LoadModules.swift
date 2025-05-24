@@ -67,3 +67,51 @@ func getIconData(for module: RepoModule, repo: RepoMetadata, completion: @escapi
         }
     }
 }
+
+func getModuleIconData(for moduleId: String, completion: @escaping (String?) -> Void) {
+    @Dependency(\.repoClient) var repoClient
+    
+    DispatchQueue.global(qos: .background).async {
+        do {
+            let repos = try repoClient.getRepos()
+            
+            for repo in repos {
+                if let modules = repo.modules {
+                    if let module = modules.first(where: { $0.id == moduleId }) {
+                        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+                        
+                        if let imageUrl = documentsDirectory?
+                            .appendingPathComponent("Repos")
+                            .appendingPathComponent(repo.id)
+                            .appendingPathComponent("Modules")
+                            .appendingPathComponent(module.id) {
+                            
+                            // Try loading the image as JPG
+                            if (try? Data(contentsOf: imageUrl.appendingPathComponent("icon.jpg"))) != nil {
+                                let imagePath = imageUrl.appendingPathComponent("icon.jpg").path
+                                DispatchQueue.main.async {
+                                    completion(imagePath)
+                                }
+                                return
+                            }
+                            // Try loading the image as PNG if JPG is unavailable
+                            else if (try? Data(contentsOf: imageUrl.appendingPathComponent("icon.png"))) != nil {
+                                let imagePath = imageUrl.appendingPathComponent("icon.png").path
+                                DispatchQueue.main.async {
+                                    completion(imagePath)
+                                }
+                                return
+                            }
+                        }
+                    }
+                }
+            }
+        } catch {
+            print("Error loading repositories: \(error.localizedDescription)")
+        }
+        
+        DispatchQueue.main.async {
+            completion(nil)
+        }
+    }
+}

@@ -58,7 +58,9 @@ class SettingsView: UIViewController {
 
     let versionLabel: UILabel = {
         let label = UILabel()
-        label.text = "Version 0.4.0"
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown"
+        label.text = "Version \(version) (\(build))"
         label.textColor = ThemeManager.shared.getColor(for: .fg)
         label.font = UIFont.systemFont(ofSize: 12)
         label.alpha = 0.7
@@ -341,6 +343,53 @@ class SettingsView: UIViewController {
         return view
     }()
     
+    let clearDataDisplay: UIView = {
+        let view = UIView()
+        view.backgroundColor = ThemeManager.shared.getColor(for: .container)
+        view.layer.cornerRadius = 20
+        view.layer.borderColor = ThemeManager.shared.getColor(for: .border).cgColor
+        view.layer.borderWidth = 0.5
+        view.translatesAutoresizingMaskIntoConstraints = false
+
+        let iconView = CircleButton(icon: "trash.circle")
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+
+        let label = UILabel()
+        label.text = "Clear Database"
+        label.font = .systemFont(ofSize: 15, weight: .bold)
+        label.textColor = ThemeManager.shared.getColor(for: .fg)
+        label.translatesAutoresizingMaskIntoConstraints = false
+
+        let chevronView = UIImageView()
+        chevronView.image = UIImage(systemName: "exclamationmark.triangle")?
+            .withRenderingMode(.alwaysTemplate)
+            .applyingSymbolConfiguration(
+                .init(
+                    font: .systemFont(ofSize: 14)
+                )
+            )
+        chevronView.tintColor = .systemRed
+        chevronView.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(iconView)
+        view.addSubview(label)
+        view.addSubview(chevronView)
+
+        NSLayoutConstraint.activate([
+            iconView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+            iconView.topAnchor.constraint(equalTo: view.topAnchor, constant: 12),
+            iconView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
+
+            label.centerYAnchor.constraint(equalTo: iconView.centerYAnchor),
+            label.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 8),
+
+            chevronView.centerYAnchor.constraint(equalTo: iconView.centerYAnchor),
+            chevronView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12)
+        ])
+
+        return view
+    }()
+    
     /*
      For Testing because Modules are broken
      */
@@ -423,6 +472,7 @@ class SettingsView: UIViewController {
         stack.addArrangedSubview(settingDisplay)
         stack.addArrangedSubview(logDisplay)
         stack.addArrangedSubview(aboutDisplay)
+        stack.addArrangedSubview(clearDataDisplay)
         //stack.addArrangedSubview(addContinueWatching)
         stack.addArrangedSubview(labelStack)
 
@@ -458,6 +508,10 @@ class SettingsView: UIViewController {
         aboutDisplay.isUserInteractionEnabled = true
         let tapGestureAbout = UITapGestureRecognizer(target: self, action: #selector(goToAbout))
         aboutDisplay.addGestureRecognizer(tapGestureAbout)
+        
+        clearDataDisplay.isUserInteractionEnabled = true
+        let tapGestureClear = UITapGestureRecognizer(target: self, action: #selector(clearDatabase))
+        clearDataDisplay.addGestureRecognizer(tapGestureClear)
         
         //Testing
         addContinueWatching.isUserInteractionEnabled = true
@@ -566,6 +620,38 @@ class SettingsView: UIViewController {
             tempVC.view.alpha = 1.0
             tempVC.view.transform = .identity
         }
+    }
+    
+    @objc func clearDatabase() {
+        // Show confirmation alert
+        let alert = UIAlertController(
+            title: "Clear Database",
+            message: "This will permanently delete all your collections, continue watching history, and saved data. This action cannot be undone.",
+            preferredStyle: .alert
+        )
+        
+        // Add destructive action
+        let clearAction = UIAlertAction(title: "Clear All Data", style: .destructive) { _ in
+            Task {
+                await self.databaseClient.clearAllData()
+                
+                DispatchQueue.main.async {
+                    // Show success message
+                    self.view.showErrorDisplay(
+                        message: "Database Cleared",
+                        description: "All data has been successfully removed from the database."
+                    )
+                }
+            }
+        }
+        
+        // Add cancel action
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        
+        alert.addAction(clearAction)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
     }
     
     @objc private func addToContinueWatching() {
