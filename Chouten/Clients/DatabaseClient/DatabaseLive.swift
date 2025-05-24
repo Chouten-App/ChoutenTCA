@@ -474,8 +474,125 @@ extension DatabaseClient: DependencyKey {
                     return
                 }
                 
+                // Calculate completion percentage
+                let completionPercentage = (progress / duration) * 100.0
+                let isNearlyFinished = completionPercentage >= 90.0  // Lowered from 95% to 90%
+                
                 // Log progress data for debugging
-                print("Adding to continue watching: moduleId=\(moduleId), progress=\(progress), duration=\(duration)")
+                print("📹 addToContinueWatching called: moduleId=\(moduleId), progress=\(progress), duration=\(duration), completion=\(String(format: "%.1f", completionPercentage))%")
+                
+                // If episode is 90% or more complete, remove it and potentially add next episode
+                if isNearlyFinished {
+                    print("🏁 Episode is \(String(format: "%.1f", completionPercentage))% complete, removing from continue watching as it's considered finished")
+                    
+                    // Use a dedicated context for removal and next episode logic
+                    let taskContext = persistentContainer.newBackgroundContext()
+                    taskContext.performAndWait {
+                        let fetchRequest: NSFetchRequest<UserContinueWatching> = UserContinueWatching.fetchRequest()
+                        fetchRequest.predicate = NSPredicate(format: "moduleId == %@", moduleId)
+                        
+                        do {
+                            let items = try taskContext.fetch(fetchRequest)
+                            let infoData = collectionItem.infoData
+                            
+                            var itemsToRemove: [UserContinueWatching] = []
+                            
+                            for item in items {
+                                if let itemInfoDataString = item.infoData,
+                                   let itemEpisodeDataString = item.episodeData {
+                                    do {
+                                        let itemInfoData = try JSONDecoder().decode(InfoData.self, from: itemInfoDataString)
+                                        let itemMediaData = try JSONDecoder().decode(MediaItem.self, from: itemEpisodeDataString)
+                                        
+                                        // Check if this is the same series and episode
+                                        let currentSeriesId = infoData.url.isEmpty ? infoData.titles.primary : infoData.url
+                                        let existingSeriesId = itemInfoData.url.isEmpty ? itemInfoData.titles.primary : itemInfoData.url
+                                        
+                                        if currentSeriesId == existingSeriesId && itemMediaData.url == mediaData.url {
+                                            itemsToRemove.append(item)
+                                            print("🗑️ Removing finished episode: \(itemInfoData.titles.primary) - Episode \(itemMediaData.number.removeTrailingZeros())")
+                                        }
+                                    } catch {
+                                        print("Error decoding item data during finished episode removal: \(error)")
+                                        continue
+                                    }
+                                }
+                            }
+                            
+                            // Remove the finished episode(s)
+                            for item in itemsToRemove {
+                                taskContext.delete(item)
+                            }
+                            
+                            if !itemsToRemove.isEmpty {
+                                try taskContext.save()
+                                print("✅ Successfully removed \(itemsToRemove.count) finished episode(s) from continue watching")
+                            }
+                            
+                            // Try to find and add the next episode from the same series
+                            // Check if we have mediaList data to find the next episode
+                            if !infoData.mediaList.isEmpty,
+                               let episodeList = infoData.mediaList.first?.pagination.first?.items {
+                                
+                                print("🔍 Searching for next episode in list of \(episodeList.count) episodes")
+                                
+                                // Find current episode index
+                                if let currentEpisodeIndex = episodeList.firstIndex(where: { $0.url == mediaData.url }) {
+                                    let nextEpisodeIndex = currentEpisodeIndex + 1
+                                    
+                                    print("📍 Current episode index: \(currentEpisodeIndex), next would be: \(nextEpisodeIndex)")
+                                    
+                                    // Check if there's a next episode
+                                    if nextEpisodeIndex < episodeList.count {
+                                        let nextEpisode = episodeList[nextEpisodeIndex]
+                                        
+                                        print("🎯 Found next episode: \(infoData.titles.primary) - Episode \(nextEpisode.number.removeTrailingZeros())")
+                                        
+                                        // Add the next episode with 0 progress to continue watching
+                                        let nextContinueWatching = UserContinueWatching(context: taskContext)
+                                        nextContinueWatching.moduleId = moduleId
+                                        nextContinueWatching.uuid = UUID().uuidString
+                                        nextContinueWatching.progress = 0.0  // Start from beginning
+                                        nextContinueWatching.duration = 1500.0  // Default duration, will be updated when actually played
+                                        
+                                        if let encodedInfoData = try? JSONEncoder().encode(infoData),
+                                           let encodedNextMediaData = try? JSONEncoder().encode(nextEpisode) {
+                                            nextContinueWatching.infoData = encodedInfoData
+                                            nextContinueWatching.episodeData = encodedNextMediaData
+                                            
+                                            try taskContext.save()
+                                            print("🚀 Successfully added next episode to continue watching: Episode \(nextEpisode.number.removeTrailingZeros())")
+                                        } else {
+                                            print("❌ Failed to encode next episode data for continue watching")
+                                        }
+                                    } else {
+                                        print("🏁 Current episode is the last episode in the series (index \(currentEpisodeIndex) of \(episodeList.count))")
+                                    }
+                                } else {
+                                    print("❌ Could not find current episode in the episode list")
+                                    print("🔍 Looking for URL: \(mediaData.url)")
+                                    print("🔍 Available URLs: \(episodeList.map { $0.url })")
+                                }
+                            } else {
+                                print("❌ No mediaList available to find next episode")
+                                print("🔍 MediaList count: \(infoData.mediaList.count)")
+                                if let firstMediaList = infoData.mediaList.first {
+                                    print("🔍 Pagination count: \(firstMediaList.pagination.count)")
+                                    if let firstPagination = firstMediaList.pagination.first {
+                                        print("🔍 Items count: \(firstPagination.items.count)")
+                                    }
+                                }
+                            }
+                            
+                        } catch {
+                            print("❌ Error removing finished episode from continue watching: \(error)")
+                        }
+                    }
+                    return // Exit early since we handled the episode completion
+                }
+                
+                // Normal flow for episodes under 90% completion
+                print("▶️ Episode under 90% completion, proceeding with normal continue watching logic")
                 
                 // Use a dedicated context for this operation to avoid threading issues
                 let taskContext = persistentContainer.newBackgroundContext()
@@ -588,10 +705,10 @@ extension DatabaseClient: DependencyKey {
                         // Save changes
                         if taskContext.hasChanges {
                             try taskContext.save()
-                            print("Successfully saved continue watching data")
+                            print("💾 Successfully saved continue watching data")
                         }
                     } catch {
-                        print("Error managing continue watching entries: \(error)")
+                        print("❌ Error managing continue watching entries: \(error)")
                     }
                 }
             },

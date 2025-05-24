@@ -335,17 +335,15 @@ class PlayerVC: UIViewController {
         let currentProgress = playerVM.currentTime
         let watchPercentage = currentProgress / duration
         
-        // Only save if progress is less than 95% (not completed)
-        if watchPercentage < 0.95 {
-            lastSavedProgress = currentProgress
-            print("Saving current progress: \(currentProgress)/\(duration)")
-            
-            // Check if the module ID is available
-            if let moduleId = UserDefaults.standard.string(forKey: "selectedModuleId") {
-                self.store.send(.view(.updateContinueWatching(self.info, self.data, currentProgress, duration)))
-            } else {
-                print("Warning: No selectedModuleId found in UserDefaults")
-            }
+        lastSavedProgress = currentProgress
+        print("Saving current progress: \(currentProgress)/\(duration) (\(String(format: "%.1f", watchPercentage * 100))%)")
+        
+        // Check if the module ID is available
+        if let moduleId = UserDefaults.standard.string(forKey: "selectedModuleId") {
+            // Always call updateContinueWatching - let the database handle completion logic
+            self.store.send(.view(.updateContinueWatching(self.info, self.data, currentProgress, duration)))
+        } else {
+            print("Warning: No selectedModuleId found in UserDefaults")
         }
     }
 
@@ -764,21 +762,15 @@ extension PlayerVC: PlayerControlsDelegate {
 
         self.applyGeometryUpdate(interfaceOrientation: .portrait)
         
-        // Only save to continue watching if the video hasn't been watched to completion (less than 95%)
+        // Always save current progress when navigating back - let database handle completion logic
         let currentProgress = playerVM.currentTime
         let totalDuration = playerVM.duration ?? 1.0
         let watchPercentage = currentProgress / totalDuration
         
-        if watchPercentage < 0.95 {
-            // Save to continue watching only if not watched completely
-            self.store.send(.view(.updateContinueWatching(self.info, self.data, currentProgress, totalDuration)))
-        } else {
-            // If video is completed, explicitly remove it from continue watching
-            if let moduleId = UserDefaults.standard.string(forKey: "selectedModuleId") {
-                self.store.send(.view(.removeFromContinueWatching(moduleId, self.info.url)))
-            }
-            print("Video completed: removing from continue watching")
-        }
+        print("Navigating back with progress: \(currentProgress)/\(totalDuration) (\(String(format: "%.1f", watchPercentage * 100))%)")
+        
+        // Always call updateContinueWatching - database will handle completion logic
+        self.store.send(.view(.updateContinueWatching(self.info, self.data, currentProgress, totalDuration)))
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             // self.dismiss(animated: true, completion: nil)

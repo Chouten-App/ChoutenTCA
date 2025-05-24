@@ -103,9 +103,18 @@ class ListCell: UICollectionViewCell, SelfConfiguringCell {
 
         indicatorLabel.text = data.indicator
         titleLabel.text = data.titles.primary
-        // swiftlint:disable force_unwrapping
-        countLabel.text = "\(data.current != nil ? String(data.current!) : "~")/\(data.total != nil ? String(data.total!) : "~")"
-        // swiftlint:enable force_unwrapping
+        
+        // If this has time indicator (continue watching), show series name as subtitle
+        // Otherwise show the current/total count
+        if !data.indicator.isEmpty && (data.indicator.contains("/") && data.indicator.contains(":")) {
+            // This is a continue watching item with time format
+            countLabel.text = data.titles.secondary
+        } else {
+            // Regular discover item
+            // swiftlint:disable force_unwrapping
+            countLabel.text = "\(data.current != nil ? String(data.current!) : "~")/\(data.total != nil ? String(data.total!) : "~")"
+            // swiftlint:enable force_unwrapping
+        }
 
         if data.indicator.isEmpty {
             indicator.alpha = 0.0
