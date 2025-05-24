@@ -350,7 +350,7 @@ extension DatabaseClient: DependencyKey {
                     let continueWatchingItems = try context.fetch(fetchRequest)
                     print("Found \(continueWatchingItems.count) continue watching items")
                     
-                    // Dictionary to track processed items by their content URL to avoid duplicates
+                    // Dictionary to track processed items by module + series + episode to avoid true duplicates
                     var processedItems = [String: Bool]()
 
                     for item in continueWatchingItems {
@@ -367,10 +367,10 @@ extension DatabaseClient: DependencyKey {
                             let infoData = try JSONDecoder().decode(InfoData.self, from: infoDataString)
                             let mediaData = try JSONDecoder().decode(MediaItem.self, from: episodeDataString)
                             
-                            // Create a content key to detect duplicates
-                            let contentKey = infoData.url + "-" + mediaData.url
+                            // Create a content key to detect true duplicates (same module, same series, same episode)
+                            let contentKey = moduleId + "-" + infoData.url + "-" + mediaData.url
                             
-                            // Skip if we've already processed this item
+                            // Skip if we've already processed this exact item
                             if processedItems[contentKey] != nil {
                                 print("Skipping duplicate item: \(infoData.titles.primary) - \(mediaData.title ?? "Episode")")
                                 continue
@@ -506,7 +506,7 @@ extension DatabaseClient: DependencyKey {
                             return
                         }
                         
-                        // Find items from the same series (by infoData.url) - we only want to keep the latest episode per series
+                        // Find items from the same series - we only want to keep the latest episode per series per module
                         for item in items {
                             if let itemInfoDataString = item.infoData,
                                let itemEpisodeDataString = item.episodeData {
@@ -514,24 +514,35 @@ extension DatabaseClient: DependencyKey {
                                     let itemInfoData = try JSONDecoder().decode(InfoData.self, from: itemInfoDataString)
                                     let itemMediaData = try JSONDecoder().decode(MediaItem.self, from: itemEpisodeDataString)
                                     
-                                    let infoUrlsMatch = itemInfoData.url == infoData.url
+                                    // Use URL as primary identifier, fallback to title if URL is empty
+                                    let currentSeriesId = infoData.url.isEmpty ? infoData.titles.primary : infoData.url
+                                    let existingSeriesId = itemInfoData.url.isEmpty ? itemInfoData.titles.primary : itemInfoData.url
+                                    
+                                    let infoUrlsMatch = currentSeriesId == existingSeriesId
                                     let mediaUrlsMatch = itemMediaData.url == mediaData.url
+                                    
+                                    print("🔍 Comparing items:")
+                                    print("  Current: \(infoData.titles.primary) - Episode \(mediaData.number.removeTrailingZeros()) (ID: \(currentSeriesId))")
+                                    print("  Existing: \(itemInfoData.titles.primary) - Episode \(itemMediaData.number.removeTrailingZeros()) (ID: \(existingSeriesId))")
+                                    print("  Series IDs match: \(infoUrlsMatch), Episodes match: \(mediaUrlsMatch)")
                                     
                                     if infoUrlsMatch {
                                         if mediaUrlsMatch {
                                             // Same series, same episode - this is an update to existing progress
                                             if existingItem == nil {
                                                 existingItem = item
-                                                print("Found exact match for: \(itemInfoData.titles.primary) - \(itemMediaData.title ?? "Episode \(itemMediaData.number.removeTrailingZeros())")")
+                                                print("✅ Found exact match for: \(itemInfoData.titles.primary) - \(itemMediaData.title ?? "Episode \(itemMediaData.number.removeTrailingZeros())")")
                                             } else {
                                                 duplicates.append(item)
-                                                print("Found duplicate to remove: \(itemInfoData.titles.primary) - \(itemMediaData.title ?? "Episode \(itemMediaData.number.removeTrailingZeros())")")
+                                                print("🗑️ Found duplicate to remove: \(itemInfoData.titles.primary) - \(itemMediaData.title ?? "Episode \(itemMediaData.number.removeTrailingZeros())")")
                                             }
                                         } else {
-                                            // Same series, different episode - remove old episode as we only want the latest
+                                            // Same series, different episode - remove old episode as we only want the latest per series
                                             duplicates.append(item)
-                                            print("Found old episode from same series to remove: \(itemInfoData.titles.primary) - \(itemMediaData.title ?? "Episode \(itemMediaData.number.removeTrailingZeros())")")
+                                            print("🔄 Found old episode from same series to remove: \(itemInfoData.titles.primary) - \(itemMediaData.title ?? "Episode \(itemMediaData.number.removeTrailingZeros())")")
                                         }
+                                    } else {
+                                        print("✨ Different series, keeping both: \(itemInfoData.titles.primary)")
                                     }
                                 } catch {
                                     print("Error decoding item data: \(error)")
@@ -549,6 +560,9 @@ extension DatabaseClient: DependencyKey {
                             taskContext.delete(duplicate)
                         }
                         
+                        print("📊 Summary for moduleId \(moduleId):")
+                        print("  Removed \(duplicates.count) old/duplicate episodes")
+                        
                         // Update or create entry
                         if let existingItem = existingItem {
                             // Update existing item
@@ -557,7 +571,7 @@ extension DatabaseClient: DependencyKey {
                             existingItem.infoData = encodedInfoData
                             existingItem.episodeData = encodedMediaData
                             
-                            print("Updated continue watching entry with progress: \(validProgress)/\(validDuration)")
+                            print("🔄 Updated continue watching entry: \(infoData.titles.primary) - Episode \(mediaData.number.removeTrailingZeros()) with progress: \(validProgress)/\(validDuration)")
                         } else {
                             // Create a new entry
                             let continueWatching = UserContinueWatching(context: taskContext)
@@ -568,7 +582,7 @@ extension DatabaseClient: DependencyKey {
                             continueWatching.infoData = encodedInfoData
                             continueWatching.episodeData = encodedMediaData
                             
-                            print("Created new continue watching entry with progress: \(validProgress)/\(validDuration)")
+                            print("✨ Created new continue watching entry: \(infoData.titles.primary) - Episode \(mediaData.number.removeTrailingZeros()) with progress: \(validProgress)/\(validDuration)")
                         }
                         
                         // Save changes
@@ -647,20 +661,24 @@ extension DatabaseClient: DependencyKey {
                         let items = try taskContext.fetch(fetchRequest)
                         print("Found \(items.count) continue watching items to check for duplicates")
                         
-                        // Dictionary to track unique series by infoData.url (one entry per series)
+                        // Dictionary to track unique series by module + series URL (one episode per series per module)
                         var seriesMap: [String: UserContinueWatching] = [:]
                         var duplicatesToRemove: [UserContinueWatching] = []
                         
-                        // Keep only the latest episode per series
+                        // Keep only the latest episode per series per module
                         for item in items {
                             if let infoDataString = item.infoData,
-                               let episodeDataString = item.episodeData {
+                               let episodeDataString = item.episodeData,
+                               let moduleId = item.moduleId {
                                 do {
                                     let infoData = try JSONDecoder().decode(InfoData.self, from: infoDataString)
                                     let mediaData = try JSONDecoder().decode(MediaItem.self, from: episodeDataString)
                                     
-                                    // Use series URL as the key (not episode-specific)
-                                    let seriesKey = infoData.url
+                                    // Use URL as primary identifier, fallback to title if URL is empty
+                                    let seriesId = infoData.url.isEmpty ? infoData.titles.primary : infoData.url
+                                    
+                                    // Use module + series ID as the key (one episode per series per module)
+                                    let seriesKey = moduleId + "-" + seriesId
                                     
                                     if let existingItem = seriesMap[seriesKey] {
                                         // Found another episode from the same series - keep the one with higher episode number or latest progress
@@ -681,9 +699,9 @@ extension DatabaseClient: DependencyKey {
                                             print("Keeping existing episode: \(infoData.titles.primary) - Episode \(existingEpisodeData.number.removeTrailingZeros())")
                                         }
                                     } else {
-                                        // First episode from this series, add to map
+                                        // First episode from this series in this module, add to map
                                         seriesMap[seriesKey] = item
-                                        print("First episode for series: \(infoData.titles.primary) - Episode \(mediaData.number.removeTrailingZeros())")
+                                        print("First episode for series in module: \(infoData.titles.primary) - Episode \(mediaData.number.removeTrailingZeros())")
                                     }
                                 } catch {
                                     print("Error decoding data during cleanup: \(error)")
