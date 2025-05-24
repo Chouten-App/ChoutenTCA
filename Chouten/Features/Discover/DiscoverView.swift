@@ -14,11 +14,38 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
     var store: Store<DiscoverFeature.State, DiscoverFeature.Action>
 
     var collectionView: UICollectionView!
+    var refreshControl: UIRefreshControl!
 
     let loadingView = DiscoverLoadingView()
     let noRepoInstalledView = TitleCard("No Module Installed.", description: "Please install and select a module using publicly available repos.")
 
     var dataSource: UICollectionViewDiffableDataSource<DiscoverSection, DiscoverData>?
+    
+    // Computed property to get combined sections with continue watching
+    private var combinedSections: [DiscoverSection] {
+        var sections = store.discoverSections
+        
+        // Only add continue watching if we have data and discover sections
+        if !store.continueWatchingData.isEmpty && !sections.isEmpty {
+            let continueWatchingSection = DiscoverSection(
+                title: "Continue Watching",
+                type: 1, // List type
+                list: store.continueWatchingData
+            )
+            
+            // Insert between first and last section
+            if sections.count == 1 {
+                // If only one section, append continue watching
+                sections.append(continueWatchingSection)
+            } else {
+                // Insert at index 1 (between first and others)
+                let insertIndex = min(1, sections.count)
+                sections.insert(continueWatchingSection, at: insertIndex)
+            }
+        }
+        
+        return sections
+    }
 
     init() {
         store = .init(
@@ -48,6 +75,11 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
         collectionView.showsVerticalScrollIndicator = false
         collectionView.showsHorizontalScrollIndicator = false
         
+        // Setup refresh control
+        refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
+        collectionView.refreshControl = refreshControl
+        
         view.addSubview(noRepoInstalledView)
         view.addSubview(loadingView.view)
         addChild(loadingView)
@@ -69,6 +101,17 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
         
         observe { [weak self] in
             guard let self else { return }
+            
+            // Handle refresh control state
+            if store.isRefreshing {
+                if !refreshControl.isRefreshing {
+                    refreshControl.beginRefreshing()
+                }
+            } else {
+                if refreshControl.isRefreshing {
+                    refreshControl.endRefreshing()
+                }
+            }
             
             if !store.discoverSections.isEmpty {
                 print("Found Data")
@@ -126,11 +169,11 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
 
     func createDataSource() {
         dataSource = UICollectionViewDiffableDataSource<DiscoverSection, DiscoverData>(collectionView: collectionView) { collectionView, indexPath, data in
-            if self.store.discoverSections.isEmpty {
+            if self.combinedSections.isEmpty {
                 return self.configure(ListCell.self, with: data, for: indexPath)
             }
 
-            switch self.store.discoverSections[indexPath.section].type {
+            switch self.combinedSections[indexPath.section].type {
             case 0:
                 return self.configure(CarouselCell.self, with: data, for: indexPath)
             default:
@@ -161,12 +204,13 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
     }
 
     func reloadData() {
-        if self.store.discoverSections.isEmpty { return }
+        let sections = combinedSections
+        if sections.isEmpty { return }
         
         var snapshot = NSDiffableDataSourceSnapshot<DiscoverSection, DiscoverData>()
-        snapshot.appendSections(self.store.discoverSections)
+        snapshot.appendSections(sections)
 
-        for section in self.store.discoverSections {
+        for section in sections {
             snapshot.appendItems(section.list, toSection: section)
         }
 
@@ -177,7 +221,12 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
 
     func createCompositionalLayout() -> UICollectionViewLayout {
         let layout = UICollectionViewCompositionalLayout { sectionIndex, layoutEnvironment in
-            let section = self.store.discoverSections[sectionIndex]
+            let sections = self.combinedSections
+            guard sectionIndex < sections.count else {
+                return self.createListSection(using: DiscoverSection(title: "", type: 1, list: []))
+            }
+            
+            let section = sections[sectionIndex]
 
             switch section.type {
             case 0:
@@ -246,6 +295,10 @@ class DiscoverView: UIViewController, UICollectionViewDelegate {
         store.send(.view(.onAppear))
     }
     
+    @objc private func refreshData() {
+        store.send(.view(.refresh))
+    }
+
     private func updateTopBarBlur(offsetY: CGFloat) {
         //Parent View Access
         if let appViewController = self.parent as? AppViewController {
@@ -280,11 +333,17 @@ extension DiscoverView: UIScrollViewDelegate {
        guard let data = dataSource?.itemIdentifier(for: indexPath) else {
            return
        }
-
-       let tempVC = InfoViewRefactor(url: data.url)
-
-       navController.navigationBar.isHidden = true
-       navController.pushViewController(tempVC, animated: true)
+       
+       // Check if this is a continue watching item
+       let sections = combinedSections
+       if indexPath.section < sections.count && sections[indexPath.section].title == "Continue Watching" {
+           handleContinueWatchingTap(for: data)
+       } else {
+           // Handle normal discover navigation
+           let tempVC = InfoViewRefactor(url: data.url)
+           navController.navigationBar.isHidden = true
+           navController.pushViewController(tempVC, animated: true)
+       }
    }
 
    // Fade in new cells
@@ -300,5 +359,65 @@ extension DiscoverView: UIScrollViewDelegate {
        UIView.animate(withDuration: 0.2) {
            cell.alpha = 0
        }
+   }
+
+   private func handleContinueWatchingTap(for data: DiscoverData) {
+       // Get the full continue watching data from the database
+       Task {
+           do {
+               let continueWatchingData = await self.getContinueWatchingData(for: data.url)
+               
+               if let (infoData, mediaData, savedProgress, duration) = continueWatchingData {
+                   DispatchQueue.main.async {
+                       self.navigateToPlayer(infoData: infoData, mediaData: mediaData, savedProgress: savedProgress, duration: duration)
+                   }
+               } else {
+                   print("Failed to get continue watching data for \(data.titles.primary)")
+                   // Fallback to normal info navigation
+                   DispatchQueue.main.async {
+                       self.navigateToInfo(url: data.url)
+                   }
+               }
+           }
+       }
+   }
+   
+   private func getContinueWatchingData(for url: String) async -> (InfoData, MediaItem, Double, Double)? {
+       // Access the database client through the dependency system
+       return await withDependencies(from: self.store) {
+           @Dependency(\.databaseClient) var databaseClient
+           return await databaseClient.fetchContinueWatchingData(url)
+       }
+   }
+   
+   private func navigateToPlayer(infoData: InfoData, mediaData: MediaItem, savedProgress: Double, duration: Double) {
+       guard let scenes = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+             let window = scenes.windows.first,
+             let navController = window.rootViewController as? UINavigationController else {
+           return
+       }
+       
+       // Create PlayerVC with the media data, info, and saved progress
+       let playerVC = PlayerVC(data: mediaData, info: infoData, index: 0, savedProgress: savedProgress)
+       playerVC.modalPresentationStyle = .fullScreen
+       
+       let transition = CATransition()
+       transition.duration = 0.3
+       transition.type = .fade
+       navController.view.layer.add(transition, forKey: nil)
+       navController.navigationBar.isHidden = true
+       navController.pushViewController(playerVC, animated: false)
+   }
+   
+   private func navigateToInfo(url: String) {
+       guard let scenes = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+             let window = scenes.windows.first,
+             let navController = window.rootViewController as? UINavigationController else {
+           return
+       }
+       
+       let infoVC = InfoViewRefactor(url: url)
+       navController.navigationBar.isHidden = true
+       navController.pushViewController(infoVC, animated: true)
    }
 }
