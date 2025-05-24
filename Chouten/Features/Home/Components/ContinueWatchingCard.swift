@@ -41,6 +41,8 @@ import UIKit
         label.font = .systemFont(ofSize: 16, weight: .bold)
         label.textColor = ThemeManager.shared.getColor(for: .fg)
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         return label
     }()
     
@@ -51,6 +53,8 @@ import UIKit
         label.textColor = ThemeManager.shared.getColor(for: .fg)
         label.alpha = 0.7
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         return label
     }()
     
@@ -61,7 +65,19 @@ import UIKit
         label.textColor = ThemeManager.shared.getColor(for: .fg)
         label.alpha = 0.7
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.setContentHuggingPriority(.required, for: .horizontal)
+        label.setContentCompressionResistancePriority(.required, for: .horizontal)
         return label
+    }()
+    
+    let subtitleTimeStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.distribution = .fillProportionally
+        stack.alignment = .center
+        stack.spacing = 8
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
     }()
     
     let progressView = ProgressBar()
@@ -132,8 +148,12 @@ import UIKit
         
         addSubview(imageView)
         overlayView.addSubview(titleLabel)
-        overlayView.addSubview(subtitleLabel)
-        overlayView.addSubview(timeLabel)
+        
+        // Add subtitle and time labels to the stack view
+        subtitleTimeStack.addArrangedSubview(subtitleLabel)
+        subtitleTimeStack.addArrangedSubview(timeLabel)
+        overlayView.addSubview(subtitleTimeStack)
+        
         overlayView.addSubview(progressView)
         addSubview(overlayView)
         
@@ -158,15 +178,15 @@ import UIKit
             imageView.leadingAnchor.constraint(equalTo: leadingAnchor),
             imageView.trailingAnchor.constraint(equalTo: trailingAnchor),
             
-            subtitleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
-            subtitleLabel.bottomAnchor.constraint(equalTo: progressView.topAnchor, constant: -8),
+            // Subtitle and time stack view
+            subtitleTimeStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            subtitleTimeStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+            subtitleTimeStack.bottomAnchor.constraint(equalTo: progressView.topAnchor, constant: -8),
             
-            timeLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
-            timeLabel.bottomAnchor.constraint(equalTo: progressView.topAnchor, constant: -8),
-            
-            titleLabel.bottomAnchor.constraint(equalTo: subtitleLabel.topAnchor, constant: -4),
-            titleLabel.leadingAnchor.constraint(equalTo: subtitleLabel.leadingAnchor),
-            titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+            // Title label constraints with proper spacing
+            titleLabel.bottomAnchor.constraint(equalTo: subtitleTimeStack.topAnchor, constant: -4),
+            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -12),
             
             progressView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
             progressView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
